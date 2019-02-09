@@ -9,41 +9,41 @@ namespace postgres {
 
 postgres::Config getConfig();
 
-struct RowMapping {
+struct test {
     template <typename V>
     static void visit_static(V& visitor) {
-        visitor.template apply<RowMapping>("int2", &RowMapping::int2);
-        visitor.template apply<RowMapping>("int4", &RowMapping::int4);
-        visitor.template apply<RowMapping>("int8", &RowMapping::int8);
-        visitor.template apply<RowMapping>("float4", &RowMapping::float4);
-        visitor.template apply<RowMapping>("float8", &RowMapping::float8);
-        visitor.template apply<RowMapping>("flag", &RowMapping::flag);
-        visitor.template apply<RowMapping>("info", &RowMapping::info);
-        visitor.template apply<RowMapping>("time", &RowMapping::time);
+        visitor.template apply<test>("int2", &test::int2);
+        visitor.template apply<test>("int4", &test::int4);
+        visitor.template apply<test>("int8", &test::int8);
+        visitor.template apply<test>("float4", &test::float4);
+        visitor.template apply<test>("float8", &test::float8);
+        visitor.template apply<test>("flag", &test::flag);
+        visitor.template apply<test>("info", &test::info);
+        visitor.template apply<test>("time", &test::time);
     }
 
     template <typename V>
     void visit(V& visitor) {
-        visitor.template apply<RowMapping>("int2", &RowMapping::int2, &int2);
-        visitor.template apply<RowMapping>("int4", &RowMapping::int4, &int4);
-        visitor.template apply<RowMapping>("int8", &RowMapping::int8, &int8);
-        visitor.template apply<RowMapping>("float4", &RowMapping::float4, &float4);
-        visitor.template apply<RowMapping>("float8", &RowMapping::float8, &float8);
-        visitor.template apply<RowMapping>("flag", &RowMapping::flag, &flag);
-        visitor.template apply<RowMapping>("info", &RowMapping::info, &info);
-        visitor.template apply<RowMapping>("time", &RowMapping::time, &time);
+        visitor.template apply<test>("int2", &test::int2, &int2);
+        visitor.template apply<test>("int4", &test::int4, &int4);
+        visitor.template apply<test>("int8", &test::int8, &int8);
+        visitor.template apply<test>("float4", &test::float4, &float4);
+        visitor.template apply<test>("float8", &test::float8, &float8);
+        visitor.template apply<test>("flag", &test::flag, &flag);
+        visitor.template apply<test>("info", &test::info, &info);
+        visitor.template apply<test>("time", &test::time, &time);
     }
 
     template <typename V>
     void visit(V& visitor) const {
-        visitor.template apply<RowMapping>("int2", &RowMapping::int2, &int2);
-        visitor.template apply<RowMapping>("int4", &RowMapping::int4, &int4);
-        visitor.template apply<RowMapping>("int8", &RowMapping::int8, &int8);
-        visitor.template apply<RowMapping>("float4", &RowMapping::float4, &float4);
-        visitor.template apply<RowMapping>("float8", &RowMapping::float8, &float8);
-        visitor.template apply<RowMapping>("flag", &RowMapping::flag, &flag);
-        visitor.template apply<RowMapping>("info", &RowMapping::info, &info);
-        visitor.template apply<RowMapping>("time", &RowMapping::time, &time);
+        visitor.template apply<test>("int2", &test::int2, &int2);
+        visitor.template apply<test>("int4", &test::int4, &int4);
+        visitor.template apply<test>("int8", &test::int8, &int8);
+        visitor.template apply<test>("float4", &test::float4, &float4);
+        visitor.template apply<test>("float8", &test::float8, &float8);
+        visitor.template apply<test>("flag", &test::flag, &flag);
+        visitor.template apply<test>("info", &test::info, &info);
+        visitor.template apply<test>("time", &test::time, &time);
     }
 
     static constexpr const char* db_table_name = "test";

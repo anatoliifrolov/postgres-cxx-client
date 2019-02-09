@@ -10,7 +10,7 @@ namespace postgres {
 struct TestVisitor : Migration, testing::Test {};
 
 TEST_F(TestVisitor, Manual) {
-    RowMapping pinged{};
+    test pinged{};
     pinged.int2 = 2;
     pinged.int4 = 4;
     pinged.int8 = 8;
@@ -20,7 +20,7 @@ TEST_F(TestVisitor, Manual) {
     pinged.info = "INFO";
     pinged.time = timePointSample();
 
-    RowMapping ponged{};
+    test ponged{};
     const auto res = client_.execute(
         Command{
             R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
@@ -39,8 +39,8 @@ TEST_F(TestVisitor, Manual) {
     ASSERT_EQ(timePointSample(), ponged.time);
 }
 
-static std::vector<RowMapping> makeDataToInsert() {
-    std::vector<RowMapping> data{};
+static std::vector<test> makeDataToInsert() {
+    std::vector<test> data{};
 
     data.emplace_back();
     data.back().int2 = 2;
@@ -139,7 +139,7 @@ TEST_F(TestVisitor, AutoInsertWeak) {
 }
 
 TEST_F(TestVisitor, AutoUpdate) {
-    std::vector<RowMapping> data{};
+    std::vector<test> data{};
 
     data.emplace_back();
     data.back().int2 = 2;
