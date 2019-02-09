@@ -7,28 +7,28 @@ namespace postgres {
 
 template <typename Visitable>
 const std::string& listFields() {
-    return internal::VisitableFields<Visitable>::get();
+    return internal::FieldsList<Visitable>::get();
 }
 
 template <typename Visitable>
 const std::string& listPlaceholders() {
-    return internal::VisitablePlaceholders<Visitable>::get();
+    return internal::PlaceholdersList<Visitable>::get();
 }
 
 template <typename Iterator>
 std::string listPlaceholders(const Iterator it, const Iterator end) {
     using Visitable = std::remove_pointer_t<typename Iterator::value_type>;
-    return internal::VisitablePlaceholders<Visitable>::generate(it, end);
+    return internal::PlaceholdersList<Visitable>::generate(it, end);
 }
 
 template <typename Visitable>
 const std::string& listAssigments() {
-    return internal::VisitableAssigments<Visitable>::get();
+    return internal::AssigmentsList<Visitable>::get();
 }
 
 template <typename Visitable>
 const std::string& listExcludedAssigments() {
-    return internal::VisitableExcludedAssigments<Visitable>::get();
+    return internal::ExcludedAssigmentsList<Visitable>::get();
 }
 
 template <typename Visitable>

@@ -7,10 +7,10 @@ namespace postgres {
 namespace internal {
 
 template <typename T>
-struct VisitableFields {
+struct FieldsList {
     static const std::string& get() {
         static const auto cache = [] {
-            VisitableFields<T> visitor{};
+            FieldsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
@@ -29,10 +29,10 @@ private:
 };
 
 template <typename T>
-struct VisitableAssigments {
+struct AssigmentsList {
     static const std::string& get() {
         static const auto cache = [] {
-            VisitableAssigments<T> visitor{};
+            AssigmentsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
@@ -54,10 +54,10 @@ private:
 };
 
 template <typename T>
-struct VisitableExcludedAssigments {
+struct ExcludedAssigmentsList {
     static const std::string& get() {
         static const auto cache = [] {
-            VisitableExcludedAssigments<T> visitor{};
+            ExcludedAssigmentsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
@@ -78,11 +78,11 @@ private:
 };
 
 template <typename T>
-struct VisitablePlaceholders {
+struct PlaceholdersList {
     template <typename Iterator>
     static std::string generate(Iterator it, const Iterator end) {
         std::string res{};
-        VisitablePlaceholders<T> visitor{};
+        PlaceholdersList<T> visitor{};
         for (; it != end; ++it) {
             T::visitPostgresDefinition(visitor);
             res += res.empty() ? "(" : ",(";
@@ -95,7 +95,7 @@ struct VisitablePlaceholders {
 
     static const std::string& get() {
         static const auto cache = [] {
-            VisitablePlaceholders<T> visitor{};
+            PlaceholdersList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
