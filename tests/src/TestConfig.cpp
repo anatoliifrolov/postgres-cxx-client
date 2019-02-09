@@ -4,15 +4,14 @@
 namespace postgres {
 
 TEST(TestConfig, Values) {
-    auto const cfg = Config::init()
-        .host("HOST")
-        .hostaddr("ADDR")
-        .port(1234)
-        .user("USER")
-        .password("PASS")
-        .dbname("NAME")
-        .set("connect_timeout", 2345)
-        .build();
+    auto const cfg = Config::init().host("HOST")
+                                   .hostaddr("ADDR")
+                                   .port(1234)
+                                   .user("USER")
+                                   .password("PASS")
+                                   .dbname("NAME")
+                                   .set("connect_timeout", 2345)
+                                   .build();
     ASSERT_STREQ("HOST", cfg.get("host"));
     ASSERT_STREQ("ADDR", cfg.get("hostaddr"));
     ASSERT_STREQ("1234", cfg.get("port"));

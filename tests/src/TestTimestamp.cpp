@@ -78,9 +78,9 @@ TEST(TestTimestamp, FormatInvalid) {
 }
 
 TEST(TestTimestamp, FormatNegative) {
-    static auto constexpr time = -4807767385l;
-    static auto const format = "1817-08-25T13:03:35";
-    auto const ts = makeTimestamp(format);
+    static auto constexpr time   = -4807767385l;
+    static auto const     format = "1817-08-25T13:03:35";
+    auto const            ts     = makeTimestamp(format);
     ASSERT_EQ(time, ts.unixTime());
     ASSERT_EQ(std::chrono::system_clock::from_time_t(time), ts.timePoint());
     ASSERT_EQ(format, ts.format());

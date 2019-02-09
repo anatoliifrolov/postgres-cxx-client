@@ -3,7 +3,9 @@
 
 namespace postgres {
 
-Status::Status(PGresult* const handle) : handle_{handle, PQclear} {}
+Status::Status(PGresult* const handle)
+    : handle_{handle, PQclear} {
+}
 
 Status::Status(Status&& other) = default;
 

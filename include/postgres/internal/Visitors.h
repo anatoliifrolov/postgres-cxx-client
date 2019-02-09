@@ -49,7 +49,7 @@ struct AssigmentsList {
     };
 
 private:
-    int index_ = 0;
+    int         index_ = 0;
     std::string res_;
 };
 
@@ -81,7 +81,7 @@ template <typename T>
 struct PlaceholdersList {
     template <typename Iterator>
     static std::string generate(Iterator it, const Iterator end) {
-        std::string res{};
+        std::string         res{};
         PlaceholdersList<T> visitor{};
         for (; it != end; ++it) {
             T::visitPostgresDefinition(visitor);
@@ -108,7 +108,7 @@ struct PlaceholdersList {
     };
 
 private:
-    int index_ = 0;
+    int         index_ = 0;
     std::string res_;
 };
 

@@ -33,19 +33,27 @@ const std::string& listExcludedAssigments() {
 
 template <typename Visitable>
 const std::string& insertStatement() {
-    static auto const cache =
-        "INSERT INTO " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
-        " (" + listFields<Visitable>() + ")" +
-        " VALUES (" + listPlaceholders<Visitable>() + ")";
+    static auto const cache = "INSERT INTO "
+                              + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME}
+                              + " ("
+                              + listFields<Visitable>()
+                              + ")"
+                              + " VALUES ("
+                              + listPlaceholders<Visitable>()
+                              + ")";
     return cache;
 }
 
 template <typename Iterator>
 std::string multiInsertStatement(const Iterator it, const Iterator end) {
     using Visitable = typename Iterator::value_type;
-    return "INSERT INTO " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
-        " (" + listFields<Visitable>() + ")" +
-        " VALUES " + listPlaceholders(it, end);
+    return "INSERT INTO "
+           + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME}
+           + " ("
+           + listFields<Visitable>()
+           + ")"
+           + " VALUES "
+           + listPlaceholders(it, end);
 }
 
 template <typename Visitable>
@@ -61,17 +69,19 @@ std::string multiInsertStatementWeak(const Iterator it, const Iterator end) {
 
 template <typename Visitable>
 const std::string& updateStatement() {
-    static auto const cache =
-        "UPDATE " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
-        " SET " + listAssigments<Visitable>();
+    static auto const cache = "UPDATE "
+                              + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME}
+                              + " SET "
+                              + listAssigments<Visitable>();
     return cache;
 }
 
 template <typename Visitable>
 const std::string& selectStatement() {
-    static auto const cache =
-        "SELECT " + listFields<Visitable>() +
-        " FROM " + Visitable::_POSTGRES_CXX_TABLE_NAME;
+    static auto const cache = "SELECT "
+                              + listFields<Visitable>()
+                              + " FROM "
+                              + Visitable::_POSTGRES_CXX_TABLE_NAME;
     return cache;
 }
 

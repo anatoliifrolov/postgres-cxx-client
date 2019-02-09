@@ -9,13 +9,13 @@
 namespace postgres {
 
 struct test {
-    int16_t int2 = 0;
-    int32_t int4 = 0;
-    int64_t int8 = 0;
-    float float4 = 0;
-    double float8 = 0;
-    bool flag = false;
-    std::string info;
+    int16_t                               int2   = 0;
+    int32_t                               int4   = 0;
+    int64_t                               int8   = 0;
+    float                                 float4 = 0;
+    double                                float8 = 0;
+    bool                                  flag   = false;
+    std::string                           info;
     std::chrono::system_clock::time_point time;
 
     POSTGRES_CXX_TABLE(test, int2, int4, int8, float4, float8, flag, info, time)

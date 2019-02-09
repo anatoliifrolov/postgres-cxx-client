@@ -8,7 +8,9 @@ namespace postgres {
 
 Client::Client() = default;
 
-Client::Client(const Config& config) : connection_{config} {}
+Client::Client(const Config& config)
+    : connection_{config} {
+}
 
 Client::Client(Client&& other) = default;
 
@@ -21,9 +23,7 @@ Result Client::setSchema(const std::string& schema, const bool cache) {
 }
 
 Result Client::trySetSchema(const std::string& schema, const bool cache) {
-    auto res = tryExecute(
-        "CREATE SCHEMA IF NOT EXISTS " + schema,
-        "SET SCHEMA '" + schema + "'");
+    auto res = tryExecute("CREATE SCHEMA IF NOT EXISTS " + schema, "SET SCHEMA '" + schema + "'");
     if (cache && res) {
         schema_ = schema;
     }

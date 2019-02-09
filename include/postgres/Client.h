@@ -33,13 +33,12 @@ public:
     Transaction begin();
 
     template <typename... Ts>
-    Result execute(const Ts&... statements) {
+    Result execute(const Ts& ... statements) {
         return validate(tryExecute(statements...));
     };
 
     template <typename... Ts>
-    std::enable_if_t<(sizeof... (Ts) > 1), Result>
-    tryExecute(const Ts&... statements) {
+    std::enable_if_t<(sizeof... (Ts) > 1), Result> tryExecute(const Ts& ... statements) {
         return completeTransaction(doTryExecute("BEGIN", statements...));
     }
 
@@ -60,8 +59,7 @@ public:
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result>
-    tryInsert(const T& val) {
+    std::enable_if_t<internal::isVisitable<T>(), Result> tryInsert(const T& val) {
         return tryExecute(Command{insertStatement<T>(), val});
     }
 
@@ -83,8 +81,7 @@ public:
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result>
-    tryInsertWeak(const T& val) {
+    std::enable_if_t<internal::isVisitable<T>(), Result> tryInsertWeak(const T& val) {
         return tryExecute(Command{insertStatementWeak<T>(), val});
     }
 
@@ -101,8 +98,7 @@ public:
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result>
-    tryUpdate(const T& val) {
+    std::enable_if_t<internal::isVisitable<T>(), Result> tryUpdate(const T& val) {
         return tryExecute(Command{updateStatement<T>(), val});
     }
 
@@ -113,8 +109,7 @@ public:
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result>
-    trySelect(std::vector<T>& vals) {
+    std::enable_if_t<internal::isVisitable<T>(), Result> trySelect(std::vector<T>& vals) {
         auto res = tryExecute(selectStatement<T>());
         if (!res) {
             return res;
@@ -129,13 +124,14 @@ public:
 
     // Async interface.
     template <typename... Ts>
-    Connection& send(Ts&&... args) {
-        _POSTGRES_CXX_ASSERT(connection_.send(std::forward<Ts>(args)...), connection_.errorMessage());
+    Connection& send(Ts&& ... args) {
+        _POSTGRES_CXX_ASSERT(connection_.send(std::forward<Ts>(args)...),
+                             connection_.errorMessage());
         return connection_;
     }
 
     template <typename... Ts>
-    Connection* trySend(Ts&&... args) {
+    Connection* trySend(Ts&& ... args) {
         return connection_.send(std::forward<Ts>(args)...) ? &connection_ : nullptr;
     }
 
@@ -146,7 +142,7 @@ public:
 private:
     template <typename T, typename... Ts>
     std::enable_if_t<(sizeof... (Ts) > 0), Result>
-    doTryExecute(const T& statement, const Ts&... statements) {
+    doTryExecute(const T& statement, const Ts& ... statements) {
         auto res = doTryExecute(statement);
         if (res) {
             return doTryExecute(statements...);
@@ -154,7 +150,7 @@ private:
         return res;
     };
 
-    template <typename T, typename = decltype (T::operator std::string)>
+    template <typename T, typename = decltype(T::operator std::string)>
     Result doTryExecute(const T& statement) {
         return doTryExecute(statement.operator std::string());
     }
@@ -167,8 +163,8 @@ private:
     Result completeTransaction(Result res);
     Result validate(Result res);
 
-    Connection connection_;
-    std::string schema_;
+    Connection               connection_;
+    std::string              schema_;
     std::vector<PrepareData> prepared_;
 };
 

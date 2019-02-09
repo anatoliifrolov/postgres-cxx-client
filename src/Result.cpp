@@ -3,7 +3,9 @@
 
 namespace postgres {
 
-Result::Result(PGresult* const handle) : Status{handle} {}
+Result::Result(PGresult* const handle)
+    : Status{handle} {
+}
 
 Result::Result(Result&& other) = default;
 
@@ -31,8 +33,8 @@ Tuple Result::operator[](const int index) const {
 }
 
 Result::iterator::iterator(PGresult& handle, const int row_index)
-    : handle_{&handle}, row_index_{row_index}
-{}
+    : handle_{&handle}, row_index_{row_index} {
+}
 
 Result::iterator::iterator(const iterator& other) = default;
 
@@ -61,9 +63,8 @@ Result::iterator Result::iterator::operator++(int) {
 }
 
 Tuple Result::iterator::operator*() const {
-    _POSTGRES_CXX_ASSERT(
-        row_index_ < size(),
-        "No tuple " << row_index_ << " in the result of size " << size());
+    _POSTGRES_CXX_ASSERT(row_index_ < size(),
+                         "No tuple " << row_index_ << " in the result of size " << size());
     return Tuple{*handle_, row_index_};
 }
 

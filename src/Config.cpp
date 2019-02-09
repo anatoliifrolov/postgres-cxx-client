@@ -40,7 +40,7 @@ void Config::set(const char* const key, const char* const val) {
     values_.push_back(nullptr);
     storage_.push_back(std::make_shared<std::string>(val));
     keywords_[keywords_.size() - 2] = key;
-    values_[values_.size() - 2] = storage_.back()->c_str();
+    values_[values_.size() - 2]     = storage_.back()->c_str();
 }
 
 const char* const* Config::keywords() const {

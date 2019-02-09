@@ -4,7 +4,8 @@
 
 namespace postgres {
 
-struct TestResult : Migration, testing::Test {};
+struct TestResult : Migration, testing::Test {
+};
 
 TEST_F(TestResult, NullPtr) {
     Result res{nullptr};
@@ -42,9 +43,10 @@ TEST_F(TestResult, Empty) {
     ASSERT_EQ(0, res.size());
     ASSERT_EQ(0, res.affected());
     ASSERT_TRUE(res.empty());
+
     for (auto const tuple : res) {
         // Must not reach here.
-        ASSERT_FALSE((bool)"Iterating empty result");
+        ASSERT_FALSE((bool) "Iterating empty result");
     }
 }
 
@@ -78,6 +80,7 @@ TEST_F(TestResult, Cast) {
         ASSERT_EQ(true, b);
         ASSERT_EQ("INFO", s);
     };
+
     auto const res = conn_->execute("SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'");
     f(res[0][0], res[0][1], res[0][2], res[0][3]);
 }

@@ -10,21 +10,16 @@
 
 namespace postgres {
 
-struct TestConnection : Migration, testing::Test {};
+struct TestConnection : Migration, testing::Test {
+};
 
 TEST_F(TestConnection, Ping) {
     ASSERT_TRUE(Connection::ping(Config{}));
-    ASSERT_FALSE(Connection::ping(Config::init()
-        .port(1234)
-        .build()));
+    ASSERT_FALSE(Connection::ping(Config::init().port(1234).build()));
 }
 
 TEST_F(TestConnection, Bad) {
-    Connection conn{postgres::Config::init()
-        .dbname("BADDB")
-        .user("BADUSER")
-        .password("BADPASSW")
-        .build()};
+    Connection conn{Config::init().dbname("BADDB").user("BADUSER").password("BADPASSW").build()};
     ASSERT_FALSE(conn.isOk());
 }
 
@@ -47,9 +42,7 @@ TEST_F(TestConnection, Raw) {
 }
 
 TEST_F(TestConnection, Async) {
-    ASSERT_TRUE(conn_->send(PrepareData{
-        "prepared_insert",
-        "INSERT INTO test(flag) VALUES($1)"}));
+    ASSERT_TRUE(conn_->send(PrepareData{"prepared_insert", "INSERT INTO test(flag) VALUES($1)"}));
     ASSERT_TRUE(conn_->nextResult());
     ASSERT_TRUE(conn_->nextResult().isDone());
     ASSERT_TRUE(conn_->send("SELECT 1::INTEGER"));
@@ -76,6 +69,7 @@ TEST_F(TestConnection, RowByRow) {
     ASSERT_TRUE(conn_->execute("INSERT INTO test(int4) VALUES(1), (2), (3)"));
     ASSERT_TRUE(conn_->send("SELECT int4 FROM test", AsyncMode::SINGLE_ROW));
     std::set<int> data{};
+
     for (auto res = conn_->nextResult(); !res.isDone(); res = conn_->nextResult()) {
         if (!res.empty()) {
             ASSERT_EQ(1, res.size());

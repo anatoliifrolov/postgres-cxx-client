@@ -5,8 +5,8 @@
 namespace postgres {
 
 Tuple::Tuple(PGresult& result, const int row_index)
-    : result_{&result}, row_index_{row_index}, column_index_{0}
-{}
+    : result_{&result}, row_index_{row_index}, column_index_{0} {
+}
 
 Tuple::Tuple(const Tuple& other) = default;
 
@@ -38,9 +38,8 @@ Field Tuple::operator[](const int column_index) const {
 }
 
 void Tuple::validateIndex(const int column_index) const {
-    _POSTGRES_CXX_ASSERT(
-        0 <= column_index && column_index < size(),
-        "No column " << column_index << " in the tuple of size " << size());
+    _POSTGRES_CXX_ASSERT(0 <= column_index && column_index < size(),
+                         "No column " << column_index << " in the tuple of size " << size());
 }
 
 }  // namespace postgres

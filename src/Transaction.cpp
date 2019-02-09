@@ -4,7 +4,8 @@
 
 namespace postgres {
 
-Transaction::Transaction(Client& client) : client_{&client} {
+Transaction::Transaction(Client& client)
+    : client_{&client} {
     client.execute("BEGIN");
 }
 

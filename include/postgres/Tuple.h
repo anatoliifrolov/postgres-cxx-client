@@ -38,14 +38,12 @@ private:
     void validateIndex(const int column_index) const;
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>()>
-    read(T& val) {
+    std::enable_if_t<internal::isVisitable<T>()> read(T& val) {
         val.visitPostgresFields(*this);
     };
 
     template <typename T>
-    std::enable_if_t<!internal::isVisitable<T>()>
-    read(T& val) {
+    std::enable_if_t<!internal::isVisitable<T>()> read(T& val) {
         validateIndex(column_index_);
         (*this)[column_index_++] >> val;
     }

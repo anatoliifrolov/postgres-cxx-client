@@ -17,13 +17,13 @@ constexpr ReadableTag classify(...) {
 }
 
 template <typename T>
-constexpr VisitableTag classify(decltype (T::_POSTGRES_CXX_VISITABLE)) {
+constexpr VisitableTag classify(decltype(T::_POSTGRES_CXX_VISITABLE)) {
     return VisitableTag{};
 }
 
 template <typename T, typename U>
 constexpr bool isTagged() {
-    return sizeof (classify<T>(true)) == sizeof (U);
+    return sizeof(classify<T>(true)) == sizeof(U);
 }
 
 template <typename T>

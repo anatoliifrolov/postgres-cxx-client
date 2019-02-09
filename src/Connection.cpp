@@ -7,16 +7,13 @@
 
 namespace postgres {
 
-Connection::Connection() : Connection{Config{}} {}
+Connection::Connection()
+    : Connection{Config{}} {
+}
 
 Connection::Connection(const Config& config)
-    : handle_{
-        PQconnectdbParams(
-            config.keywords(),
-            config.values(),
-            0),
-        PQfinish}
-{}
+    : handle_{PQconnectdbParams(config.keywords(), config.values(), 0), PQfinish} {
+}
 
 Connection::Connection(Connection&& other) = default;
 
@@ -25,10 +22,7 @@ Connection& Connection::operator=(Connection&& other) = default;
 Connection::~Connection() = default;
 
 bool Connection::ping(const Config& config) {
-    auto const status = PQpingParams(
-        config.keywords(),
-        config.values(),
-        0);
+    auto const status = PQpingParams(config.keywords(), config.values(), 0);
     switch (status) {
         case PGPing::PQPING_OK:
         case PGPing::PQPING_REJECT: {
@@ -85,12 +79,11 @@ Status Connection::executeRaw(const char* const statement) {
 }
 
 Result Connection::execute(const PrepareData& statement) {
-    return Result{PQprepare(
-        native(),
-        statement.name_.c_str(),
-        statement.body_.c_str(),
-        statement.types_.size(),
-        statement.types_.empty() ? nullptr : statement.types_.data())};
+    return Result{PQprepare(native(),
+                            statement.name_.c_str(),
+                            statement.body_.c_str(),
+                            statement.types_.size(),
+                            statement.types_.empty() ? nullptr : statement.types_.data())};
 }
 
 Result Connection::execute(const std::string& statement) {
@@ -102,35 +95,32 @@ Result Connection::execute(const char* const statement) {
 }
 
 Result Connection::execute(const PreparedCommand& command) {
-    return Result{PQexecPrepared(
-        native(),
-        command.statement(),
-        command.nParams(),
-        command.paramValues(),
-        command.paramLengths(),
-        command.paramFormats(),
-        command.resultFormat())};
+    return Result{PQexecPrepared(native(),
+                                 command.statement(),
+                                 command.nParams(),
+                                 command.paramValues(),
+                                 command.paramLengths(),
+                                 command.paramFormats(),
+                                 command.resultFormat())};
 }
 
 Result Connection::execute(const Command& command) {
-    return Result{PQexecParams(
-        native(),
-        command.statement(),
-        command.nParams(),
-        command.paramTypes(),
-        command.paramValues(),
-        command.paramLengths(),
-        command.paramFormats(),
-        command.resultFormat())};
+    return Result{PQexecParams(native(),
+                               command.statement(),
+                               command.nParams(),
+                               command.paramTypes(),
+                               command.paramValues(),
+                               command.paramLengths(),
+                               command.paramFormats(),
+                               command.resultFormat())};
 }
 
 bool Connection::send(const PrepareData& statement) {
-    return PQsendPrepare(
-        native(),
-        statement.name_.c_str(),
-        statement.body_.c_str(),
-        statement.types_.size(),
-        statement.types_.empty() ? nullptr : statement.types_.data()) == 1;
+    return PQsendPrepare(native(),
+                         statement.name_.c_str(),
+                         statement.body_.c_str(),
+                         statement.types_.size(),
+                         statement.types_.empty() ? nullptr : statement.types_.data()) == 1;
 }
 
 bool Connection::send(const std::string& statement, const AsyncMode mode) {
@@ -142,14 +132,13 @@ bool Connection::send(const char* const statement, const AsyncMode mode) {
 }
 
 bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
-    auto const res = PQsendQueryPrepared(
-        native(),
-        command.statement(),
-        command.nParams(),
-        command.paramValues(),
-        command.paramLengths(),
-        command.paramFormats(),
-        command.resultFormat()) == 1;
+    auto const res = PQsendQueryPrepared(native(),
+                                         command.statement(),
+                                         command.nParams(),
+                                         command.paramValues(),
+                                         command.paramLengths(),
+                                         command.paramFormats(),
+                                         command.resultFormat()) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
@@ -157,15 +146,14 @@ bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
 }
 
 bool Connection::send(const Command& command, const AsyncMode mode) {
-    auto const res = PQsendQueryParams(
-        native(),
-        command.statement(),
-        command.nParams(),
-        command.paramTypes(),
-        command.paramValues(),
-        command.paramLengths(),
-        command.paramFormats(),
-        command.resultFormat()) == 1;
+    auto const res = PQsendQueryParams(native(),
+                                       command.statement(),
+                                       command.nParams(),
+                                       command.paramTypes(),
+                                       command.paramValues(),
+                                       command.paramLengths(),
+                                       command.paramFormats(),
+                                       command.resultFormat()) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
@@ -173,10 +161,10 @@ bool Connection::send(const Command& command, const AsyncMode mode) {
 }
 
 bool Connection::cancel() {
-    static auto constexpr kErrBufSize = 256;
-    static char err_buf[kErrBufSize] = {0};
-    auto const info = PQgetCancel(native());
-    auto const res = PQcancel(info, err_buf, kErrBufSize) == 1;
+    static auto constexpr kErrBufSize          = 256;
+    static char           err_buf[kErrBufSize] = {0};
+    auto const            info                 = PQgetCancel(native());
+    auto const            res                  = PQcancel(info, err_buf, kErrBufSize) == 1;
     PQfreeCancel(info);
     return res;
 }

@@ -17,16 +17,12 @@ inline constexpr std::chrono::system_clock::time_point postgresEpoch() {
 
 class Timestamp {
 public:
-    explicit Timestamp(
-        const time_t timestamp,
-        const bool has_timezone = false);
-    explicit Timestamp(
-        const std::chrono::system_clock::duration dur,
-        const std::chrono::system_clock::time_point epoch = unixEpoch(),
-        const bool has_timezone = false);
-    explicit Timestamp(
-        const std::chrono::system_clock::time_point time,
-        const bool has_timezone = false);
+    explicit Timestamp(const time_t timestamp, const bool has_timezone = false);
+    explicit Timestamp(const std::chrono::system_clock::duration dur,
+                       const std::chrono::system_clock::time_point epoch = unixEpoch(),
+                       const bool has_timezone = false);
+    explicit Timestamp(const std::chrono::system_clock::time_point time,
+                       const bool has_timezone = false);
     explicit Timestamp(const std::string& formatted);
     Timestamp(const Timestamp& other);
     Timestamp(Timestamp&& other);
@@ -42,11 +38,11 @@ public:
 
 private:
     std::chrono::system_clock::time_point time_;
-    bool has_timezone_;
+    bool                                  has_timezone_;
 };
 
 template <typename... Ts>
-Timestamp makeTimestamp(Ts&&... init) {
+Timestamp makeTimestamp(Ts&& ... init) {
     return Timestamp{std::forward<Ts>(init)...};
 }
 

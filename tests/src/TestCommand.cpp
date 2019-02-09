@@ -11,12 +11,14 @@ namespace postgres {
 
 TEST(TestCommand, Dynamic) {
     Command cmd{"STATEMENT"};
+
     ASSERT_STREQ("STATEMENT", cmd.statement());
     ASSERT_EQ(0, cmd.nParams());
     ASSERT_EQ(nullptr, cmd.paramTypes());
     ASSERT_EQ(nullptr, cmd.paramValues());
     ASSERT_EQ(nullptr, cmd.paramLengths());
     ASSERT_EQ(nullptr, cmd.paramFormats());
+
     const std::vector<int> v1{4, 5};
     const std::vector<int> v2{6, 7, 8};
     cmd << 1 << 2 << 3 << v1 << std::make_pair(v2.begin(), v2.begin() + 2);
@@ -30,42 +32,29 @@ TEST(TestCommand, Dynamic) {
 }
 
 TEST(TestCommand, Types) {
-    auto const n = int32_t{42};
+    auto const n         = int32_t{42};
     auto const valid_ptr = &n;
     const char* null_ptr = nullptr;
     auto const str = "C_STRING";
 
-    const Command cmd{
-        "STATEMENT",
-
-        // Arithmetic literals.
-        'C',
-        int16_t{2},
-        int32_t{4},
-        int64_t{8},
-        float{4.44},
-        8.88,
-
-        // Boolean values.
-        true,
-        false,
-
-        // Pointers.
-        nullptr,
-        null_ptr,
-        valid_ptr,
-
-        // Strings.
-        "",
-        str,
-        std::string{"STRING"},
-
-        // Special types.
-        bindOid(n, ANYOID),
-
-        // Timestamps.
-        timePointSample(),
-        makeTimestamp(timePointSampleNs(), true)};
+    const Command cmd{"STATEMENT",
+                      'C',
+                      int16_t{2},
+                      int32_t{4},
+                      int64_t{8},
+                      float{4.44},
+                      8.88,
+                      true,
+                      false,
+                      nullptr,
+                      null_ptr,
+                      valid_ptr,
+                      "",
+                      str,
+                      std::string{"STRING"},
+                      bindOid(n, ANYOID),
+                      timePointSample(),
+                      makeTimestamp(timePointSampleNs(), true)};
 
     ASSERT_STREQ("STATEMENT", cmd.statement());
     ASSERT_EQ(17, cmd.nParams());
@@ -159,8 +148,10 @@ TEST(TestCommand, Types) {
 
 TEST(TestCommand, Iterators) {
     std::vector<int32_t> vals{1, 2, 3};
+
     const Command cmd{"STATEMENT", vals.begin(), vals.end()};
     ASSERT_EQ(3, cmd.nParams());
+
     auto i = 0;
     ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
     ASSERT_EQ(1, internal::orderBytes<int32_t>(cmd.paramValues()[i]));

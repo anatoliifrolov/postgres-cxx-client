@@ -65,7 +65,7 @@ private:
     template <typename Char>
     std::basic_string<Char> doEsc(Char* const res);
 
-    std::unique_ptr<PGconn, void(*)(PGconn*)> handle_;
+    std::unique_ptr<PGconn, void (*)(PGconn*)> handle_;
 };
 
 }  // namespace postgres

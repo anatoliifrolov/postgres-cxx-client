@@ -7,10 +7,11 @@
 
 namespace postgres {
 
-struct TestTransaction : Migration, testing::Test {};
+struct TestTransaction : Migration, testing::Test {
+};
 
 TEST_F(TestTransaction, InvalidUse) {
-    auto transaction = client_.begin();
+    auto transaction  = client_.begin();
     auto transaction2 = std::move(transaction);
     ASSERT_THROW(transaction.commit(), std::exception);
     transaction2.commit();
@@ -36,9 +37,8 @@ TEST_F(TestTransaction, Rollback) {
 }
 
 TEST_F(TestTransaction, AutoCommit) {
-    auto res = client_.execute(
-        "INSERT INTO test(int4) VALUES(1)",
-        "INSERT INTO test(int4) VALUES(2), (3)");
+    auto res = client_.execute("INSERT INTO test(int4) VALUES(1)",
+                               "INSERT INTO test(int4) VALUES(2), (3)");
     ASSERT_EQ(2, res.affected());
     res = client_.execute("SELECT int4 FROM test ORDER BY int4");
     ASSERT_EQ(1, (int) res[0][0]);
@@ -47,15 +47,11 @@ TEST_F(TestTransaction, AutoCommit) {
 }
 
 TEST_F(TestTransaction, AutoRollback) {
-    ASSERT_THROW(
-        client_.execute(
-            "INSERT INTO test(int4) VALUES(1)",
-            "BAD STATEMENT"),
-        std::exception);
-    auto res = client_.tryExecute(
-        "INSERT INTO test(int4) VALUES(1)",
-        "BAD STATEMENT",
-        "INSERT INTO test(int4) VALUES(2), (3)");
+    ASSERT_THROW(client_.execute("INSERT INTO test(int4) VALUES(1)", "BAD STATEMENT"),
+                 std::exception);
+    auto res = client_.tryExecute("INSERT INTO test(int4) VALUES(1)",
+                                  "BAD STATEMENT",
+                                  "INSERT INTO test(int4) VALUES(2), (3)");
     ASSERT_FALSE(res.isOk());
     res = client_.execute("SELECT int4 FROM test");
     ASSERT_TRUE(res.isOk());

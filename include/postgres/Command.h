@@ -21,16 +21,16 @@ namespace postgres {
 class Command {
 public:
     template <typename Statement, typename... Params>
-    explicit Command(Statement&& statement, Params&&... params)
-        : statement_{std::forward<Statement>(statement)}
-    {
+    explicit Command(Statement&& statement, Params&& ... params)
+        : statement_{std::forward<Statement>(statement)} {
         unwind(std::forward<Params>(params)...);
     }
 
-    template <typename Statement, typename Iterator, typename = typename Iterator::iterator_category>
+    template <typename Statement,
+              typename Iterator,
+              typename = typename Iterator::iterator_category>
     explicit Command(Statement&& statement, Iterator it, const Iterator end)
-        : statement_{std::forward<Statement>(statement)}
-    {
+        : statement_{std::forward<Statement>(statement)} {
         add(std::make_pair(it, end));
     }
 
@@ -64,12 +64,13 @@ public:
 
 private:
     template <typename Param, typename... Params>
-    void unwind(Param&& param, Params&&... params) {
+    void unwind(Param&& param, Params&& ... params) {
         add(std::forward<Param>(param));
         unwind(std::forward<Params>(params)...);
     };
 
-    void unwind() const {}
+    void unwind() const {
+    }
 
     // Handle containers.
     template <typename Param, typename = typename Param::iterator>
@@ -86,8 +87,7 @@ private:
 
     // Handle visitable structures.
     template <typename Param>
-    std::enable_if_t<internal::isVisitable<Param>()>
-    add(Param& param) {
+    std::enable_if_t<internal::isVisitable<Param>()> add(Param& param) {
         param.visitPostgresFields(*this);
     }
 
@@ -125,18 +125,30 @@ private:
     template <typename Param>
     std::enable_if_t<std::is_arithmetic<Param>::value> add(const Param param) {
         if constexpr (std::is_integral<Param>::value) {
-            switch (sizeof (Param)) {
-                case 1: return addBinary(param, BYTEAOID);
-                case 2: return addBinary(param, INT2OID);
-                case 4: return addBinary(param, INT4OID);
-                case 8: return addBinary(param, INT8OID);
+            switch (sizeof(Param)) {
+                case 1: {
+                    return addBinary(param, BYTEAOID);
+                }
+                case 2: {
+                    return addBinary(param, INT2OID);
+                }
+                case 4: {
+                    return addBinary(param, INT4OID);
+                }
+                case 8: {
+                    return addBinary(param, INT8OID);
+                }
             }
         }
 
         if constexpr (std::is_floating_point<Param>::value) {
-            switch (sizeof (Param)) {
-                case 4: return addBinary(param, FLOAT4OID);
-                case 8: return addBinary(param, FLOAT8OID);
+            switch (sizeof(Param)) {
+                case 4: {
+                    return addBinary(param, FLOAT4OID);
+                }
+                case 8: {
+                    return addBinary(param, FLOAT8OID);
+                }
             }
         }
 
@@ -145,7 +157,7 @@ private:
 
     template <typename Param>
     void addBinary(Param param, const int type) {
-        static auto constexpr size = sizeof (Param);
+        static auto constexpr size = sizeof(Param);
         param = internal::orderBytes(param);
         setMeta(type, size, 1);
         storeData(&param, size);
@@ -157,12 +169,12 @@ private:
     void setMeta(const Oid type, const int size, const int format);
     void storeData(const void* const param, const int size);
 
-    std::string statement_;
-    std::vector<Oid> types_;
+    std::string              statement_;
+    std::vector<Oid>         types_;
     std::vector<const char*> values_;
-    std::vector<int> lenghts_;
-    std::vector<int> formats_;
-    std::vector<char> buffer_;
+    std::vector<int>         lenghts_;
+    std::vector<int>         formats_;
+    std::vector<char>        buffer_;
 };
 
 }  // namespace postgres

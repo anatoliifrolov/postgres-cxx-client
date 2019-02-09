@@ -68,7 +68,7 @@
 #define _POSTGRES_CXX_VISIT63(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT62(accept, T, __VA_ARGS__)
 #define _POSTGRES_CXX_VISIT64(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT63(accept, T, __VA_ARGS__)
 
-#define _POSTGRES_CXX_OVERLOAD( \
+#define _POSTGRES_CXX_OVERLOAD(\
     _1, \
     _2, \
     _3, \

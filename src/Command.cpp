@@ -85,7 +85,7 @@ void Command::setMeta(const Oid type, const int size, const int format) {
 }
 
 void Command::storeData(const void* const param, const int size) {
-    auto storage = buffer_.data();
+    auto       storage  = buffer_.data();
     auto const old_size = buffer_.size();
     auto const new_size = old_size + size;
     if (buffer_.capacity() < new_size) {

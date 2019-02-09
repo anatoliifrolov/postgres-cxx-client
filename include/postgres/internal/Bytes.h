@@ -13,9 +13,10 @@ inline bool needReorder() {
 
 template <typename T>
 T orderBytes(T val) {
-    static auto constexpr size = sizeof (T);
+    static auto constexpr size = sizeof(T);
     if (needReorder()) {
         auto bytes = reinterpret_cast<char*>(&val);
+
         for (auto i = 0u; i < size / 2; ++i) {
             std::swap(bytes[i], bytes[size - 1 - i]);
         }

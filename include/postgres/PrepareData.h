@@ -7,8 +7,8 @@
 namespace postgres {
 
 struct PrepareData {
-    std::string name_;
-    std::string body_;
+    std::string      name_;
+    std::string      body_;
     std::vector<Oid> types_;
 };
 

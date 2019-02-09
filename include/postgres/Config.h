@@ -35,8 +35,8 @@ private:
     const char* const* values() const;
 
     std::list<std::shared_ptr<std::string>> storage_;
-    std::vector<const char*> keywords_;
-    std::vector<const char*> values_;
+    std::vector<const char*>                keywords_;
+    std::vector<const char*>                values_;
 };
 
 class Config::Builder {
