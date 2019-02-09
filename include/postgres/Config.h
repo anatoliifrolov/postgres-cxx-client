@@ -9,6 +9,8 @@ namespace postgres {
 
 class Config {
 public:
+    class Builder;
+
     explicit Config(
         const std::string& dbname = "",
         const std::string& user = "",
@@ -21,7 +23,8 @@ public:
     Config& operator=(Config&&);
     ~Config();
 
-    // Any parameter supported by pq library.
+    static Builder init();
+
     const char* get(const char* const key) const;
     void set(const char* const key, const std::string& val);
     void set(const char* const key, const char* const val);
@@ -41,5 +44,36 @@ private:
     std::vector<const char*> keywords_;
     std::vector<const char*> values_;
 };
+
+class Config::Builder {
+public:
+    Builder();
+    Builder(Builder const& other);
+    Builder(Builder&& other);
+    Builder& operator=(Builder const& other);
+    Builder& operator=(Builder&& other);
+    ~Builder();
+
+    Builder& host(std::string const& val);
+    Builder& hostaddr(std::string const& val);
+    Builder& port(int const val);
+    Builder& user(std::string const& val);
+    Builder& password(std::string const& val);
+    Builder& dbname(std::string const& val);
+
+    template <typename T>
+    Builder& set(char const* const key, T&& val);
+
+    Config build();
+
+private:
+    Config cfg_;
+};
+
+template <typename T>
+Config::Builder& Config::Builder::set(char const* const key, T&& val) {
+    cfg_.set(key, std::forward<T>(val));
+    return *this;
+}
 
 }  // namespace postgres

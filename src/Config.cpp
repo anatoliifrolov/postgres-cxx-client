@@ -42,6 +42,10 @@ Config& Config::operator=(Config&& other) = default;
 
 Config::~Config() = default;
 
+Config::Builder Config::init() {
+    return Builder{};
+}
+
 const char* Config::get(const char* const key) const {
     for (auto i = 0u; i < keywords_.size() - 1; ++i) {
         if (strcmp(key, keywords_[i]) == 0) {
@@ -73,6 +77,46 @@ const char* const* Config::values() const {
 
 int Config::expandDbname() const {
     return 0;
+}
+
+Config::Builder::Builder() = default;
+
+Config::Builder::Builder(Builder const& other) = default;
+
+Config::Builder::Builder(Builder&& other) = default;
+
+Config::Builder& Config::Builder::operator=(Builder const& other) = default;
+
+Config::Builder& Config::Builder::operator=(Builder&& other) = default;
+
+Config::Builder::~Builder() = default;
+
+Config::Builder& Config::Builder::host(std::string const& val) {
+    return set("host", val);
+}
+
+Config::Builder& Config::Builder::hostaddr(std::string const& val) {
+    return set("hostaddr", val);
+}
+
+Config::Builder& Config::Builder::port(int const val) {
+    return set("port", val);
+}
+
+Config::Builder& Config::Builder::user(std::string const& val) {
+    return set("user", val);
+}
+
+Config::Builder& Config::Builder::password(std::string const& val) {
+    return set("password", val);
+}
+
+Config::Builder& Config::Builder::dbname(std::string const& val) {
+    return set("dbname", val);
+}
+
+Config Config::Builder::build() {
+    return std::move(cfg_);
 }
 
 }  // namespace postgres
