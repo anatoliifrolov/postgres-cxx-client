@@ -48,12 +48,9 @@ public:
     int resultFormat() const;
 
     // Visitor interface.
-    void start_struct() const {}
-    void stop_struct() const {}
-
-    template <typename Visited, typename FieldPtr, typename Field>
-    void apply(const char* const name, FieldPtr, Field* const val) {
-        add(*val);
+    template <typename T>
+    void accept(const char* const table, const char* const name, T& val) {
+        add(val);
     };
 
     // Dynamic parameter addition.
@@ -89,7 +86,7 @@ private:
     template <typename Param>
     std::enable_if_t<internal::isVisitable<Param>()>
     add(Param& param) {
-        param.visit(*this);
+        param.visitPostgresFields(*this);
     }
 
     // Handle special types.

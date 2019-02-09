@@ -34,7 +34,7 @@ const std::string& listExcludedAssigments() {
 template <typename Visitable>
 const std::string& insertStatement() {
     static const auto cache =
-        "INSERT INTO " + std::string{Visitable::db_table_name} +
+        "INSERT INTO " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
         " (" + listFields<Visitable>() + ")" +
         " VALUES (" + listPlaceholders<Visitable>() + ")";
     return cache;
@@ -43,7 +43,7 @@ const std::string& insertStatement() {
 template <typename Iterator>
 std::string multiInsertStatement(const Iterator it, const Iterator end) {
     using Visitable = typename Iterator::value_type;
-    return "INSERT INTO " + std::string{Visitable::db_table_name} +
+    return "INSERT INTO " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
         " (" + listFields<Visitable>() + ")" +
         " VALUES " + listPlaceholders(it, end);
 }
@@ -62,7 +62,7 @@ std::string multiInsertStatementWeak(const Iterator it, const Iterator end) {
 template <typename Visitable>
 const std::string& updateStatement() {
     static const auto cache =
-        "UPDATE " + std::string{Visitable::db_table_name} +
+        "UPDATE " + std::string{Visitable::_POSTGRES_CXX_TABLE_NAME} +
         " SET " + listAssigments<Visitable>();
     return cache;
 }
@@ -71,7 +71,7 @@ template <typename Visitable>
 const std::string& selectStatement() {
     static const auto cache =
         "SELECT " + listFields<Visitable>() +
-        " FROM " + Visitable::db_table_name;
+        " FROM " + Visitable::_POSTGRES_CXX_TABLE_NAME;
     return cache;
 }
 

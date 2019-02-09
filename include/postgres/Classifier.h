@@ -18,7 +18,7 @@ constexpr ReadableTag classify(...) {
 }
 
 template <typename T>
-constexpr VisitableTag classify(decltype (T::k_has_serialiser)) {
+constexpr VisitableTag classify(decltype (T::_POSTGRES_CXX_VISITABLE)) {
     return VisitableTag{};
 }
 

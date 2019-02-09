@@ -28,13 +28,9 @@ public:
         return *this;
     }
 
-    // Visitor interface.
-    void start_struct() const {}
-    void stop_struct() const {}
-
-    template <typename Visited, typename FieldPtr, typename Field>
-    void apply(const char* const name, FieldPtr, Field* const val) {
-        (*this)[name] >> *val;
+    template <typename T>
+    void accept(const char* const table, const char* const name, T& val) {
+        (*this)[name] >> val;
     };
 
 private:
@@ -44,7 +40,7 @@ private:
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>()>
     read(T& val) {
-        val.visit(*this);
+        val.visitPostgresFields(*this);
     };
 
     template <typename T>

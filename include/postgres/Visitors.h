@@ -11,14 +11,13 @@ struct VisitableFields {
     static const std::string& get() {
         static const auto cache = [] {
             VisitableFields<T> visitor{};
-            T::visit_static(visitor);
+            T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
         return cache;
     }
 
-    template <typename Visited, typename FieldPtr>
-    void apply(const char* const name, FieldPtr) {
+    void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
@@ -34,14 +33,13 @@ struct VisitableAssigments {
     static const std::string& get() {
         static const auto cache = [] {
             VisitableAssigments<T> visitor{};
-            T::visit_static(visitor);
+            T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
         return cache;
     }
 
-    template <typename Visited, typename FieldPtr>
-    void apply(const char* const name, FieldPtr) {
+    void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
@@ -60,17 +58,13 @@ struct VisitableExcludedAssigments {
     static const std::string& get() {
         static const auto cache = [] {
             VisitableExcludedAssigments<T> visitor{};
-            T::visit_static(visitor);
+            T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
         return cache;
     }
 
-    void start_struct() const {}
-    void stop_struct() const {}
-
-    template <typename Visited, typename FieldPtr>
-    void apply(const char* const name, FieldPtr) {
+    void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
@@ -90,7 +84,7 @@ struct VisitablePlaceholders {
         std::string res{};
         VisitablePlaceholders<T> visitor{};
         for (; it != end; ++it) {
-            T::visit_static(visitor);
+            T::visitPostgresDefinition(visitor);
             res += res.empty() ? "(" : ",(";
             res += visitor.res_;
             res += ")";
@@ -102,14 +96,13 @@ struct VisitablePlaceholders {
     static const std::string& get() {
         static const auto cache = [] {
             VisitablePlaceholders<T> visitor{};
-            T::visit_static(visitor);
+            T::visitPostgresDefinition(visitor);
             return visitor.res_;
         }();
         return cache;
     }
 
-    template <typename Visited, typename FieldPtr>
-    void apply(const char* const name, FieldPtr) {
+    void accept(const char* const table, const char* const name) {
         res_ += res_.empty() ? "$" : ",$";
         res_ += std::to_string(++index_);
     };
