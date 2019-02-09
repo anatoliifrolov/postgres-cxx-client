@@ -8,11 +8,11 @@ Config::Config() {
     values_.push_back(nullptr);
 }
 
-Config::Config(const Config& other) = default;
+Config::Config(Config const& other) = default;
 
 Config::Config(Config&& other) = default;
 
-Config& Config::operator=(const Config& other) = default;
+Config& Config::operator=(Config const& other) = default;
 
 Config& Config::operator=(Config&& other) = default;
 

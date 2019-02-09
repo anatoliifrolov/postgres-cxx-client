@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <list>
-#include <vector>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace postgres {
 
@@ -15,10 +15,10 @@ public:
     class Builder;
 
     explicit Config();
-    Config(const Config&);
-    Config(Config&&);
-    Config& operator=(const Config&);
-    Config& operator=(Config&&);
+    Config(Config const& other);
+    Config(Config&& other);
+    Config& operator=(Config const& other);
+    Config& operator=(Config&& other);
     ~Config();
 
     static Builder init();
@@ -29,9 +29,7 @@ private:
     void set(const char* const key, const char* const val);
 
     template <typename T>
-    void set(const char* const key, const T& val) {
-        set(key, std::to_string(val));
-    }
+    void set(char const* const key, T const val);
 
     const char* const* keywords() const;
     const char* const* values() const;
@@ -43,7 +41,7 @@ private:
 
 class Config::Builder {
 public:
-    Builder();
+    explicit Builder();
     Builder(Builder const& other);
     Builder(Builder&& other);
     Builder& operator=(Builder const& other);
@@ -65,6 +63,11 @@ public:
 private:
     Config cfg_;
 };
+
+template <typename T>
+void Config::set(char const* const key, T const val) {
+    set(key, std::to_string(val));
+}
 
 template <typename T>
 Config::Builder& Config::Builder::set(char const* const key, T&& val) {
