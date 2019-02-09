@@ -25,7 +25,7 @@ Connection& Connection::operator=(Connection&& other) = default;
 Connection::~Connection() = default;
 
 bool Connection::ping(const Config& config) {
-    const auto status = PQpingParams(
+    auto const status = PQpingParams(
         config.keywords(),
         config.values(),
         0);
@@ -142,7 +142,7 @@ bool Connection::send(const char* const statement, const bool row_by_row) {
 }
 
 bool Connection::send(const PreparedCommand& command, const bool row_by_row) {
-    const auto res = PQsendQueryPrepared(
+    auto const res = PQsendQueryPrepared(
         native(),
         command.statement(),
         command.nParams(),
@@ -157,7 +157,7 @@ bool Connection::send(const PreparedCommand& command, const bool row_by_row) {
 }
 
 bool Connection::send(const Command& command, const bool row_by_row) {
-    const auto res = PQsendQueryParams(
+    auto const res = PQsendQueryParams(
         native(),
         command.statement(),
         command.nParams(),
@@ -173,10 +173,10 @@ bool Connection::send(const Command& command, const bool row_by_row) {
 }
 
 bool Connection::cancel() {
-    static constexpr auto kErrBufSize = 256;
+    static auto constexpr kErrBufSize = 256;
     static char err_buf[kErrBufSize] = {0};
-    const auto info = PQgetCancel(native());
-    const auto res = PQcancel(info, err_buf, kErrBufSize) == 1;
+    auto const info = PQgetCancel(native());
+    auto const res = PQcancel(info, err_buf, kErrBufSize) == 1;
     PQfreeCancel(info);
     return res;
 }

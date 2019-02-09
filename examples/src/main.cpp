@@ -37,7 +37,7 @@ void makeTestTable(postgres::Connection& conn) {
 }
 
 void basicUsage(postgres::Connection& conn) {
-    const auto res = conn.execute("SELECT 1");
+    auto const res = conn.execute("SELECT 1");
 
     // Something went wrong:
     if (!res) {
@@ -157,7 +157,7 @@ void executeAsync(postgres::Connection& conn) {
     // send() does NOT block contrary to execute().
     conn.send("SELECT 1");
     // But result() DOES block.
-    const auto res = conn.nextResult();
+    auto const res = conn.nextResult();
     // Process result...
     // You MUST ALWAYS read result until Result::isDone() returns true.
     while (!conn.nextResult().isDone()) {}
@@ -171,7 +171,7 @@ void executeAsyncNonBlocking(postgres::Connection& conn) {
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     // Guaranteed not to block here.
-    const auto res = conn.nextResult();
+    auto const res = conn.nextResult();
     // Process result...
     while (!conn.nextResult().isDone()) {}
 }
@@ -205,7 +205,7 @@ void readResultIntoVariables(postgres::Connection& conn) {
     int* p = &n;  // Possibly NULL values must be read into pointers.
 
     // Result stays valid event after connection was destroyed.
-    const auto res = conn.execute(
+    auto const res = conn.execute(
         R"(SELECT
             1 AS n,
             2.34::REAL AS f,
@@ -267,12 +267,12 @@ void readResultIntoVariables(postgres::Connection& conn) {
 }
 
 void passResultToFunction(postgres::Connection& conn) {
-    const auto someFunc = [](const int n, const std::string s) {
+    auto const someFunc = [](const int n, const std::string s) {
         std::cout << "n = " << n
             << ", s = " << s
             << std::endl;
     };
-    const auto res = conn.execute("SELECT 1, 'TEXT'");
+    auto const res = conn.execute("SELECT 1, 'TEXT'");
     // Result fields are implicitly converted to function argument types:
     someFunc(res[0][0], res[0][1]);
 }

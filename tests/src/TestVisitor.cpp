@@ -21,7 +21,7 @@ TEST_F(TestVisitor, Manual) {
     pinged.time = timePointSample();
 
     test ponged{};
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{
             R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8))",
@@ -92,7 +92,7 @@ TEST_F(TestVisitor, AutoInsert) {
     client_.insert(data.begin() + 2, data.end());
 
     data.clear();
-    const auto res = client_.select(data);
+    auto const res = client_.select(data);
     ASSERT_EQ(4, res.size());
     ASSERT_EQ(4u, data.size());
     ASSERT_EQ(
@@ -110,8 +110,8 @@ TEST_F(TestVisitor, AutoInsert) {
 TEST_F(TestVisitor, AutoInsertWeak) {
     client_.execute("ALTER TABLE test ADD PRIMARY KEY(int2)");
     auto data = makeDataToInsert();
-    const auto it = data.begin() + 1;
-    const auto it2 = data.begin() + 2;
+    auto const it = data.begin() + 1;
+    auto const it2 = data.begin() + 2;
     ASSERT_EQ(1, client_.insertWeak(data[0]).affected());
     ASSERT_EQ(0, client_.insertWeak(data[0]).affected());
     ASSERT_THROW(client_.insert(data[0]), std::exception);
@@ -123,7 +123,7 @@ TEST_F(TestVisitor, AutoInsertWeak) {
     ASSERT_THROW(client_.insert(it2, data.end()), std::exception);
 
     data.clear();
-    const auto res = client_.select(data);
+    auto const res = client_.select(data);
     ASSERT_EQ(4, res.size());
     ASSERT_EQ(4u, data.size());
     ASSERT_EQ(
@@ -163,7 +163,7 @@ TEST_F(TestVisitor, AutoUpdate) {
     client_.update(data.back());
 
     data.clear();
-    const auto res = client_.select(data);
+    auto const res = client_.select(data);
 
     ASSERT_EQ(1u, data.size());
     ASSERT_EQ(22, data.back().int2);

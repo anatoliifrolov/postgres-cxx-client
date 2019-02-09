@@ -27,7 +27,7 @@ Field Tuple::operator[](const std::string& column_name) const {
 }
 
 Field Tuple::operator[](const char* const column_name) const {
-    const auto column_index = PQfnumber(result_, column_name);
+    auto const column_index = PQfnumber(result_, column_name);
     _POSTGRES_CXX_ASSERT(0 <= column_index, "No column " << column_name);
     return Field{*result_, row_index_, column_index};
 }

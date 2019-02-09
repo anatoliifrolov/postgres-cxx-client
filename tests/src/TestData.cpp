@@ -31,7 +31,7 @@ struct Optional {
 
 TEST_F(TestData, Null) {
     const bool* const some_ptr = nullptr;
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{"INSERT INTO test(flag) VALUES(NULL), ($1), ($2)", nullptr, some_ptr},
         "SELECT flag FROM test");
 
@@ -41,7 +41,7 @@ TEST_F(TestData, Null) {
     ASSERT_THROW(res[1] >> val, std::exception);
     ASSERT_THROW(res[2] >> val, std::exception);
 
-    for (const auto i : {0, 1, 2}) {
+    for (auto const i : {0, 1, 2}) {
         auto ptr = &val;
         res[i] >> ptr;
         ASSERT_EQ(nullptr, ptr);
@@ -76,7 +76,7 @@ TEST_F(TestData, OptionalTuple) {
 }
 
 TEST_F(TestData, Types) {
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{
             R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info)
                 VALUES($1, $2, $3, $4, $5, $6, $7))",
@@ -131,7 +131,7 @@ TEST_F(TestData, Types) {
 TEST_F(TestData, Timestamp) {
     time_t time{};
     std::chrono::system_clock::time_point time_point{};
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{"INSERT INTO test(time) VALUES($1)", timeSampleFormatPrecise()},
         "SELECT time FROM test");
     res[0][0] >> time;
@@ -141,7 +141,7 @@ TEST_F(TestData, Timestamp) {
 }
 
 TEST_F(TestData, Esc) {
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{"INSERT INTO test(info) VALUES($1)", "'QUOTED_STRING's"},
         "SELECT info FROM test");
     const std::string s = res[0][0];
@@ -149,7 +149,7 @@ TEST_F(TestData, Esc) {
 }
 
 TEST_F(TestData, MultiRef) {
-    const auto res = client_.execute(
+    auto const res = client_.execute(
         Command{"INSERT INTO test(int2, int4, int8) VALUES($1, $1, $1)", 2},
         "SELECT int2, int4, int8 FROM test");
     ASSERT_EQ(2, (int16_t) res[0][0]);

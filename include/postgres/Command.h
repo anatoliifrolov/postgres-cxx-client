@@ -145,7 +145,7 @@ private:
 
     template <typename Param>
     void addBinary(Param param, const int type) {
-        static constexpr auto size = sizeof (Param);
+        static auto constexpr size = sizeof (Param);
         param = internal::orderBytes(param);
         setMeta(type, size, 1);
         storeData(&param, size);

@@ -70,9 +70,9 @@ private:
     template <typename Dst>
     std::enable_if_t<std::is_arithmetic<Dst>::value>
     read(Dst& dst) const {
-        static constexpr auto size = static_cast<int>(sizeof (Dst));
-        const auto len = PQgetlength(result_, row_index_, column_index_);
-        const auto type = PQftype(result_, column_index_);
+        static auto constexpr size = static_cast<int>(sizeof (Dst));
+        auto const len = PQgetlength(result_, row_index_, column_index_);
+        auto const type = PQftype(result_, column_index_);
 
         _POSTGRES_CXX_ASSERT(
             isBinary(),

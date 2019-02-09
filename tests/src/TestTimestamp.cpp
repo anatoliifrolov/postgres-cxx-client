@@ -6,7 +6,7 @@
 namespace postgres {
 
 TEST(TestTimestamp, CStyle) {
-    const auto ts = makeTimestamp(timeSample());
+    auto const ts = makeTimestamp(timeSample());
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePg(), ts.postgresTime());
     ASSERT_EQ(timePointSample(), ts.timePoint());
@@ -15,7 +15,7 @@ TEST(TestTimestamp, CStyle) {
 }
 
 TEST(TestTimestamp, Chrono) {
-    const auto ts = makeTimestamp(timePointSampleNs());
+    auto const ts = makeTimestamp(timePointSampleNs());
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePgUs(), ts.postgresTime());
     ASSERT_EQ(timePointSampleNs(), ts.timePoint());
@@ -24,7 +24,7 @@ TEST(TestTimestamp, Chrono) {
 }
 
 TEST(TestTimestamp, Tz) {
-    const auto ts = makeTimestamp(timePointSampleNs(), true);
+    auto const ts = makeTimestamp(timePointSampleNs(), true);
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePgUs(), ts.postgresTime());
     ASSERT_EQ(timePointSampleNs(), ts.timePoint());
@@ -33,7 +33,7 @@ TEST(TestTimestamp, Tz) {
 }
 
 TEST(TestTimestamp, Format) {
-    const auto ts = makeTimestamp(timeSampleFormat());
+    auto const ts = makeTimestamp(timeSampleFormat());
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePg(), ts.postgresTime());
     ASSERT_EQ(timePointSample(), ts.timePoint());
@@ -42,7 +42,7 @@ TEST(TestTimestamp, Format) {
 }
 
 TEST(TestTimestamp, FormatPrecise) {
-    const auto ts = makeTimestamp(timeSampleFormatPrecise());
+    auto const ts = makeTimestamp(timeSampleFormatPrecise());
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePgUs(), ts.postgresTime());
     ASSERT_EQ(timePointSampleNs(), ts.timePoint());
@@ -51,7 +51,7 @@ TEST(TestTimestamp, FormatPrecise) {
 }
 
 TEST(TestTimestamp, FormatIn) {
-    const auto ts = makeTimestamp("2017-08-25 13:03:35");
+    auto const ts = makeTimestamp("2017-08-25 13:03:35");
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePg(), ts.postgresTime());
     ASSERT_EQ(timePointSample(), ts.timePoint());
@@ -60,7 +60,7 @@ TEST(TestTimestamp, FormatIn) {
 }
 
 TEST(TestTimestamp, FormatPreciseIn) {
-    const auto ts = makeTimestamp("2017-08-25 13:03:35.987654");
+    auto const ts = makeTimestamp("2017-08-25 13:03:35.987654");
     ASSERT_EQ(timeSample(), ts.unixTime());
     ASSERT_EQ(timeSamplePgUs(), ts.postgresTime());
     ASSERT_EQ(timePointSampleUs(), ts.timePoint());
@@ -78,9 +78,9 @@ TEST(TestTimestamp, FormatInvalid) {
 }
 
 TEST(TestTimestamp, FormatNegative) {
-    static constexpr auto time = -4807767385l;
-    static const auto format = "1817-08-25T13:03:35";
-    const auto ts = makeTimestamp(format);
+    static auto constexpr time = -4807767385l;
+    static auto const format = "1817-08-25T13:03:35";
+    auto const ts = makeTimestamp(format);
     ASSERT_EQ(time, ts.unixTime());
     ASSERT_EQ(std::chrono::system_clock::from_time_t(time), ts.timePoint());
     ASSERT_EQ(format, ts.format());

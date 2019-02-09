@@ -21,7 +21,7 @@ TEST_F(TestTransaction, Commit) {
     auto transaction = client_.begin();
     client_.execute("INSERT INTO test(flag) VALUES(TRUE)");
     transaction.commit();
-    const auto res = client_.execute("SELECT flag FROM test");
+    auto const res = client_.execute("SELECT flag FROM test");
     ASSERT_EQ(true, (bool) res[0][0]);
 }
 
@@ -30,7 +30,7 @@ TEST_F(TestTransaction, Rollback) {
         auto transaction = client_.begin();
         client_.execute("INSERT INTO test(flag) VALUES(TRUE)");
     }
-    const auto res = client_.execute("SELECT flag FROM test");
+    auto const res = client_.execute("SELECT flag FROM test");
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(0, res.size());
 }

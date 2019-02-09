@@ -9,7 +9,7 @@ namespace internal {
 template <typename T>
 struct FieldsList {
     static const std::string& get() {
-        static const auto cache = [] {
+        static auto const cache = [] {
             FieldsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
@@ -31,7 +31,7 @@ private:
 template <typename T>
 struct AssigmentsList {
     static const std::string& get() {
-        static const auto cache = [] {
+        static auto const cache = [] {
             AssigmentsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
@@ -56,7 +56,7 @@ private:
 template <typename T>
 struct ExcludedAssigmentsList {
     static const std::string& get() {
-        static const auto cache = [] {
+        static auto const cache = [] {
             ExcludedAssigmentsList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;
@@ -94,7 +94,7 @@ struct PlaceholdersList {
     }
 
     static const std::string& get() {
-        static const auto cache = [] {
+        static auto const cache = [] {
             PlaceholdersList<T> visitor{};
             T::visitPostgresDefinition(visitor);
             return visitor.res_;

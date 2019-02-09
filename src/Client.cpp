@@ -70,7 +70,7 @@ bool Client::tryReconnect() {
     if (!schema_.empty() && !trySetSchema(schema_, false)) {
         return false;
     }
-    for (const auto& statement : prepared_) {
+    for (auto const& statement : prepared_) {
         tryPrepare(statement, false);
     }
     return true;

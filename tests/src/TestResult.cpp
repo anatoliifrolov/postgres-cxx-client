@@ -24,7 +24,7 @@ TEST_F(TestResult, NullPtr) {
 }
 
 TEST_F(TestResult, Invalid) {
-    const auto res = conn_->execute("BAD STATEMENT");
+    auto const res = conn_->execute("BAD STATEMENT");
     ASSERT_FALSE(res.isOk());
     ASSERT_FALSE(res);
     ASSERT_EQ(0, res.size());
@@ -37,19 +37,19 @@ TEST_F(TestResult, Invalid) {
 }
 
 TEST_F(TestResult, Empty) {
-    const auto res = conn_->execute("SELECT * FROM test");
+    auto const res = conn_->execute("SELECT * FROM test");
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(0, res.size());
     ASSERT_EQ(0, res.affected());
     ASSERT_TRUE(res.empty());
-    for (const auto tuple : res) {
+    for (auto const tuple : res) {
         // Must not reach here.
         ASSERT_FALSE((bool)"Iterating empty result");
     }
 }
 
 TEST_F(TestResult, Survival) {
-    const auto res = conn_->execute("SELECT 123::INTEGER");
+    auto const res = conn_->execute("SELECT 123::INTEGER");
     {
         conn_->~Connection();
     }
@@ -72,18 +72,18 @@ TEST_F(TestResult, Iteration) {
 }
 
 TEST_F(TestResult, Cast) {
-    const auto f = [](const int n, const double d, const bool b, const std::string& s) {
+    auto const f = [](const int n, const double d, const bool b, const std::string& s) {
         ASSERT_EQ(4, n);
         ASSERT_DOUBLE_EQ(8.88, d);
         ASSERT_EQ(true, b);
         ASSERT_EQ("INFO", s);
     };
-    const auto res = conn_->execute("SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'");
+    auto const res = conn_->execute("SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'");
     f(res[0][0], res[0][1], res[0][2], res[0][3]);
 }
 
 TEST_F(TestResult, ColumnName) {
-    const auto res = conn_->execute("SELECT 1 AS one, 2 AS two");
+    auto const res = conn_->execute("SELECT 1 AS one, 2 AS two");
     ASSERT_STREQ("one", res[0][0].name());
     ASSERT_STREQ("two", res[0][1].name());
 }

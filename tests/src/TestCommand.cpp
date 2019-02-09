@@ -30,10 +30,10 @@ TEST(TestCommand, Dynamic) {
 }
 
 TEST(TestCommand, Types) {
-    const auto n = int32_t{42};
-    const auto valid_ptr = &n;
+    auto const n = int32_t{42};
+    auto const valid_ptr = &n;
     const char* null_ptr = nullptr;
-    const auto str = "C_STRING";
+    auto const str = "C_STRING";
 
     const Command cmd{
         "STATEMENT",

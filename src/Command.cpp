@@ -47,7 +47,7 @@ void Command::add(const std::chrono::system_clock::time_point param) {
 
 void Command::add(const Timestamp& param) {
     if (param.hasTimezone()) {
-        const auto formatted = param.format();
+        auto const formatted = param.format();
         addText(formatted.c_str(), formatted.size() + 1);
         types_.back() = TIMESTAMPTZOID;
     } else {
@@ -86,8 +86,8 @@ void Command::setMeta(const Oid type, const int size, const int format) {
 
 void Command::storeData(const void* const param, const int size) {
     auto storage = buffer_.data();
-    const auto old_size = buffer_.size();
-    const auto new_size = old_size + size;
+    auto const old_size = buffer_.size();
+    auto const new_size = old_size + size;
     if (buffer_.capacity() < new_size) {
         buffer_.reserve(buffer_.empty() ? 256 : buffer_.capacity() * 2);
     }

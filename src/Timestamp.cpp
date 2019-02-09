@@ -42,8 +42,8 @@ Timestamp::Timestamp(const std::string& formatted) : has_timezone_{false} {
         std::regex_match(formatted, match, expr),
         "Unexpected timestamp format " << formatted);
 
-    const auto years = std::stol(match[1].str());
-    const auto months = std::stol(match[2].str());
+    auto const years = std::stol(match[1].str());
+    auto const months = std::stol(match[2].str());
     auto days = std::stol(match[3].str());
     auto hours = std::stol(match[4].str());
     auto minutes = std::stol(match[5].str());
@@ -58,7 +58,7 @@ Timestamp::Timestamp(const std::string& formatted) : has_timezone_{false} {
 
     static const int months_len[] = {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    static const auto isLeap = [](const int year) {
+    static auto const isLeap = [](const int year) {
         // There is a leap year every year divisible by four
         // except for years which are both divisible by 100 and not divisible by 400.
         return !(year % 4) && ((year % 100) || !(year % 400));
@@ -111,9 +111,9 @@ std::chrono::system_clock::time_point Timestamp::timePoint() const {
 
 std::string Timestamp::format() const {
     std::string res(64, 0);
-    const auto duration = time_.time_since_epoch();
-    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration - seconds);
+    auto const duration = time_.time_since_epoch();
+    auto const seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    auto const nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration - seconds);
 
     auto time = unixTime();
     tm parts{};

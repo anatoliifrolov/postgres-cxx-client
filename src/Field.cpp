@@ -32,8 +32,8 @@ void Field::read(bool& dst) const {
         "true", "false",
         "yes", "no",
         "on", "off"};
-    const auto src = value();
-    for (const auto& val : vals) {
+    auto const src = value();
+    for (auto const& val : vals) {
         if (std::strcmp(val, src) == 0) {
             dst = ((val - *vals) % 2 == 0);
             return;
@@ -63,7 +63,7 @@ void Field::read(time_t& dst) const {
 }
 
 void Field::read(std::chrono::system_clock::time_point& dst) const {
-    const auto type = PQftype(result_, column_index_);
+    auto const type = PQftype(result_, column_index_);
     _POSTGRES_CXX_ASSERT(type == TIMESTAMPOID, "Unexpected column type " << type);
     dst = (isBinary() ?
         makeTimestamp(std::chrono::microseconds{internal::orderBytes<int64_t>(value())}, postgresEpoch()) :
@@ -79,7 +79,7 @@ const char* const Field::name() const {
 }
 
 bool Field::isBinary() const {
-    const auto format = PQfformat(result_, column_index_);
+    auto const format = PQfformat(result_, column_index_);
     if (format == 0) {
         return false;
     }
