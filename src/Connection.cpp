@@ -7,24 +7,6 @@
 
 namespace postgres {
 
-bool ping(const Config& config) {
-    const auto status = PQpingParams(
-        config.keywords(),
-        config.values(),
-        0);
-    switch (status) {
-        case PGPing::PQPING_OK:
-        case PGPing::PQPING_REJECT: {
-            return true;
-        }
-        case PGPing::PQPING_NO_RESPONSE:
-        case PGPing::PQPING_NO_ATTEMPT: {
-            return false;
-        }
-    }
-    return false;
-}
-
 Connection::Connection() : Connection{Config{}} {}
 
 Connection::Connection(const Config& config)
@@ -41,6 +23,24 @@ Connection::Connection(Connection&& other) = default;
 Connection& Connection::operator=(Connection&& other) = default;
 
 Connection::~Connection() = default;
+
+bool Connection::ping(const Config& config) {
+    const auto status = PQpingParams(
+        config.keywords(),
+        config.values(),
+        0);
+    switch (status) {
+        case PGPing::PQPING_OK:
+        case PGPing::PQPING_REJECT: {
+            return true;
+        }
+        case PGPing::PQPING_NO_RESPONSE:
+        case PGPing::PQPING_NO_ATTEMPT: {
+            return false;
+        }
+    }
+    return false;
+}
 
 bool Connection::isOk() {
     return PQstatus(native()) == ConnStatusType::CONNECTION_OK;

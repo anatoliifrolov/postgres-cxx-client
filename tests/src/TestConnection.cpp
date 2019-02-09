@@ -13,8 +13,8 @@ namespace postgres {
 struct TestConnection : Migration, testing::Test {};
 
 TEST_F(TestConnection, Ping) {
-    ASSERT_TRUE(ping(Config{}));
-    ASSERT_FALSE(ping(Config::init()
+    ASSERT_TRUE(Connection::ping(Config{}));
+    ASSERT_FALSE(Connection::ping(Config::init()
         .port(1234)
         .build()));
 }

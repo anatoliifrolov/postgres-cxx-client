@@ -7,8 +7,11 @@
 
 namespace postgres {
 
+class Connection;
+
 class Config {
 public:
+    friend class Connection;
     class Builder;
 
     explicit Config();
@@ -19,12 +22,7 @@ public:
     ~Config();
 
     static Builder init();
-
     const char* get(const char* const key) const;
-
-    // libpq interface adapters.
-    const char* const* keywords() const;
-    const char* const* values() const;
 
 private:
     void set(const char* const key, const std::string& val);
@@ -34,6 +32,9 @@ private:
     void set(const char* const key, const T& val) {
         set(key, std::to_string(val));
     }
+
+    const char* const* keywords() const;
+    const char* const* values() const;
 
     std::list<std::shared_ptr<std::string>> storage_;
     std::vector<const char*> keywords_;

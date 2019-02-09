@@ -12,8 +12,6 @@ class Command;
 class PreparedCommand;
 struct PrepareData;
 
-bool ping(const Config& config);
-
 class Connection {
 public:
     explicit Connection();
@@ -23,6 +21,8 @@ public:
     Connection& operator=(const Connection& other) = delete;
     Connection& operator=(Connection&& other);
     ~Connection();
+
+    static bool ping(const Config& config);
 
     // Status info.
     bool isOk();
