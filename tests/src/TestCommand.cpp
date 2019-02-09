@@ -71,7 +71,7 @@ TEST(TestCommand, Types) {
     ASSERT_EQ(17, cmd.nParams());
 
     auto i = 0;
-    ASSERT_EQ(static_cast<Oid>(CHAROID), cmd.paramTypes()[i]);
+    ASSERT_EQ(static_cast<Oid>(BYTEAOID), cmd.paramTypes()[i]);
     ASSERT_EQ('C', *cmd.paramValues()[i]);
     ASSERT_EQ(static_cast<int>(sizeof('C')), cmd.paramLengths()[i]);
     ASSERT_EQ(1, cmd.paramFormats()[i]);

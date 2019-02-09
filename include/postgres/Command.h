@@ -13,6 +13,7 @@
 #include <postgres/internal/Visitors.h>
 #include <postgres/internal/Bytes.h>
 #include <postgres/internal/Classifier.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -122,39 +123,24 @@ private:
 
     // Handle arithmetic types.
     template <typename Param>
-    std::enable_if_t<std::is_integral<Param>::value && sizeof (Param) == 1>
-    add(const Param param) {
-        addBinary(param, CHAROID);
-    };
+    std::enable_if_t<std::is_arithmetic<Param>::value> add(const Param param) {
+        if constexpr (std::is_integral<Param>::value) {
+            switch (sizeof (Param)) {
+                case 1: return addBinary(param, BYTEAOID);
+                case 2: return addBinary(param, INT2OID);
+                case 4: return addBinary(param, INT4OID);
+                case 8: return addBinary(param, INT8OID);
+            }
+        }
 
-    template <typename Param>
-    std::enable_if_t<std::is_integral<Param>::value && sizeof (Param) == 2>
-    add(const Param param) {
-        addBinary(param, INT2OID);
-    };
+        if constexpr (std::is_floating_point<Param>::value) {
+            switch (sizeof (Param)) {
+                case 4: return addBinary(param, FLOAT4OID);
+                case 8: return addBinary(param, FLOAT8OID);
+            }
+        }
 
-    template <typename Param>
-    std::enable_if_t<std::is_integral<Param>::value && sizeof (Param) == 4>
-    add(const Param param) {
-        addBinary(param, INT4OID);
-    };
-
-    template <typename Param>
-    std::enable_if_t<std::is_integral<Param>::value && sizeof (Param) == 8>
-    add(const Param param) {
-        addBinary(param, INT8OID);
-    };
-
-    template <typename Param>
-    std::enable_if_t<std::is_floating_point<Param>::value && sizeof (Param) == 4>
-    add(const Param param) {
-        addBinary(param, FLOAT4OID);
-    };
-
-    template <typename Param>
-    std::enable_if_t<std::is_floating_point<Param>::value && sizeof (Param) == 8>
-    add(const Param param) {
-        addBinary(param, FLOAT8OID);
+        _POSTGRES_CXX_FAIL("Unexpected arithmetic argument type");
     };
 
     template <typename Param>
