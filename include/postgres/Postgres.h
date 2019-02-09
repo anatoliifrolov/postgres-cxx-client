@@ -1,0 +1,20 @@
+#pragma once
+
+#include <postgres/Client.h>
+#include <postgres/Command.h>
+#include <postgres/Config.h>
+#include <postgres/Connection.h>
+#include <postgres/Field.h>
+#include <postgres/Fwd.h>
+#include <postgres/Generators.h>
+#include <postgres/OidBinding.h>
+#include <postgres/Oid.h>
+#include <postgres/Postgres.h>
+#include <postgres/PrepareData.h>
+#include <postgres/PreparedCommand.h>
+#include <postgres/Result.h>
+#include <postgres/Status.h>
+#include <postgres/Timestamp.h>
+#include <postgres/Transaction.h>
+#include <postgres/Tuple.h>
+#include <postgres/Visitable.h>
