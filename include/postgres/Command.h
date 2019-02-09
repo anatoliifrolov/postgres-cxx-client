@@ -10,7 +10,7 @@
 #include <postgres/OidBinding.h>
 #include <postgres/Oid.h>
 #include <postgres/Timestamp.h>
-#include <postgres/Visitors.h>
+#include <postgres/internal/Visitors.h>
 #include <postgres/internal/Bytes.h>
 #include <postgres/internal/Classifier.h>
 
