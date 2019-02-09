@@ -21,7 +21,7 @@ if (POSTGRES_CXX_BUILD_TESTS)
     include_directories(deps/googletest/googletest/include)
     include_directories(deps/googletest/googlemock/include)
     add_subdirectory(deps/googletest)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif()
 
 if (POSTGRES_CXX_BUILD_EXAMPLES)
