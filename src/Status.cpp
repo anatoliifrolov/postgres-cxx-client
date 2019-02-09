@@ -1,5 +1,5 @@
 #include <postgres/Status.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -28,7 +28,7 @@ bool Status::isDone() const {
 }
 
 void Status::validate() const {
-    POSTGRES_CXX_ASSERT(isOk(), errorMessage());
+    _POSTGRES_CXX_ASSERT(isOk(), errorMessage());
 }
 
 Status::operator bool() const {

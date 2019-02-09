@@ -1,5 +1,5 @@
 #include <utility>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 #include <postgres/Tuple.h>
 
 namespace postgres {
@@ -28,7 +28,7 @@ Field Tuple::operator[](const std::string& column_name) const {
 
 Field Tuple::operator[](const char* const column_name) const {
     const auto column_index = PQfnumber(result_, column_name);
-    POSTGRES_CXX_ASSERT(0 <= column_index, "No column " << column_name);
+    _POSTGRES_CXX_ASSERT(0 <= column_index, "No column " << column_name);
     return Field{*result_, row_index_, column_index};
 }
 
@@ -38,7 +38,7 @@ Field Tuple::operator[](const int column_index) const {
 }
 
 void Tuple::validateIndex(const int column_index) const {
-    POSTGRES_CXX_ASSERT(
+    _POSTGRES_CXX_ASSERT(
         0 <= column_index && column_index < size(),
         "No column " << column_index << " in the tuple of size " << size());
 }

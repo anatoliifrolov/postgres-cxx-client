@@ -2,7 +2,7 @@
 #include <postgres/Config.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -60,7 +60,7 @@ Result Client::completeTransaction(Result res) {
 }
 
 void Client::reconnect() {
-    POSTGRES_CXX_ASSERT(tryReconnect(), connection_.errorMessage());
+    _POSTGRES_CXX_ASSERT(tryReconnect(), connection_.errorMessage());
 }
 
 bool Client::tryReconnect() {
@@ -88,7 +88,7 @@ Result Client::validate(postgres::Result res) {
     if (msg.empty()) {
         msg = connection().errorMessage();
     }
-    POSTGRES_CXX_FAIL(msg);
+    _POSTGRES_CXX_FAIL(msg);
 }
 
 }  // namespace postgres

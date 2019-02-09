@@ -1,5 +1,5 @@
 #include <postgres/Result.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -61,7 +61,7 @@ Result::iterator Result::iterator::operator++(int) {
 }
 
 Tuple Result::iterator::operator*() const {
-    POSTGRES_CXX_ASSERT(
+    _POSTGRES_CXX_ASSERT(
         row_index_ < size(),
         "No tuple " << row_index_ << " in the result of size " << size());
     return Tuple{*handle_, row_index_};

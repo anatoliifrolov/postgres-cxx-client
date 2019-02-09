@@ -1,6 +1,6 @@
 #include <postgres/Transaction.h>
 #include <postgres/Client.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -28,7 +28,7 @@ Transaction::~Transaction() {
 }
 
 void Transaction::commit() {
-    POSTGRES_CXX_ASSERT(client_, "Transaction expired");
+    _POSTGRES_CXX_ASSERT(client_, "Transaction expired");
     client_->execute("COMMIT");
     client_ = nullptr;
 }

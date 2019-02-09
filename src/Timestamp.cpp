@@ -1,7 +1,7 @@
 #include <utility>
 #include <regex>
 #include <postgres/Timestamp.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -38,7 +38,7 @@ Timestamp::Timestamp(const std::string& formatted) : has_timezone_{false} {
     };
 
     std::smatch match{};
-    POSTGRES_CXX_ASSERT(
+    _POSTGRES_CXX_ASSERT(
         std::regex_match(formatted, match, expr),
         "Unexpected timestamp format " << formatted);
 
@@ -50,11 +50,11 @@ Timestamp::Timestamp(const std::string& formatted) : has_timezone_{false} {
     auto seconds = std::stol(match[6].str());
     auto fraction = match[7].str();
 
-    POSTGRES_CXX_ASSERT(1 <= months && months <= 12, "Invalid month " << months);
-    POSTGRES_CXX_ASSERT(1 <= days && days <= 31, "Invalid month day " << days);
-    POSTGRES_CXX_ASSERT(0 <= hours && hours <= 23, "Invalid hour " << hours);
-    POSTGRES_CXX_ASSERT(0 <= minutes && minutes <= 59, "Invalid minute " << minutes);
-    POSTGRES_CXX_ASSERT(0 <= seconds && seconds <= 59, "Invalid minute " << seconds);
+    _POSTGRES_CXX_ASSERT(1 <= months && months <= 12, "Invalid month " << months);
+    _POSTGRES_CXX_ASSERT(1 <= days && days <= 31, "Invalid month day " << days);
+    _POSTGRES_CXX_ASSERT(0 <= hours && hours <= 23, "Invalid hour " << hours);
+    _POSTGRES_CXX_ASSERT(0 <= minutes && minutes <= 59, "Invalid minute " << minutes);
+    _POSTGRES_CXX_ASSERT(0 <= seconds && seconds <= 59, "Invalid minute " << seconds);
 
     static const int months_len[] = {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

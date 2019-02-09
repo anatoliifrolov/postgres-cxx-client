@@ -1,6 +1,6 @@
 #include <utility>
 #include <cstring>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 #include <postgres/Field.h>
 #include <postgres/Timestamp.h>
 
@@ -39,7 +39,7 @@ void Field::read(bool& dst) const {
             return;
         }
     }
-    POSTGRES_CXX_FAIL("Cannot treat '" << src << "' as boolean");
+    _POSTGRES_CXX_FAIL("Cannot treat '" << src << "' as boolean");
 }
 
 void Field::read(std::string& dst) const {
@@ -64,7 +64,7 @@ void Field::read(time_t& dst) const {
 
 void Field::read(std::chrono::system_clock::time_point& dst) const {
     const auto type = PQftype(result_, column_index_);
-    POSTGRES_CXX_ASSERT(type == TIMESTAMPOID, "Unexpected column type " << type);
+    _POSTGRES_CXX_ASSERT(type == TIMESTAMPOID, "Unexpected column type " << type);
     dst = (isBinary() ?
         makeTimestamp(std::chrono::microseconds{internal::orderBytes<int64_t>(value())}, postgresEpoch()) :
         makeTimestamp(value())).timePoint();
@@ -86,7 +86,7 @@ bool Field::isBinary() const {
     if (format == 1) {
         return true;
     }
-    POSTGRES_CXX_FAIL("Unexpected column data format " << format);
+    _POSTGRES_CXX_FAIL("Unexpected column data format " << format);
 }
 
 const char* Field::value() const {

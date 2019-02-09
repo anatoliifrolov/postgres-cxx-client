@@ -130,7 +130,7 @@ public:
     // Async interface.
     template <typename... Ts>
     Connection& send(Ts&&... args) {
-        POSTGRES_CXX_ASSERT(connection_.send(std::forward<Ts>(args)...), connection_.errorMessage());
+        _POSTGRES_CXX_ASSERT(connection_.send(std::forward<Ts>(args)...), connection_.errorMessage());
         return connection_;
     }
 

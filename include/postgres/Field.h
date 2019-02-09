@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 #include <libpq-fe.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 #include <postgres/Oid.h>
 #include <postgres/Binary.h>
 #include <postgres/Classifier.h>
@@ -51,7 +51,7 @@ public:
     operator>>(Dst& dst) const {
         auto ptr = &dst;
         *this >> ptr;
-        POSTGRES_CXX_ASSERT(ptr, "Cannot store NULL value of field " << name() << " into reference");
+        _POSTGRES_CXX_ASSERT(ptr, "Cannot store NULL value of field " << name() << " into reference");
     }
 
     template <typename Dst>
@@ -74,11 +74,11 @@ private:
         const auto len = PQgetlength(result_, row_index_, column_index_);
         const auto type = PQftype(result_, column_index_);
 
-        POSTGRES_CXX_ASSERT(
+        _POSTGRES_CXX_ASSERT(
             isBinary(),
             "Cannot store text field " << name() <<
             " into object of arithmetic type");
-        POSTGRES_CXX_ASSERT(
+        _POSTGRES_CXX_ASSERT(
             len <= size,
             "Cannot store field " << name() <<
             " which is of size " << len <<
@@ -114,7 +114,7 @@ private:
                 break;
             }
             default: {
-                POSTGRES_CXX_FAIL("Column " << name() << " is of unexpected type " << type);
+                _POSTGRES_CXX_FAIL("Column " << name() << " is of unexpected type " << type);
             }
         }
     }

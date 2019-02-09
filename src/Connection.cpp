@@ -3,7 +3,7 @@
 #include <postgres/PrepareData.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/Assert.h>
+#include <postgres/internal/Assert.h>
 
 namespace postgres {
 
@@ -70,7 +70,7 @@ std::basic_string<unsigned char> Connection::escBytes(const std::basic_string<un
 
 template <typename Char>
 std::basic_string<Char> Connection::doEsc(Char* const escaped) {
-    POSTGRES_CXX_ASSERT(escaped, errorMessage());
+    _POSTGRES_CXX_ASSERT(escaped, errorMessage());
     std::basic_string<Char> res = escaped;
     PQfreemem(escaped);
     return res;

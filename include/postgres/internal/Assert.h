@@ -3,14 +3,14 @@
 #include <stdexcept>
 #include <sstream>
 
-#define POSTGRES_CXX_FAIL(msg) \
+#define _POSTGRES_CXX_FAIL(msg) \
     { \
         std::stringstream stream{}; \
         stream << msg; \
         throw std::runtime_error{stream.str()}; \
     }
 
-#define POSTGRES_CXX_ASSERT(cond, msg) \
+#define _POSTGRES_CXX_ASSERT(cond, msg) \
     if (!(cond)) { \
-        POSTGRES_CXX_FAIL(msg); \
+        _POSTGRES_CXX_FAIL(msg); \
     }
