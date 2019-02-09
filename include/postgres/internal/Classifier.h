@@ -10,7 +10,6 @@ struct Tag {
 
 using ReadableTag = Tag<1>;
 using VisitableTag = Tag<2>;
-using OptionalTag = Tag<3>;
 
 template <typename T>
 constexpr ReadableTag classify(...) {
@@ -20,11 +19,6 @@ constexpr ReadableTag classify(...) {
 template <typename T>
 constexpr VisitableTag classify(decltype (T::_POSTGRES_CXX_VISITABLE)) {
     return VisitableTag{};
-}
-
-template <typename T>
-constexpr OptionalTag classify(decltype (T{}.has_value())) {
-    return OptionalTag{};
 }
 
 template <typename T, typename U>
@@ -40,11 +34,6 @@ constexpr bool isReadable() {
 template <typename T>
 constexpr bool isVisitable() {
     return isTagged<T, VisitableTag>();
-}
-
-template <typename T>
-constexpr bool isOptional() {
-    return isTagged<T, OptionalTag>();
 }
 
 }  // namespace internal

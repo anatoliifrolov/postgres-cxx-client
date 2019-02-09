@@ -4,6 +4,7 @@
 #include <ctime>
 #include <string>
 #include <type_traits>
+#include <optional>
 #include <libpq-fe.h>
 #include <postgres/internal/Assert.h>
 #include <postgres/Oid.h>
@@ -38,12 +39,11 @@ public:
     }
 
     template <typename Dst>
-    std::enable_if_t<internal::isOptional<Dst>()>
-    operator>>(Dst& dst) const {
+    void operator>>(std::optional<Dst>& dst) const {
         if (isNull()) {
             return;
         }
-        dst = as<typename Dst::value_type>();
+        dst = as<Dst>();
     }
 
     template <typename Dst>

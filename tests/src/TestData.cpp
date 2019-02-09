@@ -7,28 +7,6 @@ namespace postgres {
 
 struct TestData : Migration, testing::Test {};
 
-template <typename T>
-struct Optional {
-    using value_type = T;
-
-    Optional& operator= (T const val) {
-        val_ = val;
-        has_ = true;
-        return *this;
-    }
-
-    T value() const {
-        return val_;
-    }
-
-    bool has_value() const {
-        return has_;
-    }
-
-    T val_;
-    bool has_ = false;
-};
-
 TEST_F(TestData, Null) {
     const bool* const some_ptr = nullptr;
     auto const res = client_.execute(
@@ -49,30 +27,30 @@ TEST_F(TestData, Null) {
 }
 
 TEST_F(TestData, NullOptional) {
-    Optional<int> opt;
+    std::optional<int> opt;
     client_.execute(Command{"INSERT INTO test (int4) VALUES ($1)", opt},
                     "SELECT int4 FROM test")[0][0] >> opt;
-    ASSERT_FALSE(opt.has_);
+    ASSERT_FALSE(opt.has_value());
 }
 
 TEST_F(TestData, OptionalValue) {
-    Optional<int> opt, opt2;
+    std::optional<int> opt, opt2;
     opt = 2;
-    ASSERT_TRUE(opt.has_);
-    ASSERT_EQ(2, opt.val_);
-    ASSERT_FALSE(opt2.has_);
+    ASSERT_TRUE(opt.has_value());
+    ASSERT_EQ(2, opt.value());
+    ASSERT_FALSE(opt2.has_value());
     client_.execute(Command{"INSERT INTO test (int4) VALUES ($1)", opt},
                     "SELECT int4 FROM test")[0][0] >> opt2;
-    ASSERT_TRUE(opt2.has_);
-    ASSERT_EQ(2, opt2.val_);
+    ASSERT_TRUE(opt2.has_value());
+    ASSERT_EQ(2, opt2.value());
 }
 
 TEST_F(TestData, OptionalTuple) {
-    Optional<int> opt, opt2;
+    std::optional<int> opt, opt2;
     client_.execute("SELECT 2, NULL::INT")[0] >> opt >> opt2;
-    ASSERT_TRUE(opt.has_);
-    ASSERT_EQ(2, opt.val_);
-    ASSERT_FALSE(opt2.has_);
+    ASSERT_TRUE(opt.has_value());
+    ASSERT_EQ(2, opt.value());
+    ASSERT_FALSE(opt2.has_value());
 }
 
 TEST_F(TestData, Types) {

@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstring>
+#include <optional>
 #include <libpq-fe.h>
 #include <postgres/OidBinding.h>
 #include <postgres/Oid.h>
@@ -99,8 +100,7 @@ private:
 
     // Handle optional types.
     template <typename Param>
-    std::enable_if_t<internal::isOptional<Param>()>
-    add(Param& param) {
+    void add(std::optional<Param> const& param) {
         param.has_value() ? add(param.value()) : add(nullptr);
     }
 
