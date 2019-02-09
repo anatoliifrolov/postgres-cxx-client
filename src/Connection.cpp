@@ -11,7 +11,7 @@ bool ping(const Config& config) {
     const auto status = PQpingParams(
         config.keywords(),
         config.values(),
-        config.expandDbname());
+        0);
     switch (status) {
         case PGPing::PQPING_OK:
         case PGPing::PQPING_REJECT: {
@@ -25,12 +25,14 @@ bool ping(const Config& config) {
     return false;
 }
 
+Connection::Connection() : Connection{Config{}} {}
+
 Connection::Connection(const Config& config)
     : handle_{
         PQconnectdbParams(
             config.keywords(),
             config.values(),
-            config.expandDbname()),
+            0),
         PQfinish}
 {}
 

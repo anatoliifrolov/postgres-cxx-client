@@ -8,8 +8,6 @@
 
 namespace postgres {
 
-postgres::Config getConfig();
-
 struct test {
     int16_t int2 = 0;
     int32_t int4 = 0;

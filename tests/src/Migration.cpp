@@ -2,18 +2,7 @@
 
 namespace postgres {
 
-postgres::Config makeConfig() {
-    return Config::init()
-        .set("application_name", "postgres-test")
-        .build();
-}
-
-postgres::Config getConfig() {
-    static const auto config = makeConfig();
-    return config;
-}
-
-Migration::Migration() : client_{getConfig()}, conn_{&client_.connection()} {
+Migration::Migration() : client_{}, conn_{&client_.connection()} {
     migrate();
     client_.execute("DELETE FROM test");
 }

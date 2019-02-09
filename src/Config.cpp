@@ -51,10 +51,6 @@ const char* const* Config::values() const {
     return values_.data();
 }
 
-int Config::expandDbname() const {
-    return 0;
-}
-
 Config::Builder::Builder() = default;
 
 Config::Builder::Builder(Builder const& other) = default;

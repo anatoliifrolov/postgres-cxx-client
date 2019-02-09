@@ -16,6 +16,7 @@ bool ping(const Config& config);
 
 class Connection {
 public:
+    explicit Connection();
     explicit Connection(const Config& config);
     Connection(const Connection& other) = delete;
     Connection(Connection&& other);

@@ -17,6 +17,7 @@ class PreparedCommand;
 
 class Client {
 public:
+    explicit Client();
     explicit Client(const Config& config);
     Client(const Client&) = delete;
     Client(Client&&);

@@ -25,7 +25,6 @@ public:
     // libpq interface adapters.
     const char* const* keywords() const;
     const char* const* values() const;
-    int expandDbname() const;
 
 private:
     void set(const char* const key, const std::string& val);

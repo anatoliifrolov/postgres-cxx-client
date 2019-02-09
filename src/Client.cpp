@@ -6,6 +6,8 @@
 
 namespace postgres {
 
+Client::Client() = default;
+
 Client::Client(const Config& config) : connection_{config} {}
 
 Client::Client(Client&& other) = default;
