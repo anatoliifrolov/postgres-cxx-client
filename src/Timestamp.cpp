@@ -52,7 +52,7 @@ Timestamp::Timestamp(const std::string& formatted)
     _POSTGRES_CXX_ASSERT(1 <= days && days <= 31, "Invalid month day " << days);
     _POSTGRES_CXX_ASSERT(0 <= hours && hours <= 23, "Invalid hour " << hours);
     _POSTGRES_CXX_ASSERT(0 <= minutes && minutes <= 59, "Invalid minute " << minutes);
-    _POSTGRES_CXX_ASSERT(0 <= seconds && seconds <= 59, "Invalid minute " << seconds);
+    _POSTGRES_CXX_ASSERT(0 <= seconds && seconds <= 59, "Invalid second " << seconds);
 
     static const int  months_len[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     static auto const isLeap       = [](const int year) {
