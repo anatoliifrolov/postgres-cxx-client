@@ -14,6 +14,16 @@ postgres::Config getConfig() {
 }
 
 Migration::Migration() : client_{getConfig()}, conn_{&client_.connection()} {
+    migrate();
+    client_.execute("DELETE FROM test");
+}
+
+void Migration::migrate() {
+    static auto is_done = false;
+    if (is_done) {
+        return;
+    }
+
     client_.execute(
         "DROP TABLE IF EXISTS test",
         R"(
@@ -26,6 +36,7 @@ Migration::Migration() : client_{getConfig()}, conn_{&client_.connection()} {
                 flag BOOLEAN,
                 info TEXT,
                 time TIMESTAMP))");
+    is_done = true;
 }
 
 }  // namespace postgres

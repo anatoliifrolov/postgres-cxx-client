@@ -28,6 +28,9 @@ struct Migration {
 
     Client client_;
     Connection* conn_;
+
+private:
+    void migrate();
 };
 
 }  // namespace postgres
