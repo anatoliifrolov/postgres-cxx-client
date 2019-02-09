@@ -14,17 +14,15 @@
 #include <postgres/Visitable.h>
 
 postgres::Config makeConfig() {
-    postgres::Config config{
-        "PGDATABASE",   // Is the same as user by default.
-        "PGUSER",   // Is the same as user running application by default.
-        "PGPASSWORD",   // Not used if empty.
-        "127.0.0.1",   // Localhost by default.
-        5432};  // 5432 by default.
-        
-    // Set some optional, but useful parameters:
-    config.set("application_name", "postgres-example");
-    config.set("connect_timeout", 3);
-    return config;
+    return postgres::Config::init()
+        .dbname("PGDATABASE")   // Is the same as user by default.
+        .user("PGUSER")   // Is the same as user running application by default.
+        .password("PGPASSWORD")   // Not used if empty.
+        .hostaddr("127.0.0.1")   // Localhost by default.
+        .port(5432)  // 5432 by default.
+        .set("application_name", "postgres-example")
+        .set("connect_timeout", 3)
+        .build();
 }
 
 void makeTestTable(postgres::Connection& conn) {

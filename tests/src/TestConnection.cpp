@@ -13,14 +13,18 @@ namespace postgres {
 struct TestConnection : Migration, testing::Test {};
 
 TEST_F(TestConnection, Ping) {
-    auto config = getConfig();
-    ASSERT_TRUE(ping(config));
-    config.set("port", 1234);
-    ASSERT_FALSE(ping(config));
+    ASSERT_TRUE(ping(Config{}));
+    ASSERT_FALSE(ping(Config::init()
+        .port(1234)
+        .build()));
 }
 
 TEST_F(TestConnection, Bad) {
-    Connection conn{postgres::Config{"BADDB", "BADUSER", "BADPASSW"}};
+    Connection conn{postgres::Config::init()
+        .dbname("BADDB")
+        .user("BADUSER")
+        .password("BADPASSW")
+        .build()};
     ASSERT_FALSE(conn.isOk());
 }
 

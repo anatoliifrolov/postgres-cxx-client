@@ -3,21 +3,15 @@
 
 namespace postgres {
 
-TEST(TestConfig, Default) {
-    postgres::Config config{};
-    const auto& keys = config.keywords();
-    const auto& vals = config.values();
-    ASSERT_STREQ(keys[0], "hostaddr");
-    ASSERT_STREQ(vals[0], "127.0.0.1");
-    ASSERT_STREQ(keys[1], "port");
-    ASSERT_STREQ(vals[1], "5432");
-    ASSERT_EQ(keys[2], nullptr);
-    ASSERT_EQ(vals[2], nullptr);
-}
-
 TEST(TestConfig, Basic) {
-    postgres::Config config{"NAME", "USER", "PASS", "HOST", 1234};
-    config.set("connect_timeout", 56);
+    auto const config = Config::init()
+        .dbname("NAME")
+        .user("USER")
+        .password("PASS")
+        .host("HOST")
+        .port(1234)
+        .set("connect_timeout", 56)
+        .build();
     const auto& keys = config.keywords();
     const auto& vals = config.values();
     ASSERT_STREQ(keys[0], "dbname");

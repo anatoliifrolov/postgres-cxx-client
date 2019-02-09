@@ -3,9 +3,9 @@
 namespace postgres {
 
 postgres::Config makeConfig() {
-    auto config = postgres::Config{};
-    config.set("application_name", "postgres-test");
-    return config;
+    return Config::init()
+        .set("application_name", "postgres-test")
+        .build();
 }
 
 postgres::Config getConfig() {

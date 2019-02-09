@@ -1,35 +1,11 @@
-#include <regex>
+#include <cstring>
 #include <postgres/Config.h>
 
 namespace postgres {
 
-static bool looksLikeIp(const std::string& host) {
-    static const std::regex expr{R"(^[0-9]{1,3}(\.[0-9]{1,3}){3}$)"};
-    return std::regex_match(host, expr);
-}
-
-Config::Config(
-    const std::string& dbname,
-    const std::string& user,
-    const std::string& password,
-    const std::string& host,
-    const int port)
-{
+Config::Config() {
     keywords_.push_back(nullptr);
     values_.push_back(nullptr);
-    if (!dbname.empty()) {
-        set("dbname", dbname);
-    }
-    if (!user.empty()) {
-        set("user", user);
-    }
-    if (!password.empty()) {
-        set("password", password);
-    }
-    if (!host.empty()) {
-        set(looksLikeIp(host) ? "hostaddr" : "host", host);
-    }
-    set("port", port);
 }
 
 Config::Config(const Config& other) = default;
