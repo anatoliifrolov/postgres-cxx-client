@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <postgres/Command.h>
 #include <postgres/Timestamp.h>
-#include <postgres/Binary.h>
+#include <postgres/internal/Bytes.h>
 #include "TimestampSamples.h"
 
 namespace postgres {

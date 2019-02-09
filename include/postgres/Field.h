@@ -7,7 +7,7 @@
 #include <libpq-fe.h>
 #include <postgres/internal/Assert.h>
 #include <postgres/Oid.h>
-#include <postgres/Binary.h>
+#include <postgres/internal/Bytes.h>
 #include <postgres/Classifier.h>
 
 namespace postgres {
