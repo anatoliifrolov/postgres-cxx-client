@@ -178,7 +178,7 @@ void executeAsyncNonBlocking(postgres::Connection& conn) {
 
 void executeAsyncRowByRow(postgres::Connection& conn) {
     // Rows of large result set could be obtained one by one as they are ready.
-    conn.send("SELECT * FROM example", true);
+    conn.send("SELECT * FROM example", postgres::AsyncMode::SINGLE_ROW);
     for (auto res = conn.nextResult(); !res.isDone(); res = conn.nextResult()) {
         // Note that the last result will be empty while isDone() will be still false.
         if (!res.empty()) {

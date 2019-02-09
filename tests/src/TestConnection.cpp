@@ -74,7 +74,7 @@ TEST_F(TestConnection, Busy) {
 
 TEST_F(TestConnection, RowByRow) {
     ASSERT_TRUE(conn_->execute("INSERT INTO test(int4) VALUES(1), (2), (3)"));
-    ASSERT_TRUE(conn_->send("SELECT int4 FROM test", true));
+    ASSERT_TRUE(conn_->send("SELECT int4 FROM test", AsyncMode::SINGLE_ROW));
     std::set<int> data{};
     for (auto res = conn_->nextResult(); !res.isDone(); res = conn_->nextResult()) {
         if (!res.empty()) {

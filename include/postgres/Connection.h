@@ -12,6 +12,11 @@ class Command;
 class PreparedCommand;
 struct PrepareData;
 
+enum class AsyncMode {
+    MULTI_ROW,
+    SINGLE_ROW,
+};
+
 class Connection {
 public:
     explicit Connection();
@@ -45,10 +50,10 @@ public:
 
     // Async interface.
     bool send(const PrepareData& statement);
-    bool send(const std::string& statement, const bool row_by_row = false);
-    bool send(const char* const statement, const bool row_by_row = false);
-    bool send(const PreparedCommand& command, const bool row_by_row = false);
-    bool send(const Command& command, const bool row_by_row = false);
+    bool send(const std::string& statement, const AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(const char* const statement, const AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(const PreparedCommand& command, const AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(const Command& command, const AsyncMode mode = AsyncMode::MULTI_ROW);
     bool cancel();
     Result nextResult();
 

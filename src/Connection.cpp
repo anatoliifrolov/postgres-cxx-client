@@ -133,15 +133,15 @@ bool Connection::send(const PrepareData& statement) {
         statement.types_.empty() ? nullptr : statement.types_.data()) == 1;
 }
 
-bool Connection::send(const std::string& statement, const bool row_by_row) {
-    return send(Command{statement}, row_by_row);
+bool Connection::send(const std::string& statement, const AsyncMode mode) {
+    return send(Command{statement}, mode);
 }
 
-bool Connection::send(const char* const statement, const bool row_by_row) {
-    return send(Command{statement}, row_by_row);
+bool Connection::send(const char* const statement, const AsyncMode mode) {
+    return send(Command{statement}, mode);
 }
 
-bool Connection::send(const PreparedCommand& command, const bool row_by_row) {
+bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
     auto const res = PQsendQueryPrepared(
         native(),
         command.statement(),
@@ -150,13 +150,13 @@ bool Connection::send(const PreparedCommand& command, const bool row_by_row) {
         command.paramLengths(),
         command.paramFormats(),
         command.resultFormat()) == 1;
-    if (res && row_by_row) {
+    if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
     return res;
 }
 
-bool Connection::send(const Command& command, const bool row_by_row) {
+bool Connection::send(const Command& command, const AsyncMode mode) {
     auto const res = PQsendQueryParams(
         native(),
         command.statement(),
@@ -166,7 +166,7 @@ bool Connection::send(const Command& command, const bool row_by_row) {
         command.paramLengths(),
         command.paramFormats(),
         command.resultFormat()) == 1;
-    if (res && row_by_row) {
+    if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
     return res;
