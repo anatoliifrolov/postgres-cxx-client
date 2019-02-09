@@ -12,7 +12,7 @@
 #include <postgres/Timestamp.h>
 #include <postgres/Visitors.h>
 #include <postgres/internal/Bytes.h>
-#include <postgres/Classifier.h>
+#include <postgres/internal/Classifier.h>
 
 namespace postgres {
 

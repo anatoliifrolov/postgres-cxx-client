@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <postgres/Classifier.h>
+#include <postgres/internal/Classifier.h>
 
 namespace postgres {
 namespace internal {

@@ -3,7 +3,7 @@
 #include <string>
 #include <libpq-fe.h>
 #include <postgres/Field.h>
-#include <postgres/Classifier.h>
+#include <postgres/internal/Classifier.h>
 
 namespace postgres {
 
