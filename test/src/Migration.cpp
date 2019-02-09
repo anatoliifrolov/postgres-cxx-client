@@ -14,7 +14,6 @@ postgres::Config getConfig() {
 }
 
 Migration::Migration() : client_{getConfig()}, conn_{&client_.connection()} {
-    client_.setSchema("postgres");
     client_.execute(
         "DROP TABLE IF EXISTS test",
         R"(

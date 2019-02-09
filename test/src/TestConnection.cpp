@@ -45,7 +45,7 @@ TEST_F(TestConnection, Raw) {
 TEST_F(TestConnection, Async) {
     ASSERT_TRUE(conn_->send(PrepareData{
         "prepared_insert",
-        "INSERT INTO postgres.test(flag) VALUES($1)"}));
+        "INSERT INTO test(flag) VALUES($1)"}));
     ASSERT_TRUE(conn_->nextResult());
     ASSERT_TRUE(conn_->nextResult().isDone());
     ASSERT_TRUE(conn_->send("SELECT 1::INTEGER"));
@@ -69,8 +69,8 @@ TEST_F(TestConnection, Busy) {
 }
 
 TEST_F(TestConnection, RowByRow) {
-    ASSERT_TRUE(conn_->execute("INSERT INTO postgres.test(int4) VALUES(1), (2), (3)"));
-    ASSERT_TRUE(conn_->send("SELECT int4 FROM postgres.test", true));
+    ASSERT_TRUE(conn_->execute("INSERT INTO test(int4) VALUES(1), (2), (3)"));
+    ASSERT_TRUE(conn_->send("SELECT int4 FROM test", true));
     std::set<int> data{};
     for (auto res = conn_->nextResult(); !res.isDone(); res = conn_->nextResult()) {
         if (!res.empty()) {
