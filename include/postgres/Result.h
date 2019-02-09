@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iterator>
 #include <postgres/Tuple.h>
 #include <postgres/Status.h>
 
@@ -25,10 +24,16 @@ public:
     Tuple operator[](const int index) const;
 };
 
-class Result::iterator : public std::iterator<std::forward_iterator_tag, Tuple> {
+class Result::iterator {
     friend class Result;
 
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = Tuple;
+    using pointer = Tuple*;
+    using reference = Tuple&;
+
     iterator(const iterator& other);
     iterator(iterator&& other);
     iterator& operator=(const iterator& other);
