@@ -6,20 +6,18 @@
 namespace postgres {
 namespace internal {
 
-inline bool needReorder() {
-    static auto const res = (htonl(1) != 1);
-    return res;
-}
-
 template <typename T>
 T orderBytes(T val) {
-    static auto constexpr size = sizeof(T);
-    if (needReorder()) {
-        auto bytes = reinterpret_cast<char*>(&val);
+    auto constexpr    LEN        = sizeof(T);
+    static auto const IS_ORDERED = (LEN == 1) || (htonl(1) == 1);
+    if (IS_ORDERED) {
+        return val;
+    }
 
-        for (auto i = 0u; i < size / 2; ++i) {
-            std::swap(bytes[i], bytes[size - 1 - i]);
-        }
+    auto bytes = reinterpret_cast<char*>(&val);
+
+    for (auto i = 0u; i < LEN / 2; ++i) {
+        std::swap(bytes[i], bytes[LEN - 1 - i]);
     }
     return val;
 }

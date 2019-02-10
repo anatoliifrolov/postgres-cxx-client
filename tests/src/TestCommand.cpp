@@ -1,177 +1,302 @@
-#include <arpa/inet.h>
-#include <functional>
 #include <vector>
 #include <gtest/gtest.h>
-#include <postgres/Command.h>
-#include <postgres/Timestamp.h>
 #include <postgres/internal/Bytes.h>
+#include <postgres/Command.h>
+#include <postgres/Visitable.h>
 #include "TimestampSamples.h"
 
 namespace postgres {
 
+TEST(TestCommand, NoArgs) {
+    Command const cmd{"STMT"};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(0, cmd.count());
+    ASSERT_EQ(nullptr, cmd.types());
+    ASSERT_EQ(nullptr, cmd.values());
+    ASSERT_EQ(nullptr, cmd.lengths());
+    ASSERT_EQ(nullptr, cmd.formats());
+}
+
+TEST(TestCommand, True) {
+    Command const cmd{"STMT", true};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{BOOLOID}, cmd.types()[0]);
+    ASSERT_EQ(true, internal::orderBytes<bool>(cmd.values()[0]));
+    ASSERT_EQ(1, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, False) {
+    Command const cmd{"STMT", false};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{BOOLOID}, cmd.types()[0]);
+    ASSERT_EQ(false, internal::orderBytes<bool>(cmd.values()[0]));
+    ASSERT_EQ(1, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Int2) {
+    Command const cmd{"STMT", int16_t{3}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{INT2OID}, cmd.types()[0]);
+    ASSERT_EQ(3, internal::orderBytes<int16_t>(cmd.values()[0]));
+    ASSERT_EQ(2, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Int4) {
+    Command const cmd{"STMT", int32_t{3}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[0]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[0]));
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Int8) {
+    Command const cmd{"STMT", int64_t{3}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{INT8OID}, cmd.types()[0]);
+    ASSERT_EQ(3, internal::orderBytes<int64_t>(cmd.values()[0]));
+    ASSERT_EQ(8, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Float4) {
+    Command const cmd{"STMT", float{3.45}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{FLOAT4OID}, cmd.types()[0]);
+    ASSERT_NEAR(3.45, internal::orderBytes<float>(cmd.values()[0]), 0.001);
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Float8) {
+    Command const cmd{"STMT", double{3.45}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{FLOAT8OID}, cmd.types()[0]);
+    ASSERT_NEAR(3.45, internal::orderBytes<double>(cmd.values()[0]), 0.001);
+    ASSERT_EQ(8, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Ptr) {
+    int32_t const val = 3;
+    auto const    ptr = &val;
+    Command const cmd{"STMT", ptr};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[0]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[0]));
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, NullPtr) {
+    int* const null_ptr = nullptr;
+    Command const cmd{"STMT", null_ptr};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(nullptr, cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Opt) {
+    std::optional<int32_t> opt = 3;
+    Command const cmd{"STMT", opt};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[0]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[0]));
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, NullOpt) {
+    std::optional<int32_t> opt{};
+    Command const cmd{"STMT", opt};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(nullptr, cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, EmptyStr) {
+    Command const cmd{"STMT", ""};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_STREQ("", cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, CStr) {
+    auto const    str = "STR";
+    Command const cmd{"STMT", str};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(str, cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, RefStr) {
+    std::string const str = "STR";
+    Command const     cmd{"STMT", str};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_STREQ("STR", cmd.values()[0]);
+    ASSERT_EQ(str.data(), cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, MoveStr) {
+    Command const cmd{"STMT", std::string{"STR"}};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_STREQ("STR", cmd.values()[0]);
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Oid) {
+    std::string   str  = "STR";
+    auto const    data = str.data();
+    Command const cmd{"STMT", bindOid(std::move(str), ANYOID)};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{ANYOID}, cmd.types()[0]);
+    ASSERT_STREQ("STR", cmd.values()[0]);
+    ASSERT_NE(data, cmd.values()[0]);
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Time) {
+    Command const cmd{"STMT", timePointSample()};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{TIMESTAMPOID}, cmd.types()[0]);
+    ASSERT_EQ(timeSamplePg(), internal::orderBytes<time_t>(cmd.values()[0]));
+    ASSERT_EQ(static_cast<int>(sizeof(time_t)), cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+}
+
+TEST(TestCommand, TimeZone) {
+    Command const cmd{"STMT", makeTimestamp(timePointSampleNs(), true)};
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(Oid{TIMESTAMPTZOID}, cmd.types()[0]);
+    ASSERT_EQ(timeSampleFormatPreciseTz(), cmd.values()[0]);
+    ASSERT_EQ(static_cast<int>(timeSampleFormatPreciseTz().size() + 1), cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, Range) {
+    std::vector<int32_t> const arr{1, 2, 3};
+
+    Command const cmd{"STMT", std::make_pair(arr.begin(), arr.end())};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(3, cmd.count());
+
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[0]);
+    ASSERT_EQ(1, internal::orderBytes<int32_t>(cmd.values()[0]));
+    ASSERT_EQ(4, cmd.lengths()[0]);
+    ASSERT_EQ(1, cmd.formats()[0]);
+
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[1]);
+    ASSERT_EQ(2, internal::orderBytes<int32_t>(cmd.values()[1]));
+    ASSERT_EQ(4, cmd.lengths()[1]);
+    ASSERT_EQ(1, cmd.formats()[1]);
+
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[2]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[2]));
+    ASSERT_EQ(4, cmd.lengths()[2]);
+    ASSERT_EQ(1, cmd.formats()[2]);
+}
+
+struct Visitable {
+    std::string s;
+    int32_t     n = 0;
+    double      f = 0.0;
+
+    POSTGRES_CXX_TABLE(Visitable, s, n, f);
+};
+
+TEST(TestCommand, Visit) {
+    Visitable const v{"TEXT", 3, 4.56};
+    Command const   cmd{"STMT", v};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(3, cmd.count());
+
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(v.s.data(), cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[1]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[1]));
+    ASSERT_EQ(4, cmd.lengths()[1]);
+    ASSERT_EQ(1, cmd.formats()[1]);
+
+    ASSERT_EQ(Oid{FLOAT8OID}, cmd.types()[2]);
+    ASSERT_NEAR(4.56, internal::orderBytes<double>(cmd.values()[2]), 0.001);
+    ASSERT_EQ(8, cmd.lengths()[2]);
+    ASSERT_EQ(1, cmd.formats()[2]);
+}
+
+TEST(TestCommand, MultiArgs) {
+    Command const cmd{"STMT", std::string{"TEXT"}, int32_t{3}, 4.56};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(3, cmd.count());
+
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_STREQ("TEXT", cmd.values()[0]);
+    ASSERT_EQ(5, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+
+    ASSERT_EQ(Oid{INT4OID}, cmd.types()[1]);
+    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.values()[1]));
+    ASSERT_EQ(4, cmd.lengths()[1]);
+    ASSERT_EQ(1, cmd.formats()[1]);
+
+    ASSERT_EQ(Oid{FLOAT8OID}, cmd.types()[2]);
+    ASSERT_NEAR(4.56, internal::orderBytes<double>(cmd.values()[2]), 0.001);
+    ASSERT_EQ(8, cmd.lengths()[2]);
+    ASSERT_EQ(1, cmd.formats()[2]);
+}
+
 TEST(TestCommand, Dynamic) {
-    Command cmd{"STATEMENT"};
+    Command    cmd{"STMT"};
+    auto const str = "STR";
+    cmd << str << std::string{"STR2"};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(2, cmd.count());
 
-    ASSERT_STREQ("STATEMENT", cmd.statement());
-    ASSERT_EQ(0, cmd.nParams());
-    ASSERT_EQ(nullptr, cmd.paramTypes());
-    ASSERT_EQ(nullptr, cmd.paramValues());
-    ASSERT_EQ(nullptr, cmd.paramLengths());
-    ASSERT_EQ(nullptr, cmd.paramFormats());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(str, cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
 
-    const std::vector<int> v1{4, 5};
-    const std::vector<int> v2{6, 7, 8};
-    cmd
-        << 1
-        << 2
-        << 3
-        << std::make_pair(v1.begin(), v1.end())
-        << std::make_pair(v2.begin(), v2.begin() + 2);
-    ASSERT_EQ(7, cmd.nParams());
-    for (auto i = 0; i <= 6; ++i) {
-        ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-        ASSERT_EQ(i + 1, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-        ASSERT_EQ(static_cast<int>(sizeof(int)), cmd.paramLengths()[i]);
-        ASSERT_EQ(1, cmd.paramFormats()[i]);
-    }
-}
-
-TEST(TestCommand, Types) {
-    auto const n         = int32_t{42};
-    auto const valid_ptr = &n;
-    const char* null_ptr = nullptr;
-    auto const str = "C_STRING";
-
-    const Command cmd{"STATEMENT",
-                      'C',
-                      int16_t{2},
-                      int32_t{4},
-                      int64_t{8},
-                      float{4.44},
-                      8.88,
-                      true,
-                      false,
-                      nullptr,
-                      null_ptr,
-                      valid_ptr,
-                      "",
-                      str,
-                      std::string{"STRING"},
-                      bindOid(n, ANYOID),
-                      timePointSample(),
-                      makeTimestamp(timePointSampleNs(), true)};
-
-    ASSERT_STREQ("STATEMENT", cmd.statement());
-    ASSERT_EQ(17, cmd.nParams());
-
-    auto i = 0;
-    ASSERT_EQ(static_cast<Oid>(BYTEAOID), cmd.paramTypes()[i]);
-    ASSERT_EQ('C', *cmd.paramValues()[i]);
-    ASSERT_EQ(static_cast<int>(sizeof('C')), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT2OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(2, internal::orderBytes<int16_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int16_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(4, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT8OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(8, internal::orderBytes<int64_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int64_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(FLOAT4OID), cmd.paramTypes()[i]);
-    ASSERT_NEAR(4.44, internal::orderBytes<float>(cmd.paramValues()[i]), 0.001);
-    ASSERT_EQ(static_cast<int>(sizeof(float)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(FLOAT8OID), cmd.paramTypes()[i]);
-    ASSERT_NEAR(8.88, internal::orderBytes<double>(cmd.paramValues()[i]), 0.001);
-    ASSERT_EQ(static_cast<int>(sizeof(double)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(BOOLOID), cmd.paramTypes()[i]);
-    ASSERT_TRUE(*reinterpret_cast<const bool*>(cmd.paramValues()[i]));
-    ASSERT_EQ(1, cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(BOOLOID), cmd.paramTypes()[i]);
-    ASSERT_FALSE(*reinterpret_cast<const bool*>(cmd.paramValues()[i]));
-    ASSERT_EQ(1, cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(0u, cmd.paramTypes()[i]);
-    ASSERT_EQ(nullptr, cmd.paramValues()[i]);
-    ASSERT_EQ(0, cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(0u, cmd.paramTypes()[i]);
-    ASSERT_EQ(nullptr, cmd.paramValues()[i]);
-    ASSERT_EQ(0, cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(42, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(0u, cmd.paramTypes()[i]);
-    ASSERT_STREQ("", cmd.paramValues()[i]);
-    ASSERT_EQ(0, cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(0u, cmd.paramTypes()[i]);
-    ASSERT_EQ(str, cmd.paramValues()[i]);
-    ASSERT_EQ(0, cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(0u, cmd.paramTypes()[i]);
-    ASSERT_STREQ("STRING", cmd.paramValues()[i]);
-    ASSERT_EQ(static_cast<int>(sizeof("STRING")), cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(ANYOID), cmd.paramTypes()[i]);
-    ASSERT_EQ(42, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(TIMESTAMPOID), cmd.paramTypes()[i]);
-    ASSERT_EQ(timeSamplePg(), internal::orderBytes<time_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(time_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(TIMESTAMPTZOID), cmd.paramTypes()[i]);
-    ASSERT_EQ(timeSampleFormatPreciseTz(), cmd.paramValues()[i]);
-    ASSERT_EQ(static_cast<int>(timeSampleFormatPreciseTz().size() + 1), cmd.paramLengths()[i]);
-    ASSERT_EQ(0, cmd.paramFormats()[i]);
-}
-
-TEST(TestCommand, Iterators) {
-    std::vector<int32_t> vals{1, 2, 3};
-
-    const Command cmd{"STATEMENT", vals.begin(), vals.end()};
-    ASSERT_EQ(3, cmd.nParams());
-
-    auto i = 0;
-    ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(1, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(2, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
-    ++i;
-    ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);
-    ASSERT_EQ(3, internal::orderBytes<int32_t>(cmd.paramValues()[i]));
-    ASSERT_EQ(static_cast<int>(sizeof(int32_t)), cmd.paramLengths()[i]);
-    ASSERT_EQ(1, cmd.paramFormats()[i]);
+    ASSERT_EQ(0u, cmd.types()[1]);
+    ASSERT_STREQ("STR2", cmd.values()[1]);
+    ASSERT_EQ(5, cmd.lengths()[1]);
+    ASSERT_EQ(0, cmd.formats()[1]);
 }
 
 }  // namespace postgres

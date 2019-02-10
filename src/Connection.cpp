@@ -7,6 +7,8 @@
 
 namespace postgres {
 
+static constexpr auto RESULT_FORMAT = 1;
+
 Connection::Connection()
     : Connection{Config::make()} {
 }
@@ -97,22 +99,20 @@ Result Connection::execute(const char* const statement) {
 Result Connection::execute(const PreparedCommand& command) {
     return Result{PQexecPrepared(native(),
                                  command.statement(),
-                                 command.nParams(),
-                                 command.paramValues(),
-                                 command.paramLengths(),
-                                 command.paramFormats(),
-                                 command.resultFormat())};
+                                 command.count(),
+                                 command.values(),
+                                 command.lengths(),
+                                 command.formats(), RESULT_FORMAT)};
 }
 
 Result Connection::execute(const Command& command) {
     return Result{PQexecParams(native(),
                                command.statement(),
-                               command.nParams(),
-                               command.paramTypes(),
-                               command.paramValues(),
-                               command.paramLengths(),
-                               command.paramFormats(),
-                               command.resultFormat())};
+                               command.count(),
+                               command.types(),
+                               command.values(),
+                               command.lengths(),
+                               command.formats(), RESULT_FORMAT)};
 }
 
 bool Connection::send(const PrepareData& statement) {
@@ -134,11 +134,10 @@ bool Connection::send(const char* const statement, const AsyncMode mode) {
 bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
     auto const res = PQsendQueryPrepared(native(),
                                          command.statement(),
-                                         command.nParams(),
-                                         command.paramValues(),
-                                         command.paramLengths(),
-                                         command.paramFormats(),
-                                         command.resultFormat()) == 1;
+                                         command.count(),
+                                         command.values(),
+                                         command.lengths(),
+                                         command.formats(), RESULT_FORMAT) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
@@ -148,12 +147,11 @@ bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
 bool Connection::send(const Command& command, const AsyncMode mode) {
     auto const res = PQsendQueryParams(native(),
                                        command.statement(),
-                                       command.nParams(),
-                                       command.paramTypes(),
-                                       command.paramValues(),
-                                       command.paramLengths(),
-                                       command.paramFormats(),
-                                       command.resultFormat()) == 1;
+                                       command.count(),
+                                       command.types(),
+                                       command.values(),
+                                       command.lengths(),
+                                       command.formats(), RESULT_FORMAT) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }

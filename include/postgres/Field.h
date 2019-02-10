@@ -68,9 +68,9 @@ private:
 
     template <typename Dst>
     std::enable_if_t<std::is_arithmetic<Dst>::value> read(Dst& dst) const {
-        static auto constexpr size = static_cast<int>(sizeof(Dst));
-        auto const            len  = PQgetlength(result_, row_index_, column_index_);
-        auto const            type = PQftype(result_, column_index_);
+        auto constexpr size = static_cast<int>(sizeof(Dst));
+        auto const     len  = PQgetlength(result_, row_index_, column_index_);
+        auto const     type = PQftype(result_, column_index_);
 
         _POSTGRES_CXX_ASSERT(isBinary(),
                              "Cannot store text field "

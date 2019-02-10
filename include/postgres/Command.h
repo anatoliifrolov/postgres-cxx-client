@@ -1,20 +1,14 @@
 #pragma once
 
-#include <utility>
-#include <type_traits>
-#include <string>
-#include <vector>
-#include <cstddef>
-#include <cstring>
 #include <optional>
-#include <libpq-fe.h>
-#include <postgres/OidBinding.h>
-#include <postgres/Oid.h>
-#include <postgres/Timestamp.h>
-#include <postgres/internal/Visitors.h>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 #include <postgres/internal/Bytes.h>
 #include <postgres/internal/Classifier.h>
-#include <postgres/internal/Assert.h>
+#include <postgres/Oid.h>
+#include <postgres/Timestamp.h>
 
 namespace postgres {
 
@@ -26,16 +20,10 @@ public:
         unwind(std::forward<Args>(args)...);
     }
 
-    template <typename Stmt, typename Iter, typename = typename Iter::iterator_category>
-    explicit Command(Stmt&& stmt, Iter const it, Iter const end)
-        : stmt_{std::forward<Stmt>(stmt)} {
-        add(std::make_pair(it, end));
-    }
-
     Command(Command const& other) = delete;
     Command& operator=(Command const& other) = delete;
-    Command(Command&& other);
-    Command& operator=(Command&& other);
+    Command(Command&& other) noexcept;
+    Command& operator=(Command&& other) noexcept;
     ~Command();
 
     // Dynamic arguments addition.
@@ -47,18 +35,17 @@ public:
 
     // Visitor interface.
     template <typename Arg>
-    void accept(char const*, char const*, Arg&& arg) {
+    void accept(char const*, char const*, Arg& arg) {
         add(std::forward<Arg>(arg));
     };
 
     // libpq interface adapters.
     char const* statement() const;
-    int nParams() const;
-    Oid const* paramTypes() const;
-    char const* const* paramValues() const;
-    int const* paramLengths() const;
-    int const* paramFormats() const;
-    int resultFormat() const;
+    int count() const;
+    Oid const* types() const;
+    char const* const* values() const;
+    int const* lengths() const;
+    int const* formats() const;
 
 private:
     template <typename Arg, typename... Args>
@@ -70,101 +57,73 @@ private:
     void unwind() const {
     }
 
-    // Containers.
     template <typename Iter>
-    void add(std::pair<Iter, Iter> range) {
-        for (; range.first != range.second; ++range.first) {
-            add(*range.first);
+    void add(std::pair<Iter, Iter> const rng) {
+        for (auto it = rng.first; it != rng.second; ++it) {
+            add(*it);
         }
     };
 
-    // Visitable.
+    // Use mutable reference to disallow temporaries.
     template <typename Arg>
-    std::enable_if_t<internal::isVisitable<Arg>()> add(Arg const& arg) {
+    std::enable_if_t<internal::isVisitable<Arg>()> add(Arg& arg) {
         arg.visitPostgresFields(*this);
     }
 
-    // Handle special types.
-    template <typename Param>
-    void add(OidBinding<Param> param) {
-        add(std::forward<Param>(param.val_));
-        types_.back() = param.type_;
+    template <typename Arg>
+    void add(internal::OidBinding<Arg> arg) {
+        add(std::forward<Arg>(arg.val));
+        types_.back() = arg.type;
     }
 
-    // Handle optional types.
-    template <typename Param>
-    void add(std::optional<Param> const& param) {
-        param.has_value() ? add(param.value()) : add(nullptr);
+    template <typename Arg>
+    void add(std::optional<Arg>& arg) {
+        arg.has_value() ? add(arg.value()) : add(nullptr);
     }
 
-    template <typename Param>
-    void add(Param const* const param) {
-        param ? add(*param) : add(nullptr);
+    template <typename Arg>
+    void add(Arg const* const arg) {
+        arg ? add(*arg) : add(nullptr);
     }
 
-    void add(std::nullptr_t);
+    template <typename Arg>
+    std::enable_if_t<std::is_arithmetic_v<Arg>> add(Arg arg) {
+        auto constexpr LEN = sizeof(arg);
+        static_assert(LEN <= 8, "Unexpected arithmetic argument type length");
 
-    // Handle timestamps.
-    void add(std::chrono::system_clock::time_point const param);
-    void add(Timestamp const& param);
-
-    // Handle strings.
-    void add(std::string const& param);
-    void add(std::string&& param);
-    void add(char const* const param);
-    void addText(char const* const param, int const size);
-
-    // Handle arithmetic types.
-    template <typename Param>
-    std::enable_if_t<std::is_arithmetic<Param>::value> add(Param const param) {
-        if constexpr (std::is_integral<Param>::value) {
-            switch (sizeof(Param)) {
-                case 1: {
-                    return addBinary(param, BYTEAOID);
-                }
-                case 2: {
-                    return addBinary(param, INT2OID);
-                }
-                case 4: {
-                    return addBinary(param, INT4OID);
-                }
-                case 8: {
-                    return addBinary(param, INT8OID);
-                }
+        auto constexpr ID = []() -> Oid {
+            if (std::is_same_v<Arg, bool>) {
+                return BOOLOID;
             }
-        }
-
-        if constexpr (std::is_floating_point<Param>::value) {
-            switch (sizeof(Param)) {
-                case 4: {
-                    return addBinary(param, FLOAT4OID);
-                }
-                case 8: {
-                    return addBinary(param, FLOAT8OID);
-                }
+            if (std::is_integral_v<Arg>) {
+                return ((Oid[]) {INT2OID, INT4OID, INT8OID})[LEN / 4];
             }
-        }
+            if (std::is_floating_point_v<Arg>) {
+                return ((Oid[]) {UNKNOWNOID, FLOAT4OID, FLOAT8OID})[LEN / 4];
+            }
+            return UNKNOWNOID;
+        }();
+        static_assert(ID != UNKNOWNOID, "Unexpected arithmetic argument type");
 
-        _POSTGRES_CXX_FAIL("Unexpected arithmetic argument type");
+        arg = internal::orderBytes(arg);
+        setMeta(ID, LEN, 1);
+        storeData(&arg, LEN);
     };
 
-    template <typename Param>
-    void addBinary(Param param, int const type) {
-        static auto constexpr size = sizeof(Param);
-        param = internal::orderBytes(param);
-        setMeta(type, size, 1);
-        storeData(&param, size);
-    }
-
-    void add(bool const param);
-
-    void setMeta(Oid const id, int const len, int const fmt);
-    void storeData(void const* const arg, int const len);
+    void add(std::nullptr_t);
+    void add(std::chrono::system_clock::time_point arg);
+    void add(Timestamp const& arg);
+    void add(std::string const& arg);
+    void add(std::string&& arg);
+    void add(char const* arg);
+    void addText(char const* arg, size_t len);
+    void setMeta(Oid id, int len, int fmt);
+    void storeData(void const* arg, size_t len);
 
     std::string              stmt_;
     std::vector<Oid>         types_;
     std::vector<char const*> values_;
-    std::vector<int>         lenghts_;
+    std::vector<int>         lengths_;
     std::vector<int>         formats_;
     std::vector<char>        buffer_;
 };

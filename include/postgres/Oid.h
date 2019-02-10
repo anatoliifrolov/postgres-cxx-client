@@ -1,6 +1,9 @@
 #pragma once
 
-// Copied from /usr/include/postgresql/9.5/server/catalog/pg_type.h
+#include <utility>
+#include <postgres/internal/OidBinding.h>
+
+// Taken from /usr/include/postgresql/9.5/server/catalog/pg_type.h.
 #define BOOLOID 16
 #define BYTEAOID 17
 #define CHAROID 18
@@ -90,3 +93,12 @@
 #define FDW_HANDLEROID 3115
 #define TSM_HANDLEROID 3310
 #define ANYRANGEOID 3831
+
+namespace postgres {
+
+template <typename T>
+internal::OidBinding<T> bindOid(T&& param, const Oid type) {
+    return internal::OidBinding<T>{std::forward<T>(param), type};
+}
+
+}  // namespace postgres

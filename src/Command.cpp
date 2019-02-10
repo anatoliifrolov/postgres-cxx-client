@@ -1,10 +1,11 @@
 #include <postgres/Command.h>
+#include <cstring>
 
 namespace postgres {
 
-Command::Command(Command&& other) = default;
+Command::Command(Command&& other) noexcept = default;
 
-Command& Command::operator=(Command&& other) = default;
+Command& Command::operator=(Command&& other) noexcept = default;
 
 Command::~Command() = default;
 
@@ -12,28 +13,24 @@ char const* Command::statement() const {
     return stmt_.c_str();
 }
 
-int Command::nParams() const {
-    return values_.size();
+int Command::count() const {
+    return static_cast<int>(values_.size());
 }
 
-Oid const* Command::paramTypes() const {
-    return types_.empty() ? nullptr : types_.data();
+Oid const* Command::types() const {
+    return types_.data();
 }
 
-char const* const* Command::paramValues() const {
-    return values_.empty() ? nullptr : values_.data();
+char const* const* Command::values() const {
+    return values_.data();
 }
 
-int const* Command::paramLengths() const {
-    return lenghts_.empty() ? nullptr : lenghts_.data();
+int const* Command::lengths() const {
+    return lengths_.data();
 }
 
-int const* Command::paramFormats() const {
-    return formats_.empty() ? nullptr : formats_.data();
-}
-
-int Command::resultFormat() const {
-    return 1;
+int const* Command::formats() const {
+    return formats_.data();
 }
 
 void Command::add(std::nullptr_t) {
@@ -41,63 +38,56 @@ void Command::add(std::nullptr_t) {
     values_.push_back(nullptr);
 }
 
-void Command::add(std::chrono::system_clock::time_point const param) {
-    add(makeTimestamp(param));
+void Command::add(std::chrono::system_clock::time_point const arg) {
+    add(makeTimestamp(arg));
 }
 
-void Command::add(Timestamp const& param) {
-    if (param.hasTimezone()) {
-        auto const formatted = param.format();
-        addText(formatted.c_str(), formatted.size() + 1);
+void Command::add(Timestamp const& arg) {
+    if (arg.hasTimezone()) {
+        add(arg.format());
         types_.back() = TIMESTAMPTZOID;
-    } else {
-        add(param.postgresTime());
-        types_.back() = TIMESTAMPOID;
+        return;
     }
+
+    add(arg.postgresTime());
+    types_.back() = TIMESTAMPOID;
 }
 
-void Command::add(std::string const& param) {
-    add(param.c_str());
+void Command::add(std::string const& arg) {
+    add(arg.c_str());
 }
 
-void Command::add(std::string&& param) {
-    addText(param.c_str(), param.size() + 1);
+void Command::add(std::string&& arg) {
+    addText(arg.c_str(), arg.size() + 1);
 }
 
-void Command::add(char const* const param) {
+void Command::add(char const* const arg) {
     setMeta(0, 0, 0);
-    values_.push_back(param);
+    values_.push_back(arg);
 }
 
-void Command::addText(char const* const param, int const size) {
-    setMeta(0, size, 0);
-    storeData(param, size);
-}
-
-void Command::add(bool const param) {
-    addBinary(param, BOOLOID);
+void Command::addText(char const* const arg, size_t const len) {
+    setMeta(0, static_cast<int>(len), 0);
+    storeData(arg, len);
 }
 
 void Command::setMeta(Oid const id, int const len, int const fmt) {
     types_.push_back(id);
-    lenghts_.push_back(len);
+    lengths_.push_back(len);
     formats_.push_back(fmt);
 }
 
-void Command::storeData(void const* const arg, int const len) {
+void Command::storeData(void const* const arg, size_t const len) {
     auto       storage = buffer_.data();
     auto const old_len = buffer_.size();
     auto const new_len = old_len + len;
-    if (buffer_.capacity() < new_len) {
-        buffer_.reserve(buffer_.empty() ? 256 : buffer_.capacity() * 2);
-    }
     buffer_.resize(new_len);
     if (buffer_.data() != storage) {
         storage = buffer_.data();
         for (auto i = 0u; i < values_.size(); ++i) {
-            if (values_[i] && lenghts_[i]) {
+            if (values_[i] && lengths_[i]) {
                 values_[i] = storage;
-                storage += lenghts_[i];
+                storage += lengths_[i];
             }
         }
     } else {

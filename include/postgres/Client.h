@@ -66,7 +66,7 @@ public:
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsert(const Iterator it, const Iterator end) {
-        return tryExecute(Command{multiInsertStatement(it, end), it, end});
+        return tryExecute(Command{multiInsertStatement(it, end), std::make_pair(it, end)});
     }
 
     // Insert helpers handling conflicts.
@@ -88,7 +88,7 @@ public:
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsertWeak(const Iterator it, const Iterator end) {
-        return tryExecute(Command{multiInsertStatementWeak(it, end), it, end});
+        return tryExecute(Command{multiInsertStatementWeak(it, end), std::make_pair(it, end)});
     }
 
     // Update helpers.
