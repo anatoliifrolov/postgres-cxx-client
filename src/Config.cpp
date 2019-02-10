@@ -1,63 +1,30 @@
-#include <cstring>
 #include <postgres/Config.h>
 
 namespace postgres {
 
-Config::Config() {
-    keywords_.push_back(nullptr);
-    values_.push_back(nullptr);
-}
-
-Config::Config(Config const& other) = default;
+Config::Config() = default;
 
 Config::Config(Config&& other) = default;
-
-Config& Config::operator=(Config const& other) = default;
 
 Config& Config::operator=(Config&& other) = default;
 
 Config::~Config() = default;
 
-Config::Builder Config::init() {
-    return Builder{};
+Config Config::make() {
+    return Builder{}.build();
 }
 
-const char* Config::get(const char* const key) const {
-    for (auto i = 0u; i < keywords_.size() - 1; ++i) {
-        if (strcmp(key, keywords_[i]) == 0) {
-            return values_[i];
-        }
-    }
-    return nullptr;
+char const* const* Config::keys() const {
+    return keys_.data();
 }
 
-void Config::set(const char* const key, const std::string& val) {
-    set(key, val.c_str());
-}
-
-void Config::set(const char* const key, const char* const val) {
-    keywords_.push_back(nullptr);
-    values_.push_back(nullptr);
-    storage_.push_back(std::make_shared<std::string>(val));
-    keywords_[keywords_.size() - 2] = key;
-    values_[values_.size() - 2]     = storage_.back()->c_str();
-}
-
-const char* const* Config::keywords() const {
-    return keywords_.data();
-}
-
-const char* const* Config::values() const {
-    return values_.data();
+char const* const* Config::values() const {
+    return vals_.data();
 }
 
 Config::Builder::Builder() = default;
 
-Config::Builder::Builder(Builder const& other) = default;
-
 Config::Builder::Builder(Builder&& other) = default;
-
-Config::Builder& Config::Builder::operator=(Builder const& other) = default;
 
 Config::Builder& Config::Builder::operator=(Builder&& other) = default;
 
@@ -87,7 +54,22 @@ Config::Builder& Config::Builder::dbname(std::string const& val) {
     return set("dbname", val);
 }
 
+Config::Builder& Config::Builder::set(std::string const& key, int const val) {
+    return set(key, std::to_string(val));
+}
+
+Config::Builder& Config::Builder::set(std::string const& key, std::string const& val) {
+    cfg_.params_[key] = val;
+    return *this;
+}
+
 Config Config::Builder::build() {
+    for (auto const& param : cfg_.params_) {
+        cfg_.keys_.push_back(param.first.c_str());
+        cfg_.vals_.push_back(param.second.c_str());
+    }
+    cfg_.keys_.push_back(nullptr);
+    cfg_.vals_.push_back(nullptr);
     return std::move(cfg_);
 }
 

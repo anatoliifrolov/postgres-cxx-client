@@ -14,12 +14,12 @@ struct TestConnection : Migration, testing::Test {
 };
 
 TEST_F(TestConnection, Ping) {
-    ASSERT_TRUE(Connection::ping(Config{}));
-    ASSERT_FALSE(Connection::ping(Config::init().port(1234).build()));
+    ASSERT_TRUE(Connection::ping(Config::make()));
+    ASSERT_FALSE(Connection::ping(Config::Builder{}.port(1234).build()));
 }
 
 TEST_F(TestConnection, Bad) {
-    Connection conn{Config::init().dbname("BADDB").user("BADUSER").password("BADPASSW").build()};
+    Connection conn{Config::Builder{}.dbname("BADDB").user("BADUSER").password("BADPASSW").build()};
     ASSERT_FALSE(conn.isOk());
 }
 

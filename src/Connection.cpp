@@ -8,11 +8,11 @@
 namespace postgres {
 
 Connection::Connection()
-    : Connection{Config{}} {
+    : Connection{Config::make()} {
 }
 
 Connection::Connection(const Config& config)
-    : handle_{PQconnectdbParams(config.keywords(), config.values(), 0), PQfinish} {
+    : handle_{PQconnectdbParams(config.keys(), config.values(), 0), PQfinish} {
 }
 
 Connection::Connection(Connection&& other) = default;
@@ -22,7 +22,7 @@ Connection& Connection::operator=(Connection&& other) = default;
 Connection::~Connection() = default;
 
 bool Connection::ping(const Config& config) {
-    auto const status = PQpingParams(config.keywords(), config.values(), 0);
+    auto const status = PQpingParams(config.keys(), config.values(), 0);
     switch (status) {
         case PGPing::PQPING_OK:
         case PGPing::PQPING_REJECT: {

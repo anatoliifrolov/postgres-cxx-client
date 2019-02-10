@@ -21,14 +21,14 @@ using postgres::PreparedCommand;
 using postgres::PrepareData;
 
 Config makeConfig() {
-    return Config::init().dbname("PGDATABASE")   // The same as the user by default.
-                         .user("PGUSER")   // The same as user running app by default.
-                         .password("PGPASSWORD")   // Not used if empty.
-                         .hostaddr("127.0.0.1")   // Localhost by default.
-                         .port(5432)  // 5432 by default.
-                         .set("application_name", "postgres-example")
-                         .set("connect_timeout", 3)
-                         .build();
+    return Config::Builder{}.dbname("PGDATABASE")   // The same as the user by default.
+                            .user("PGUSER")   // The same as user running app by default.
+                            .password("PGPASSWORD")   // Not used if empty.
+                            .hostaddr("127.0.0.1")   // Localhost by default.
+                            .port(5432)  // 5432 by default.
+                            .set("application_name", "postgres-example")
+                            .set("connect_timeout", 3)
+                            .build();
 }
 
 static constexpr auto DROP_TABLE_SQL = R"(
