@@ -9,11 +9,6 @@
 
 namespace postgres {
 
-TEST(TestCommand, Temp) {
-    std::vector<int> const v{1, 2, 3};
-    Command                cmd{"STMT", v};
-}
-
 TEST(TestCommand, Dynamic) {
     Command cmd{"STATEMENT"};
 
@@ -26,7 +21,12 @@ TEST(TestCommand, Dynamic) {
 
     const std::vector<int> v1{4, 5};
     const std::vector<int> v2{6, 7, 8};
-    cmd << 1 << 2 << 3 << v1 << std::make_pair(v2.begin(), v2.begin() + 2);
+    cmd
+        << 1
+        << 2
+        << 3
+        << std::make_pair(v1.begin(), v1.end())
+        << std::make_pair(v2.begin(), v2.begin() + 2);
     ASSERT_EQ(7, cmd.nParams());
     for (auto i = 0; i <= 6; ++i) {
         ASSERT_EQ(static_cast<Oid>(INT4OID), cmd.paramTypes()[i]);

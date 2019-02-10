@@ -70,13 +70,8 @@ private:
     void unwind() const {
     }
 
-    // Containers. Use mutable reference to disallow temporaries!
-    template <typename Args, typename = typename Args::iterator>
-    void add(Args& args) {
-        add(std::make_pair(args.begin(), args.end()));
-    };
-
-    template <typename Iter, typename = typename Iter::iterator_category>
+    // Containers.
+    template <typename Iter>
     void add(std::pair<Iter, Iter> range) {
         for (; range.first != range.second; ++range.first) {
             add(*range.first);
