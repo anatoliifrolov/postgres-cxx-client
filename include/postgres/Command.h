@@ -20,75 +20,73 @@ namespace postgres {
 
 class Command {
 public:
-    template <typename Statement, typename... Params>
-    explicit Command(Statement&& statement, Params&& ... params)
-        : statement_{std::forward<Statement>(statement)} {
-        unwind(std::forward<Params>(params)...);
+    template <typename Stmt, typename... Args>
+    explicit Command(Stmt&& stmt, Args&& ... args)
+        : stmt_{std::forward<Stmt>(stmt)} {
+        unwind(std::forward<Args>(args)...);
     }
 
-    template <typename Statement,
-              typename Iterator,
-              typename = typename Iterator::iterator_category>
-    explicit Command(Statement&& statement, Iterator it, const Iterator end)
-        : statement_{std::forward<Statement>(statement)} {
+    template <typename Stmt, typename Iter, typename = typename Iter::iterator_category>
+    explicit Command(Stmt&& stmt, Iter const it, Iter const end)
+        : stmt_{std::forward<Stmt>(stmt)} {
         add(std::make_pair(it, end));
     }
 
-    Command(const Command& other) = delete;
+    Command(Command const& other) = delete;
+    Command& operator=(Command const& other) = delete;
     Command(Command&& other);
-    Command& operator=(const Command& other) = delete;
     Command& operator=(Command&& other);
     ~Command();
 
-    // libpq interface adapters.
-    const char* statement() const;
-    int nParams() const;
-    const Oid* paramTypes() const;
-    const char* const* paramValues() const;
-    const int* paramLengths() const;
-    const int* paramFormats() const;
-    int resultFormat() const;
-
-    // Visitor interface.
-    template <typename T>
-    void accept(const char* const table, const char* const name, T& val) {
-        add(val);
-    };
-
-    // Dynamic parameter addition.
-    template <typename Param>
-    Command& operator<<(Param&& param) {
-        add(std::forward<Param>(param));
+    // Dynamic arguments addition.
+    template <typename Arg>
+    Command& operator<<(Arg&& arg) {
+        add(std::forward<Arg>(arg));
         return *this;
     }
 
+    // Visitor interface.
+    template <typename Arg>
+    void accept(char const*, char const*, Arg&& arg) {
+        add(std::forward<Arg>(arg));
+    };
+
+    // libpq interface adapters.
+    char const* statement() const;
+    int nParams() const;
+    Oid const* paramTypes() const;
+    char const* const* paramValues() const;
+    int const* paramLengths() const;
+    int const* paramFormats() const;
+    int resultFormat() const;
+
 private:
-    template <typename Param, typename... Params>
-    void unwind(Param&& param, Params&& ... params) {
-        add(std::forward<Param>(param));
-        unwind(std::forward<Params>(params)...);
+    template <typename Arg, typename... Args>
+    void unwind(Arg&& arg, Args&& ... args) {
+        add(std::forward<Arg>(arg));
+        unwind(std::forward<Args>(args)...);
     };
 
     void unwind() const {
     }
 
-    // Handle containers.
-    template <typename Param, typename = typename Param::iterator>
-    void add(const Param& params) {
-        add(std::make_pair(params.begin(), params.end()));
+    // Containers. Use mutable reference to disallow temporaries!
+    template <typename Args, typename = typename Args::iterator>
+    void add(Args& args) {
+        add(std::make_pair(args.begin(), args.end()));
     };
 
-    template <typename Iterator, typename = typename Iterator::iterator_category>
-    void add(std::pair<Iterator, Iterator> range) {
+    template <typename Iter, typename = typename Iter::iterator_category>
+    void add(std::pair<Iter, Iter> range) {
         for (; range.first != range.second; ++range.first) {
             add(*range.first);
         }
     };
 
-    // Handle visitable structures.
-    template <typename Param>
-    std::enable_if_t<internal::isVisitable<Param>()> add(Param& param) {
-        param.visitPostgresFields(*this);
+    // Visitable.
+    template <typename Arg>
+    std::enable_if_t<internal::isVisitable<Arg>()> add(Arg const& arg) {
+        arg.visitPostgresFields(*this);
     }
 
     // Handle special types.
@@ -105,25 +103,25 @@ private:
     }
 
     template <typename Param>
-    void add(const Param* const param) {
+    void add(Param const* const param) {
         param ? add(*param) : add(nullptr);
     }
 
     void add(std::nullptr_t);
 
     // Handle timestamps.
-    void add(const std::chrono::system_clock::time_point param);
-    void add(const Timestamp& param);
+    void add(std::chrono::system_clock::time_point const param);
+    void add(Timestamp const& param);
 
     // Handle strings.
-    void add(const std::string& param);
+    void add(std::string const& param);
     void add(std::string&& param);
-    void add(const char* const param);
-    void addText(const char* const param, const int size);
+    void add(char const* const param);
+    void addText(char const* const param, int const size);
 
     // Handle arithmetic types.
     template <typename Param>
-    std::enable_if_t<std::is_arithmetic<Param>::value> add(const Param param) {
+    std::enable_if_t<std::is_arithmetic<Param>::value> add(Param const param) {
         if constexpr (std::is_integral<Param>::value) {
             switch (sizeof(Param)) {
                 case 1: {
@@ -156,22 +154,21 @@ private:
     };
 
     template <typename Param>
-    void addBinary(Param param, const int type) {
+    void addBinary(Param param, int const type) {
         static auto constexpr size = sizeof(Param);
         param = internal::orderBytes(param);
         setMeta(type, size, 1);
         storeData(&param, size);
     }
 
-    void add(const bool param);
+    void add(bool const param);
 
-    // Misc.
-    void setMeta(const Oid type, const int size, const int format);
-    void storeData(const void* const param, const int size);
+    void setMeta(Oid const id, int const len, int const fmt);
+    void storeData(void const* const arg, int const len);
 
-    std::string              statement_;
+    std::string              stmt_;
     std::vector<Oid>         types_;
-    std::vector<const char*> values_;
+    std::vector<char const*> values_;
     std::vector<int>         lenghts_;
     std::vector<int>         formats_;
     std::vector<char>        buffer_;

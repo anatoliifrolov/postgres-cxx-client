@@ -8,27 +8,27 @@ Command& Command::operator=(Command&& other) = default;
 
 Command::~Command() = default;
 
-const char* Command::statement() const {
-    return statement_.c_str();
+char const* Command::statement() const {
+    return stmt_.c_str();
 }
 
 int Command::nParams() const {
     return values_.size();
 }
 
-const Oid* Command::paramTypes() const {
+Oid const* Command::paramTypes() const {
     return types_.empty() ? nullptr : types_.data();
 }
 
-const char* const* Command::paramValues() const {
+char const* const* Command::paramValues() const {
     return values_.empty() ? nullptr : values_.data();
 }
 
-const int* Command::paramLengths() const {
+int const* Command::paramLengths() const {
     return lenghts_.empty() ? nullptr : lenghts_.data();
 }
 
-const int* Command::paramFormats() const {
+int const* Command::paramFormats() const {
     return formats_.empty() ? nullptr : formats_.data();
 }
 
@@ -41,11 +41,11 @@ void Command::add(std::nullptr_t) {
     values_.push_back(nullptr);
 }
 
-void Command::add(const std::chrono::system_clock::time_point param) {
+void Command::add(std::chrono::system_clock::time_point const param) {
     add(makeTimestamp(param));
 }
 
-void Command::add(const Timestamp& param) {
+void Command::add(Timestamp const& param) {
     if (param.hasTimezone()) {
         auto const formatted = param.format();
         addText(formatted.c_str(), formatted.size() + 1);
@@ -56,7 +56,7 @@ void Command::add(const Timestamp& param) {
     }
 }
 
-void Command::add(const std::string& param) {
+void Command::add(std::string const& param) {
     add(param.c_str());
 }
 
@@ -64,34 +64,34 @@ void Command::add(std::string&& param) {
     addText(param.c_str(), param.size() + 1);
 }
 
-void Command::add(const char* const param) {
+void Command::add(char const* const param) {
     setMeta(0, 0, 0);
     values_.push_back(param);
 }
 
-void Command::addText(const char* const param, const int size) {
+void Command::addText(char const* const param, int const size) {
     setMeta(0, size, 0);
     storeData(param, size);
 }
 
-void Command::add(const bool param) {
+void Command::add(bool const param) {
     addBinary(param, BOOLOID);
 }
 
-void Command::setMeta(const Oid type, const int size, const int format) {
-    types_.push_back(type);
-    lenghts_.push_back(size);
-    formats_.push_back(format);
+void Command::setMeta(Oid const id, int const len, int const fmt) {
+    types_.push_back(id);
+    lenghts_.push_back(len);
+    formats_.push_back(fmt);
 }
 
-void Command::storeData(const void* const param, const int size) {
-    auto       storage  = buffer_.data();
-    auto const old_size = buffer_.size();
-    auto const new_size = old_size + size;
-    if (buffer_.capacity() < new_size) {
+void Command::storeData(void const* const arg, int const len) {
+    auto       storage = buffer_.data();
+    auto const old_len = buffer_.size();
+    auto const new_len = old_len + len;
+    if (buffer_.capacity() < new_len) {
         buffer_.reserve(buffer_.empty() ? 256 : buffer_.capacity() * 2);
     }
-    buffer_.resize(new_size);
+    buffer_.resize(new_len);
     if (buffer_.data() != storage) {
         storage = buffer_.data();
         for (auto i = 0u; i < values_.size(); ++i) {
@@ -101,9 +101,9 @@ void Command::storeData(const void* const param, const int size) {
             }
         }
     } else {
-        storage += old_size;
+        storage += old_len;
     }
-    memcpy(storage, param, size);
+    memcpy(storage, arg, len);
     values_.push_back(storage);
 }
 

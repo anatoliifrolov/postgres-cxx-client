@@ -9,6 +9,11 @@
 
 namespace postgres {
 
+TEST(TestCommand, Temp) {
+    std::vector<int> const v{1, 2, 3};
+    Command                cmd{"STMT", v};
+}
+
 TEST(TestCommand, Dynamic) {
     Command cmd{"STATEMENT"};
 

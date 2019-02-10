@@ -17,6 +17,8 @@ public:
     ~Config();
 
     static Config make();
+
+    // libpq interface adapters.
     char const* const* keys() const;
     char const* const* values() const;
 
