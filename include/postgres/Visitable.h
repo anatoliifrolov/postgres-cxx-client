@@ -67,6 +67,70 @@
 #define _POSTGRES_CXX_VISIT62(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT61(accept, T, __VA_ARGS__)
 #define _POSTGRES_CXX_VISIT63(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT62(accept, T, __VA_ARGS__)
 #define _POSTGRES_CXX_VISIT64(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT63(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT65(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT64(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT66(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT65(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT67(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT66(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT68(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT67(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT69(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT68(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT70(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT69(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT71(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT70(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT72(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT71(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT73(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT72(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT74(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT73(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT75(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT74(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT76(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT75(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT77(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT76(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT78(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT77(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT79(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT78(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT80(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT79(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT81(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT80(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT82(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT81(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT83(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT82(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT84(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT83(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT85(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT84(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT86(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT85(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT87(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT86(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT88(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT87(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT89(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT88(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT90(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT89(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT91(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT90(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT92(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT91(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT93(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT92(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT94(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT93(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT95(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT94(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT96(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT95(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT97(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT96(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT98(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT97(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT99(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT98(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT100(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT99(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT101(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT100(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT102(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT101(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT103(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT102(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT104(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT103(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT105(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT104(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT106(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT105(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT107(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT106(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT108(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT107(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT109(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT108(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT110(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT109(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT111(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT110(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT112(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT111(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT113(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT112(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT114(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT113(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT115(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT114(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT116(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT115(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT117(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT116(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT118(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT117(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT119(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT118(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT120(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT119(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT121(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT120(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT122(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT121(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT123(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT122(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT124(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT123(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT125(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT124(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT126(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT125(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT127(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT126(accept, T, __VA_ARGS__)
+#define _POSTGRES_CXX_VISIT128(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT127(accept, T, __VA_ARGS__)
 
 #define _POSTGRES_CXX_OVERLOAD(\
     _1, \
@@ -133,10 +197,138 @@
     _62, \
     _63, \
     _64, \
+    _65, \
+    _66, \
+    _67, \
+    _68, \
+    _69, \
+    _70, \
+    _71, \
+    _72, \
+    _73, \
+    _74, \
+    _75, \
+    _76, \
+    _77, \
+    _78, \
+    _79, \
+    _80, \
+    _81, \
+    _82, \
+    _83, \
+    _84, \
+    _85, \
+    _86, \
+    _87, \
+    _88, \
+    _89, \
+    _90, \
+    _91, \
+    _92, \
+    _93, \
+    _94, \
+    _95, \
+    _96, \
+    _97, \
+    _98, \
+    _99, \
+    _100, \
+    _101, \
+    _102, \
+    _103, \
+    _104, \
+    _105, \
+    _106, \
+    _107, \
+    _108, \
+    _109, \
+    _110, \
+    _111, \
+    _112, \
+    _113, \
+    _114, \
+    _115, \
+    _116, \
+    _117, \
+    _118, \
+    _119, \
+    _120, \
+    _121, \
+    _122, \
+    _123, \
+    _124, \
+    _125, \
+    _126, \
+    _127, \
+    _128, \
     N, ...) N
 
 #define _POSTGRES_CXX_VISIT(accept, T, ...) _POSTGRES_CXX_OVERLOAD( \
     __VA_ARGS__, \
+    _POSTGRES_CXX_VISIT128, \
+    _POSTGRES_CXX_VISIT127, \
+    _POSTGRES_CXX_VISIT126, \
+    _POSTGRES_CXX_VISIT125, \
+    _POSTGRES_CXX_VISIT124, \
+    _POSTGRES_CXX_VISIT123, \
+    _POSTGRES_CXX_VISIT122, \
+    _POSTGRES_CXX_VISIT121, \
+    _POSTGRES_CXX_VISIT120, \
+    _POSTGRES_CXX_VISIT119, \
+    _POSTGRES_CXX_VISIT118, \
+    _POSTGRES_CXX_VISIT117, \
+    _POSTGRES_CXX_VISIT116, \
+    _POSTGRES_CXX_VISIT115, \
+    _POSTGRES_CXX_VISIT114, \
+    _POSTGRES_CXX_VISIT113, \
+    _POSTGRES_CXX_VISIT112, \
+    _POSTGRES_CXX_VISIT111, \
+    _POSTGRES_CXX_VISIT110, \
+    _POSTGRES_CXX_VISIT109, \
+    _POSTGRES_CXX_VISIT108, \
+    _POSTGRES_CXX_VISIT107, \
+    _POSTGRES_CXX_VISIT106, \
+    _POSTGRES_CXX_VISIT105, \
+    _POSTGRES_CXX_VISIT104, \
+    _POSTGRES_CXX_VISIT103, \
+    _POSTGRES_CXX_VISIT102, \
+    _POSTGRES_CXX_VISIT101, \
+    _POSTGRES_CXX_VISIT100, \
+    _POSTGRES_CXX_VISIT99, \
+    _POSTGRES_CXX_VISIT98, \
+    _POSTGRES_CXX_VISIT97, \
+    _POSTGRES_CXX_VISIT96, \
+    _POSTGRES_CXX_VISIT95, \
+    _POSTGRES_CXX_VISIT94, \
+    _POSTGRES_CXX_VISIT93, \
+    _POSTGRES_CXX_VISIT92, \
+    _POSTGRES_CXX_VISIT91, \
+    _POSTGRES_CXX_VISIT90, \
+    _POSTGRES_CXX_VISIT89, \
+    _POSTGRES_CXX_VISIT88, \
+    _POSTGRES_CXX_VISIT87, \
+    _POSTGRES_CXX_VISIT86, \
+    _POSTGRES_CXX_VISIT85, \
+    _POSTGRES_CXX_VISIT84, \
+    _POSTGRES_CXX_VISIT83, \
+    _POSTGRES_CXX_VISIT82, \
+    _POSTGRES_CXX_VISIT81, \
+    _POSTGRES_CXX_VISIT80, \
+    _POSTGRES_CXX_VISIT79, \
+    _POSTGRES_CXX_VISIT78, \
+    _POSTGRES_CXX_VISIT77, \
+    _POSTGRES_CXX_VISIT76, \
+    _POSTGRES_CXX_VISIT75, \
+    _POSTGRES_CXX_VISIT74, \
+    _POSTGRES_CXX_VISIT73, \
+    _POSTGRES_CXX_VISIT72, \
+    _POSTGRES_CXX_VISIT71, \
+    _POSTGRES_CXX_VISIT70, \
+    _POSTGRES_CXX_VISIT69, \
+    _POSTGRES_CXX_VISIT68, \
+    _POSTGRES_CXX_VISIT67, \
+    _POSTGRES_CXX_VISIT66, \
+    _POSTGRES_CXX_VISIT65, \
     _POSTGRES_CXX_VISIT64, \
     _POSTGRES_CXX_VISIT63, \
     _POSTGRES_CXX_VISIT62, \
