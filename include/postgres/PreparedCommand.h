@@ -12,10 +12,10 @@ public:
         : Command{std::forward<Ts>(args)...} {
     }
 
-    PreparedCommand(const PreparedCommand& other) = delete;
-    PreparedCommand(PreparedCommand&& other) = delete;
-    PreparedCommand& operator=(const PreparedCommand& other) = delete;
-    PreparedCommand& operator=(PreparedCommand&& other) = delete;
+    PreparedCommand(PreparedCommand const& other) = delete;
+    PreparedCommand& operator=(PreparedCommand const& other) = delete;
+    PreparedCommand(PreparedCommand&& other) noexcept;
+    PreparedCommand& operator=(PreparedCommand&& other) noexcept;
     ~PreparedCommand();
 };
 
