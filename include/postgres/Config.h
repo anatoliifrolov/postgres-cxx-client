@@ -12,8 +12,8 @@ public:
 
     Config(Config const& other) = delete;
     Config& operator=(Config const& other) = delete;
-    Config(Config&& other);
-    Config& operator=(Config&& other);
+    Config(Config&& other) noexcept;
+    Config& operator=(Config&& other) noexcept;
     ~Config();
 
     static Config make();
@@ -35,17 +35,17 @@ public:
     explicit Builder();
     Builder(Builder const& other) = delete;
     Builder& operator=(Builder const& other) = delete;
-    Builder(Builder&& other);
-    Builder& operator=(Builder&& other);
+    Builder(Builder&& other) noexcept;
+    Builder& operator=(Builder&& other) noexcept;
     ~Builder();
 
     Builder& host(std::string const& val);
     Builder& hostaddr(std::string const& val);
-    Builder& port(int const val);
+    Builder& port(int val);
     Builder& user(std::string const& val);
     Builder& password(std::string const& val);
     Builder& dbname(std::string const& val);
-    Builder& set(std::string const& key, int const val);
+    Builder& set(std::string const& key, int val);
     Builder& set(std::string const& key, std::string const& val);
     Config build();
 

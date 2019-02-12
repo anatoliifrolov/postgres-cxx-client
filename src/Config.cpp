@@ -4,9 +4,9 @@ namespace postgres {
 
 Config::Config() = default;
 
-Config::Config(Config&& other) = default;
+Config::Config(Config&& other) noexcept = default;
 
-Config& Config::operator=(Config&& other) = default;
+Config& Config::operator=(Config&& other) noexcept = default;
 
 Config::~Config() = default;
 
@@ -24,9 +24,9 @@ char const* const* Config::values() const {
 
 Config::Builder::Builder() = default;
 
-Config::Builder::Builder(Builder&& other) = default;
+Config::Builder::Builder(Builder&& other) noexcept = default;
 
-Config::Builder& Config::Builder::operator=(Builder&& other) = default;
+Config::Builder& Config::Builder::operator=(Builder&& other) noexcept = default;
 
 Config::Builder::~Builder() = default;
 
