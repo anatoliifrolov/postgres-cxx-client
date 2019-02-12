@@ -11,7 +11,7 @@ class PrepareData;
 class PreparedCommand;
 class Result;
 class Status;
-class Timestamp;
+class Time;
 class Transaction;
 class Tuple;
 

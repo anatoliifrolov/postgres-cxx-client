@@ -3,7 +3,7 @@
 #include <postgres/internal/Bytes.h>
 #include <postgres/Command.h>
 #include <postgres/Visitable.h>
-#include "TimestampSamples.h"
+#include "Timestamps.h"
 
 namespace postgres {
 
@@ -199,11 +199,11 @@ TEST(TestCommand, Time) {
 }
 
 TEST(TestCommand, TimeZone) {
-    Command const cmd{"STMT", makeTimestamp(timePointSampleNs(), true)};
+    Command const cmd{"STMT", Time{timePointSampleNano(), true}};
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{TIMESTAMPTZOID}, cmd.types()[0]);
-    ASSERT_EQ(timeSampleFormatPreciseTz(), cmd.values()[0]);
-    ASSERT_EQ(static_cast<int>(timeSampleFormatPreciseTz().size() + 1), cmd.lengths()[0]);
+    ASSERT_EQ(timeFormatSampleNanoTz(), cmd.values()[0]);
+    ASSERT_EQ(static_cast<int>(timeFormatSampleNanoTz().size() + 1), cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 

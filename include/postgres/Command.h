@@ -8,7 +8,7 @@
 #include <postgres/internal/Bytes.h>
 #include <postgres/internal/Classifier.h>
 #include <postgres/Oid.h>
-#include <postgres/Timestamp.h>
+#include <postgres/Time.h>
 
 namespace postgres {
 
@@ -111,12 +111,12 @@ private:
     };
 
     void add(std::nullptr_t);
-    void add(std::chrono::system_clock::time_point arg);
-    void add(Timestamp const& arg);
-    void add(std::string const& arg);
-    void add(std::string&& arg);
-    void add(char const* arg);
-    void addText(char const* arg, size_t len);
+    void add(std::chrono::system_clock::time_point t);
+    void add(Time const& t);
+    void add(std::string const& s);
+    void add(std::string&& s);
+    void add(char const* s);
+    void addText(char const* s, size_t len);
     void setMeta(Oid id, int len, int fmt);
     void storeData(void const* arg, size_t len);
 

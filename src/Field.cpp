@@ -2,7 +2,7 @@
 #include <cstring>
 #include <postgres/internal/Assert.h>
 #include <postgres/Field.h>
-#include <postgres/Timestamp.h>
+#include <postgres/Time.h>
 
 namespace postgres {
 
@@ -70,10 +70,14 @@ void Field::read(time_t& dst) const {
 void Field::read(std::chrono::system_clock::time_point& dst) const {
     auto const type = PQftype(result_, column_index_);
     _POSTGRES_CXX_ASSERT(type == TIMESTAMPOID, "Unexpected column type " << type);
-    dst = (isBinary()
-           ? makeTimestamp(std::chrono::microseconds{internal::orderBytes<int64_t>(value())},
-                           postgresEpoch())
-           : makeTimestamp(value())).timePoint();
+
+    if (!isBinary()) {
+        dst = (Time{value()}).point();
+        return;
+    }
+
+    using std::chrono::microseconds;
+    dst = Time{Time::EPOCH + microseconds{internal::orderBytes<int64_t>(value())}}.point();
 }
 
 bool Field::isNull() const {

@@ -38,37 +38,37 @@ void Command::add(std::nullptr_t) {
     values_.push_back(nullptr);
 }
 
-void Command::add(std::chrono::system_clock::time_point const arg) {
-    add(makeTimestamp(arg));
+void Command::add(std::chrono::system_clock::time_point const t) {
+    add(Time{t});
 }
 
-void Command::add(Timestamp const& arg) {
-    if (arg.hasTimezone()) {
-        add(arg.format());
+void Command::add(Time const& t) {
+    if (t.hasZone()) {
+        add(t.format());
         types_.back() = TIMESTAMPTZOID;
         return;
     }
 
-    add(arg.postgresTime());
+    add(t.toPostgres());
     types_.back() = TIMESTAMPOID;
 }
 
-void Command::add(std::string const& arg) {
-    add(arg.c_str());
+void Command::add(std::string const& s) {
+    add(s.c_str());
 }
 
-void Command::add(std::string&& arg) {
-    addText(arg.c_str(), arg.size() + 1);
+void Command::add(std::string&& s) {
+    addText(s.c_str(), s.size() + 1);
 }
 
-void Command::add(char const* const arg) {
+void Command::add(char const* const s) {
     setMeta(0, 0, 0);
-    values_.push_back(arg);
+    values_.push_back(s);
 }
 
-void Command::addText(char const* const arg, size_t const len) {
+void Command::addText(char const* const s, size_t const len) {
     setMeta(0, static_cast<int>(len), 0);
-    storeData(arg, len);
+    storeData(s, len);
 }
 
 void Command::setMeta(Oid const id, int const len, int const fmt) {

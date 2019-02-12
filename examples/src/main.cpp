@@ -86,18 +86,17 @@ void parametrizedInsert(Connection& conn) {
     // Take parameters from range:
     std::vector<int> vals{1, 2, 3};
     conn.execute(Command{"INSERT INTO example(n) VALUES($1), ($2), ($3)",
-                         vals.begin(),
-                         vals.end()});
+                         std::make_pair(vals.begin(), vals.end())});
 }
 
 void insertTimestamps(Connection& conn) {
     // You can also insert timestamp with time zone specified.
-    // Call postgres::makeTimestamp() with second parameter set to true for that.
+    // Call postgres::Time constructor with second parameter set to true for that.
     // But there would be no way to read it back using this library.
     conn.execute(Command{"INSERT INTO example(t) VALUES($1), ($2), ($3)",
                          std::chrono::system_clock::now(),  // Implicitly recognized.
-                         postgres::makeTimestamp(time(nullptr)),  // Must be explicitly converted to timestamp.
-                         postgres::makeTimestamp("2017-08-25T13:03:35")});
+                         postgres::Time{time(nullptr)},  // Must be explicitly converted to timestamp.
+                         postgres::Time{"2017-08-25T13:03:35"}});
 }
 
 void nonCopyingInsert(Connection& conn) {
@@ -354,11 +353,9 @@ void selectVisitable(Client& client) {
 }
 
 int main() {
-    auto const cfg = Config{};
-
     // postgres::Connection is relatively low level.
     // Better use postgres::Client instead.
-    Connection conn{cfg};
+    Connection conn{};
 
     makeTestTable(conn);
     basicUsage(conn);
@@ -376,7 +373,7 @@ int main() {
     readResultIntoVariables(conn);
     passResultToFunction(conn);
 
-    Client client{cfg};
+    Client client{};
     prepareClient(client);
     executeTransaction(client);
     executeTransactionBlock(client);

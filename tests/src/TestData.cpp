@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <postgres/Command.h>
 #include "Migration.h"
-#include "TimestampSamples.h"
+#include "Timestamps.h"
 
 namespace postgres {
 
@@ -110,12 +110,12 @@ TEST_F(TestData, Timestamp) {
     std::chrono::system_clock::time_point time_point{};
 
     auto const res = client_.execute(Command{"INSERT INTO test(time) VALUES($1)",
-                                             timeSampleFormatPrecise()}, "SELECT time FROM test");
+                                             timeFormatSampleNano()}, "SELECT time FROM test");
 
     res[0][0] >> time;
     ASSERT_EQ(timeSample(), time);
     res[0][0] >> time_point;
-    ASSERT_EQ(timePointSampleUs(), time_point);
+    ASSERT_EQ(timePointSampleMicro(), time_point);
 }
 
 TEST_F(TestData, Esc) {

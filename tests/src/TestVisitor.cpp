@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <postgres/Command.h>
 #include "Migration.h"
-#include "TimestampSamples.h"
+#include "Timestamps.h"
 
 namespace postgres {
 

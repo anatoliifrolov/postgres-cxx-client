@@ -13,7 +13,7 @@
 #include <postgres/PreparedCommand.h>
 #include <postgres/Result.h>
 #include <postgres/Status.h>
-#include <postgres/Timestamp.h>
+#include <postgres/Time.h>
 #include <postgres/Transaction.h>
 #include <postgres/Tuple.h>
 #include <postgres/Visitable.h>
