@@ -1,7 +1,7 @@
 #pragma once
 
-#define _POSTGRES_CXX_ACCEPT_DEF(T, arg) visitor.accept(#T, #arg);
-#define _POSTGRES_CXX_ACCEPT_FLD(T, arg) visitor.accept(#T, #arg, arg);
+#define _POSTGRES_CXX_ACCEPT_DEF(T, arg) visitor.accept(#arg);
+#define _POSTGRES_CXX_ACCEPT_FLD(T, arg) visitor.accept(#arg, arg);
 
 #define _POSTGRES_CXX_VISIT1(accept, T, arg)      accept(T, arg)
 #define _POSTGRES_CXX_VISIT2(accept, T, arg, ...) accept(T, arg) _POSTGRES_CXX_VISIT1(accept, T, __VA_ARGS__)

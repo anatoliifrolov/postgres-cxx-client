@@ -8,7 +8,7 @@ namespace internal {
 
 template <typename T>
 struct FieldsCollector {
-    void accept(const char* const table, const char* const name) {
+    void accept(char const* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
@@ -20,7 +20,7 @@ struct FieldsCollector {
 
 template <typename T>
 struct PlaceholdersCollector {
-    void accept(const char* const table, const char* const name) {
+    void accept(char const* const name) {
         res_ += res_.empty() ? "$" : ",$";
         res_ += std::to_string(++idx_);
     };
@@ -31,7 +31,7 @@ struct PlaceholdersCollector {
 
 template <typename T>
 struct AssigmentsCollector {
-    void accept(const char* const table, const char* const name) {
+    void accept(char const* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
@@ -46,7 +46,7 @@ struct AssigmentsCollector {
 
 template <typename T>
 struct ExcludedAssigmentsCollector {
-    void accept(const char* const table, const char* const name) {
+    void accept(char const* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }

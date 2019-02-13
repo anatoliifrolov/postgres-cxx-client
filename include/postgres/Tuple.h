@@ -29,7 +29,7 @@ public:
     }
 
     template <typename T>
-    void accept(const char* const table, const char* const name, T& val) {
+    void accept(char const* const name, T& val) {
         (*this)[name] >> val;
     };
 

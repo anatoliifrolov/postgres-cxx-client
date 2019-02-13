@@ -35,7 +35,7 @@ public:
 
     // Visitor interface.
     template <typename Arg>
-    void accept(char const*, char const*, Arg& arg) {
+    void accept(char const*, Arg& arg) {
         add(std::forward<Arg>(arg));
     };
 
