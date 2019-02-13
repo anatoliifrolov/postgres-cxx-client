@@ -27,7 +27,7 @@ Config makeConfig() {
                             .hostaddr("127.0.0.1")   // Localhost by default.
                             .port(5432)  // 5432 by default.
                             .set("application_name", "postgres-example")
-                            .set("connect_timeout", 3)
+                            .setNumber("connect_timeout", 3)
                             .build();
 }
 
