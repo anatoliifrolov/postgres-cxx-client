@@ -7,16 +7,7 @@ namespace postgres {
 namespace internal {
 
 template <typename T>
-struct FieldsList {
-    static const std::string& get() {
-        static auto const cache = [] {
-            FieldsList<T> visitor{};
-            T::visitPostgresDefinition(visitor);
-            return visitor.res_;
-        }();
-        return cache;
-    }
-
+struct FieldsCollector {
     void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
@@ -24,46 +15,37 @@ struct FieldsList {
         res_ += name;
     };
 
-private:
     std::string res_;
 };
 
 template <typename T>
-struct AssigmentsList {
-    static const std::string& get() {
-        static auto const cache = [] {
-            AssigmentsList<T> visitor{};
-            T::visitPostgresDefinition(visitor);
-            return visitor.res_;
-        }();
-        return cache;
-    }
+struct PlaceholdersCollector {
+    void accept(const char* const table, const char* const name) {
+        res_ += res_.empty() ? "$" : ",$";
+        res_ += std::to_string(++idx_);
+    };
 
+    int         idx_ = 0;
+    std::string res_;
+};
+
+template <typename T>
+struct AssigmentsCollector {
     void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
         }
         res_ += name;
         res_ += "=$";
-        res_ += std::to_string(++index_);
+        res_ += std::to_string(++idx_);
     };
 
-private:
-    int         index_ = 0;
+    int         idx_ = 0;
     std::string res_;
 };
 
 template <typename T>
-struct ExcludedAssigmentsList {
-    static const std::string& get() {
-        static auto const cache = [] {
-            ExcludedAssigmentsList<T> visitor{};
-            T::visitPostgresDefinition(visitor);
-            return visitor.res_;
-        }();
-        return cache;
-    }
-
+struct ExcludedAssigmentsCollector {
     void accept(const char* const table, const char* const name) {
         if (!res_.empty()) {
             res_ += ",";
@@ -73,42 +55,6 @@ struct ExcludedAssigmentsList {
         res_ += name;
     };
 
-private:
-    std::string res_;
-};
-
-template <typename T>
-struct PlaceholdersList {
-    template <typename Iterator>
-    static std::string generate(Iterator it, const Iterator end) {
-        std::string         res{};
-        PlaceholdersList<T> visitor{};
-        for (; it != end; ++it) {
-            T::visitPostgresDefinition(visitor);
-            res += res.empty() ? "(" : ",(";
-            res += visitor.res_;
-            res += ")";
-            visitor.res_.clear();
-        }
-        return res;
-    }
-
-    static const std::string& get() {
-        static auto const cache = [] {
-            PlaceholdersList<T> visitor{};
-            T::visitPostgresDefinition(visitor);
-            return visitor.res_;
-        }();
-        return cache;
-    }
-
-    void accept(const char* const table, const char* const name) {
-        res_ += res_.empty() ? "$" : ",$";
-        res_ += std::to_string(++index_);
-    };
-
-private:
-    int         index_ = 0;
     std::string res_;
 };
 

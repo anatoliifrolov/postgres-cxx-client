@@ -7,7 +7,7 @@
 #include <postgres/Transaction.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Connection.h>
-#include <postgres/Generators.h>
+#include <postgres/Statement.h>
 
 namespace postgres {
 
@@ -60,13 +60,14 @@ public:
 
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>(), Result> tryInsert(const T& val) {
-        return tryExecute(Command{insertStatement<T>(), val});
+        return tryExecute(Command{Statement<T>::insert(), val});
     }
 
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsert(const Iterator it, const Iterator end) {
-        return tryExecute(Command{multiInsertStatement(it, end), std::make_pair(it, end)});
+        return tryExecute(Command{Statement<typename Iterator::value_type>::multiInsert(it, end),
+                                  std::make_pair(it, end)});
     }
 
     // Insert helpers handling conflicts.
@@ -82,13 +83,15 @@ public:
 
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>(), Result> tryInsertWeak(const T& val) {
-        return tryExecute(Command{insertStatementWeak<T>(), val});
+        return tryExecute(Command{Statement<T>::insertWeak(), val});
     }
 
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsertWeak(const Iterator it, const Iterator end) {
-        return tryExecute(Command{multiInsertStatementWeak(it, end), std::make_pair(it, end)});
+        return tryExecute(Command{Statement<typename Iterator::value_type>::multiInsertWeak(it,
+                                                                                            end),
+                                  std::make_pair(it, end)});
     }
 
     // Update helpers.
@@ -99,7 +102,7 @@ public:
 
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>(), Result> tryUpdate(const T& val) {
-        return tryExecute(Command{updateStatement<T>(), val});
+        return tryExecute(Command{Statement<T>::update(), val});
     }
 
     // Select helpers.
@@ -110,7 +113,7 @@ public:
 
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>(), Result> trySelect(std::vector<T>& vals) {
-        auto res = tryExecute(selectStatement<T>());
+        auto res = tryExecute(Statement<T>::select());
         if (!res) {
             return res;
         }

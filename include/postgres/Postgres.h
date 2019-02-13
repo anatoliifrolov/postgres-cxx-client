@@ -6,12 +6,12 @@
 #include <postgres/Connection.h>
 #include <postgres/Field.h>
 #include <postgres/Fwd.h>
-#include <postgres/Generators.h>
 #include <postgres/Oid.h>
 #include <postgres/Postgres.h>
 #include <postgres/PrepareData.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/Result.h>
+#include <postgres/Statement.h>
 #include <postgres/Status.h>
 #include <postgres/Time.h>
 #include <postgres/Transaction.h>
