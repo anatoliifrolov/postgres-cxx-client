@@ -21,7 +21,7 @@ public:
 
     time_t toUnix() const;
     time_t toPostgres() const;
-    std::string format() const;
+    std::string toString() const;
     Point point() const;
     bool hasZone() const;
 

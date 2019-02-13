@@ -10,7 +10,7 @@ TEST(TestTime, CStyle) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
     ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.format());
+    ASSERT_EQ(timeFormatSample(), t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -19,7 +19,7 @@ TEST(TestTime, Chrono) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
     ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNano(), t.format());
+    ASSERT_EQ(timeFormatSampleNano(), t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -28,7 +28,7 @@ TEST(TestTime, Tz) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
     ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNanoTz(), t.format());
+    ASSERT_EQ(timeFormatSampleNanoTz(), t.toString());
     ASSERT_TRUE(t.hasZone());
 }
 
@@ -37,7 +37,7 @@ TEST(TestTime, Fmt) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
     ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.format());
+    ASSERT_EQ(timeFormatSample(), t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -46,7 +46,7 @@ TEST(TestTime, NanoFmt) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
     ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNano(), t.format());
+    ASSERT_EQ(timeFormatSampleNano(), t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -55,7 +55,7 @@ TEST(TestTime, SpaceDelim) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
     ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.format());
+    ASSERT_EQ(timeFormatSample(), t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -64,7 +64,7 @@ TEST(TestTime, SpaceDelimMicro) {
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
     ASSERT_EQ(timePointSampleMicro(), t.point());
-    ASSERT_EQ("2017-08-25T13:03:35.987654000", t.format());
+    ASSERT_EQ("2017-08-25T13:03:35.987654000", t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
@@ -83,7 +83,7 @@ TEST(TestTime, Past) {
     auto constexpr    uni = -4807767385l;
     ASSERT_EQ(uni, t.toUnix());
     ASSERT_EQ(std::chrono::system_clock::from_time_t(uni), t.point());
-    ASSERT_EQ(fmt, t.format());
+    ASSERT_EQ(fmt, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 

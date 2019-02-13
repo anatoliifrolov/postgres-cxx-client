@@ -98,7 +98,7 @@ time_t Time::toPostgres() const {
     return std::chrono::duration_cast<microseconds>(pnt_ - EPOCH).count();
 }
 
-std::string Time::format() const {
+std::string Time::toString() const {
     std::string res(64, 0);
     auto const  dur   = pnt_.time_since_epoch();
     auto const  secs  = std::chrono::duration_cast<seconds>(dur);

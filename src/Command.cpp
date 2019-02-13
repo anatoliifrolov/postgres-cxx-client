@@ -44,7 +44,7 @@ void Command::add(std::chrono::system_clock::time_point const t) {
 
 void Command::add(Time const& t) {
     if (t.hasZone()) {
-        add(t.format());
+        add(t.toString());
         types_.back() = TIMESTAMPTZOID;
         return;
     }
