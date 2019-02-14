@@ -112,7 +112,7 @@ TEST(TestCommand, NullPtr) {
 
 TEST(TestCommand, Opt) {
     std::optional<int32_t> opt = 3;
-    Command const cmd{"STMT", opt};
+    Command const          cmd{"STMT", opt};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{INT4OID}, cmd.types()[0]);
@@ -123,7 +123,7 @@ TEST(TestCommand, Opt) {
 
 TEST(TestCommand, NullOpt) {
     std::optional<int32_t> opt{};
-    Command const cmd{"STMT", opt};
+    Command const          cmd{"STMT", opt};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(0u, cmd.types()[0]);

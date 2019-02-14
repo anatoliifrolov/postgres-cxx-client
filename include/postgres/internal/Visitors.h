@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <postgres/internal/Classifier.h>
 
 namespace postgres {
 namespace internal {
@@ -25,8 +24,8 @@ struct PlaceholdersCollector {
         res_ += std::to_string(++idx_);
     };
 
-    int         idx_ = 0;
     std::string res_;
+    int         idx_ = 0;
 };
 
 template <typename T>
@@ -40,8 +39,8 @@ struct AssignmentsCollector {
         res_ += std::to_string(++idx_);
     };
 
-    int         idx_ = 0;
     std::string res_;
+    int         idx_ = 0;
 };
 
 }  // namespace internal

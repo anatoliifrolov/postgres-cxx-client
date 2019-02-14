@@ -159,7 +159,7 @@ Config::Builder& Config::Builder::sslrootcert(std::string const& val) {
     return set("sslrootcert", val);
 }
 
-Config::Builder& Config::Builder::target_session_attrs(TargetSession val) {
+Config::Builder& Config::Builder::target_session_attrs(TargetSession const val) {
     return set("target_session_attrs", [val] {
         switch (val) {
             case TargetSession::ANY: {
@@ -184,12 +184,14 @@ Config::Builder& Config::Builder::enable(std::string const& key, bool const val)
     return set(key, val ? "1" : "0");
 }
 
-Config::Builder& Config::Builder::setNumber(std::string const& key, int val) {
+Config::Builder& Config::Builder::setNumber(std::string const& key, int const val) {
     return set(key, std::to_string(val));
 }
 
-Config::Builder& Config::Builder::setInterval(std::string const& key, Duration val) {
-    return set(key, std::to_string(std::chrono::duration_cast<std::chrono::seconds>(val).count()));
+Config::Builder& Config::Builder::setInterval(std::string const& key, Duration const val) {
+    using std::chrono::duration_cast;
+    using std::chrono::seconds;
+    return set(key, std::to_string(duration_cast<seconds>(val).count()));
 }
 
 Config::Builder& Config::Builder::set(std::string const& key, std::string const& val) {

@@ -27,16 +27,16 @@ public:
     ~Command();
 
     // Dynamic arguments addition.
-    template <typename Arg>
-    Command& operator<<(Arg&& arg) {
-        add(std::forward<Arg>(arg));
+    template <typename T>
+    Command& operator<<(T&& arg) {
+        add(std::forward<T>(arg));
         return *this;
     }
 
     // Visitor interface.
-    template <typename Arg>
-    void accept(char const*, Arg& arg) {
-        add(std::forward<Arg>(arg));
+    template <typename T>
+    void accept(char const*, T& arg) {
+        add(std::forward<T>(arg));
     };
 
     // libpq interface adapters.
@@ -48,10 +48,10 @@ public:
     int const* formats() const;
 
 private:
-    template <typename Arg, typename... Args>
-    void unwind(Arg&& arg, Args&& ... args) {
-        add(std::forward<Arg>(arg));
-        unwind(std::forward<Args>(args)...);
+    template <typename T, typename... Ts>
+    void unwind(T&& arg, Ts&& ... args) {
+        add(std::forward<T>(arg));
+        unwind(std::forward<Ts>(args)...);
     };
 
     void unwind() const {
@@ -65,40 +65,40 @@ private:
     };
 
     // Use mutable reference to disallow temporaries.
-    template <typename Arg>
-    std::enable_if_t<internal::isVisitable<Arg>()> add(Arg& arg) {
+    template <typename T>
+    std::enable_if_t<internal::isVisitable<T>()> add(T& arg) {
         arg.visitPostgresFields(*this);
     }
 
-    template <typename Arg>
-    void add(OidBinding<Arg> arg) {
+    template <typename T>
+    void add(OidBinding<T> arg) {
         add(std::move(arg.value));
         types_.back() = arg.type;
     }
 
-    template <typename Arg>
-    void add(std::optional<Arg>& arg) {
+    template <typename T>
+    void add(std::optional<T>& arg) {
         arg.has_value() ? add(arg.value()) : add(nullptr);
     }
 
-    template <typename Arg>
-    void add(Arg const* const arg) {
+    template <typename T>
+    void add(T const* const arg) {
         arg ? add(*arg) : add(nullptr);
     }
 
-    template <typename Arg>
-    std::enable_if_t<std::is_arithmetic_v<Arg>> add(Arg arg) {
+    template <typename T>
+    std::enable_if_t<std::is_arithmetic_v<T>> add(T arg) {
         auto constexpr LEN = sizeof(arg);
         static_assert(LEN <= 8, "Unexpected arithmetic argument type length");
 
         auto constexpr ID = []() -> Oid {
-            if (std::is_same_v<Arg, bool>) {
+            if (std::is_same_v<T, bool>) {
                 return BOOLOID;
             }
-            if (std::is_integral_v<Arg>) {
+            if (std::is_integral_v<T>) {
                 return ((Oid[]) {INT2OID, INT4OID, INT8OID})[LEN / 4];
             }
-            if (std::is_floating_point_v<Arg>) {
+            if (std::is_floating_point_v<T>) {
                 return ((Oid[]) {UNKNOWNOID, FLOAT4OID, FLOAT8OID})[LEN / 4];
             }
             return UNKNOWNOID;

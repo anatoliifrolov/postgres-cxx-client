@@ -61,9 +61,9 @@ struct Statement {
 };
 
 struct RangeStatement {
-    template <typename I>
-    static std::string insert(I const it, I const end) {
-        using T = std::remove_pointer_t<typename I::value_type>;
+    template <typename Iter>
+    static std::string insert(Iter const it, Iter const end) {
+        using T = std::remove_pointer_t<typename Iter::value_type>;
         using S = Statement<T>;
         return "INSERT INTO "
                + std::string{S::table()}
@@ -73,9 +73,9 @@ struct RangeStatement {
                + placeholders(it, end);
     }
 
-    template <typename I>
-    static std::string placeholders(I it, I const end) {
-        using T = std::remove_pointer_t<typename I::value_type>;
+    template <typename Iter>
+    static std::string placeholders(Iter it, Iter const end) {
+        using T = std::remove_pointer_t<typename Iter::value_type>;
         std::string                        res{};
         internal::PlaceholdersCollector<T> coll{};
         for (; it != end; ++it) {
