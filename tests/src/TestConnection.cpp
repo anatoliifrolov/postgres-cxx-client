@@ -14,8 +14,8 @@ struct TestConnection : Migration, testing::Test {
 };
 
 TEST_F(TestConnection, Ping) {
-    ASSERT_TRUE(Connection::ping(Config::make()));
-    ASSERT_FALSE(Connection::ping(Config::Builder{}.port(1234).build()));
+    ASSERT_EQ(PQPING_OK, Connection::ping(Config::make()));
+    ASSERT_EQ(PQPING_NO_RESPONSE, Connection::ping(Config::Builder{}.port(1234).build()));
 }
 
 TEST_F(TestConnection, Bad) {

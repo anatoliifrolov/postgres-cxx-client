@@ -15,10 +15,12 @@ enum class AsyncMode {
 
 class Connection {
 public:
-    static bool ping(Config const& cfg);
+    static PGPing ping(Config const& cfg);
+    static PGPing ping(std::string const& uri);
 
     explicit Connection();
     explicit Connection(Config const& cfg);
+    explicit Connection(std::string const& uri);
     Connection(Connection const& other) = delete;
     Connection& operator=(Connection const& other) = delete;
     Connection(Connection&& other) noexcept;
@@ -32,8 +34,9 @@ public:
     Result execute(Command const& cmd);
     Result execute(PrepareData const& stmt);
     Result execute(PreparedCommand const& cmd);
-    Status executeRaw(char const* stmt);
     Status executeRaw(std::string const& stmt);
+    Status executeRaw(std::string_view stmt);
+    Status executeRaw(char const* stmt);
 
     bool send(std::string&& stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
     bool send(std::string const& stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
@@ -53,9 +56,11 @@ public:
 
     std::string esc(std::string const& in);
     std::string escId(std::string const& in);
-    std::basic_string<unsigned char> esc(std::basic_string<unsigned char> const& in);
+    std::basic_string<unsigned char> escBytes(std::basic_string<unsigned char> const& in);
 
 private:
+    bool onSend(int res, AsyncMode mode);
+
     std::unique_ptr<PGconn, void (*)(PGconn*)> handle_;
 };
 
