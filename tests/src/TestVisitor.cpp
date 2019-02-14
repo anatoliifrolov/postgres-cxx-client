@@ -103,34 +103,6 @@ TEST_F(TestVisitor, AutoInsert) {
     // Seems to work...
 }
 
-TEST_F(TestVisitor, AutoInsertWeak) {
-    client_.execute("ALTER TABLE test ADD PRIMARY KEY(int2)");
-    auto       data = makeDataToInsert();
-    auto const it   = data.begin() + 1;
-    auto const it2  = data.begin() + 2;
-    ASSERT_EQ(1, client_.insertWeak(data[0]).affected());
-    ASSERT_EQ(0, client_.insertWeak(data[0]).affected());
-    ASSERT_THROW(client_.insert(data[0]), std::exception);
-    ASSERT_EQ(1, client_.insertWeak(it, it2).affected());
-    ASSERT_EQ(0, client_.insertWeak(it, it2).affected());
-    ASSERT_THROW(client_.insert(it, it2), std::exception);
-    ASSERT_EQ(2, client_.insertWeak(it2, data.end()).affected());
-    ASSERT_EQ(0, client_.insertWeak(it2, data.end()).affected());
-    ASSERT_THROW(client_.insert(it2, data.end()), std::exception);
-
-    data.clear();
-    auto const res = client_.select(data);
-    ASSERT_EQ(4, res.size());
-    ASSERT_EQ(4u, data.size());
-    ASSERT_EQ((std::set<int16_t>{2, 22, 32, 42}),
-              (std::set<int16_t>{data[0].int2, data[1].int2, data[2].int2, data[3].int2}));
-    ASSERT_EQ((std::set<int32_t>{4, 24, 34, 44}),
-              (std::set<int32_t>{data[0].int4, data[1].int4, data[2].int4, data[3].int4}));
-    ASSERT_EQ((std::set<int64_t>{8, 28, 38, 48}),
-              (std::set<int64_t>{data[0].int8, data[1].int8, data[2].int8, data[3].int8}));
-    // Seems to work...
-}
-
 TEST_F(TestVisitor, AutoUpdate) {
     std::vector<test> data{};
 

@@ -44,19 +44,5 @@ struct AssigmentsCollector {
     std::string res_;
 };
 
-template <typename T>
-struct ExcludedAssigmentsCollector {
-    void accept(char const* const name) {
-        if (!res_.empty()) {
-            res_ += ",";
-        }
-        res_ += name;
-        res_ += "=EXCLUDED.";
-        res_ += name;
-    };
-
-    std::string res_;
-};
-
 }  // namespace internal
 }  // namespace postgres

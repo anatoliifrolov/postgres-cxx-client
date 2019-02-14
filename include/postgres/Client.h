@@ -69,28 +69,6 @@ public:
         return tryExecute(Command{RangeStatement::insert(it, end), std::make_pair(it, end)});
     }
 
-    // Insert helpers handling conflicts.
-    template <typename T>
-    Result insertWeak(const T& val) {
-        return validate(tryInsertWeak(val));
-    }
-
-    template <typename Iterator>
-    Result insertWeak(const Iterator it, const Iterator end) {
-        return validate(tryInsertWeak(it, end));
-    }
-
-    template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result> tryInsertWeak(const T& val) {
-        return tryExecute(Command{Statement<T>::insertWeak(), val});
-    }
-
-    template <typename Iterator>
-    std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
-    tryInsertWeak(const Iterator it, const Iterator end) {
-        return tryExecute(Command{RangeStatement::insertWeak(it, end), std::make_pair(it, end)});
-    }
-
     // Update helpers.
     template <typename T>
     Result update(const T& val) {

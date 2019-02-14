@@ -18,11 +18,6 @@ struct Statement {
         return cache;
     }
 
-    static std::string const& insertWeak() {
-        static auto const cache = insert() + " ON CONFLICT DO NOTHING";
-        return cache;
-    }
-
     static std::string const& update() {
         static auto const cache = "UPDATE " + std::string{table()} + " SET " + assigments();
         return cache;
@@ -60,15 +55,6 @@ struct Statement {
         return cache;
     }
 
-    static std::string const& excludedAssigments() {
-        static auto const cache = [] {
-            internal::ExcludedAssigmentsCollector<T> coll{};
-            T::visitPostgresDefinition(coll);
-            return coll.res_;
-        }();
-        return cache;
-    }
-
     static char const* table() {
         return T::_POSTGRES_CXX_TABLE_NAME;
     }
@@ -87,11 +73,6 @@ struct RangeStatement {
                + Statement<Iter>::fields()
                + ") VALUES "
                + placeholders(it, end);
-    }
-
-    template <typename Iter>
-    static std::string insertWeak(Iter const it, Iter const end) {
-        return insert(it, end) + " ON CONFLICT DO NOTHING";
     }
 
     template <typename Iter>
