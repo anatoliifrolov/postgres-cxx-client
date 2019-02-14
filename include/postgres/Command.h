@@ -71,8 +71,8 @@ private:
     }
 
     template <typename Arg>
-    void add(internal::OidBinding<Arg> arg) {
-        add(std::forward<Arg>(arg.val));
+    void add(OidBinding<Arg> arg) {
+        add(std::move(arg.value));
         types_.back() = arg.type;
     }
 

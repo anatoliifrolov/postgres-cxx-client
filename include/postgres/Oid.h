@@ -1,7 +1,7 @@
 #pragma once
 
 #include <utility>
-#include <postgres/internal/OidBinding.h>
+#include <libpq-fe.h>
 
 // Taken from /usr/include/postgresql/9.5/server/catalog/pg_type.h.
 #define BOOLOID 16
@@ -97,8 +97,14 @@
 namespace postgres {
 
 template <typename T>
-internal::OidBinding<T> bindOid(T&& param, const Oid type) {
-    return internal::OidBinding<T>{std::forward<T>(param), type};
+struct OidBinding {
+    T         value;
+    Oid const type;
+};
+
+template <typename T>
+OidBinding<T> bindOid(T&& param, Oid const type) {
+    return OidBinding<T>{std::forward<T>(param), type};
 }
 
 }  // namespace postgres
