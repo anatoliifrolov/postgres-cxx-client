@@ -23,8 +23,8 @@ TEST(Statement, Insert) {
     auto const             multi_weak = multi + conflict;
     ASSERT_EQ(single, Statement<Abc>::insert());
     ASSERT_EQ(weak, Statement<Abc>::insertWeak());
-    ASSERT_EQ(multi, Statement<Abc>::multiInsert(v.begin(), v.end()));
-    ASSERT_EQ(multi_weak, Statement<Abc>::multiInsertWeak(v.begin(), v.end()));
+    ASSERT_EQ(multi, RangeStatement::insert(v.begin(), v.end()));
+    ASSERT_EQ(multi_weak, RangeStatement::insertWeak(v.begin(), v.end()));
 }
 
 TEST(Statement, Misc) {

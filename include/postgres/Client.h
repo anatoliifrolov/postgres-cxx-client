@@ -66,8 +66,7 @@ public:
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsert(const Iterator it, const Iterator end) {
-        return tryExecute(Command{Statement<typename Iterator::value_type>::multiInsert(it, end),
-                                  std::make_pair(it, end)});
+        return tryExecute(Command{RangeStatement::insert(it, end), std::make_pair(it, end)});
     }
 
     // Insert helpers handling conflicts.
@@ -89,9 +88,7 @@ public:
     template <typename Iterator>
     std::enable_if_t<internal::isVisitable<typename Iterator::value_type>(), Result>
     tryInsertWeak(const Iterator it, const Iterator end) {
-        return tryExecute(Command{Statement<typename Iterator::value_type>::multiInsertWeak(it,
-                                                                                            end),
-                                  std::make_pair(it, end)});
+        return tryExecute(Command{RangeStatement::insertWeak(it, end), std::make_pair(it, end)});
     }
 
     // Update helpers.
@@ -143,7 +140,8 @@ public:
     Connection& connection();
 
 private:
-    template <typename T, typename... Ts>
+    template <typename T,
+              typename... Ts>
     std::enable_if_t<(sizeof... (Ts) > 0), Result>
     doTryExecute(const T& statement, const Ts& ... statements) {
         auto res = doTryExecute(statement);
@@ -153,7 +151,8 @@ private:
         return res;
     };
 
-    template <typename T, typename = decltype(T::operator std::string)>
+    template <typename T,
+              typename = decltype(T::operator std::string)>
     Result doTryExecute(const T& statement) {
         return doTryExecute(statement.operator std::string());
     }

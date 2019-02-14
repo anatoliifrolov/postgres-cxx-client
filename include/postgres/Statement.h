@@ -6,15 +6,7 @@
 namespace postgres {
 
 template <typename T>
-class Statement {
-public:
-    explicit Statement() = delete;
-    Statement(Statement const& other) = delete;
-    Statement& operator=(Statement const& other) = delete;
-    Statement(Statement&& other) = delete;
-    Statement& operator=(Statement&& other) = delete;
-    ~Statement() = delete;
-
+struct Statement {
     static std::string const& insert() {
         static auto const cache = "INSERT INTO "
                                   + std::string{table()}
@@ -29,21 +21,6 @@ public:
     static std::string const& insertWeak() {
         static auto const cache = insert() + " ON CONFLICT DO NOTHING";
         return cache;
-    }
-
-    template <typename Iter>
-    static std::string multiInsert(Iter const it, Iter const end) {
-        return "INSERT INTO "
-               + std::string{table()}
-               + " ("
-               + fields()
-               + ") VALUES "
-               + multiPlaceholders(it, end);
-    }
-
-    template <typename Iter>
-    static std::string multiInsertWeak(Iter const it, Iter const end) {
-        return multiInsert(it, end) + " ON CONFLICT DO NOTHING";
     }
 
     static std::string const& update() {
@@ -74,22 +51,6 @@ public:
         return cache;
     }
 
-    template <typename Iter>
-    static std::string multiPlaceholders(Iter it, Iter const end) {
-        static_assert(std::is_same_v<T, std::remove_pointer_t<typename Iter::value_type>>,
-                      "Iterator has mismatched value type");
-        std::string                        res{};
-        internal::PlaceholdersCollector<T> coll{};
-        for (; it != end; ++it) {
-            T::visitPostgresDefinition(coll);
-            res += res.empty() ? "(" : ",(";
-            res += coll.res_;
-            res += ")";
-            coll.res_.clear();
-        }
-        return res;
-    }
-
     static std::string const& assigments() {
         static auto const cache = [] {
             internal::AssigmentsCollector<T> coll{};
@@ -110,6 +71,41 @@ public:
 
     static char const* table() {
         return T::_POSTGRES_CXX_TABLE_NAME;
+    }
+};
+
+struct RangeStatement {
+    template <typename Iter> using Value = std::remove_pointer_t<typename Iter::value_type>;
+
+    template <typename Iter> using Statement = Statement<Value<Iter>>;
+
+    template <typename Iter>
+    static std::string insert(Iter const it, Iter const end) {
+        return "INSERT INTO "
+               + std::string{Statement<Iter>::table()}
+               + " ("
+               + Statement<Iter>::fields()
+               + ") VALUES "
+               + placeholders(it, end);
+    }
+
+    template <typename Iter>
+    static std::string insertWeak(Iter const it, Iter const end) {
+        return insert(it, end) + " ON CONFLICT DO NOTHING";
+    }
+
+    template <typename Iter>
+    static std::string placeholders(Iter it, Iter const end) {
+        std::string                                  res{};
+        internal::PlaceholdersCollector<Value<Iter>> coll{};
+        for (; it != end; ++it) {
+            Value<Iter>::visitPostgresDefinition(coll);
+            res += res.empty() ? "(" : ",(";
+            res += coll.res_;
+            res += ")";
+            coll.res_.clear();
+        }
+        return res;
     }
 };
 
