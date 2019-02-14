@@ -24,7 +24,7 @@ TEST(Statement, All) {
     ASSERT_EQ("SELECT a,b,c FROM Abc", Statement<Abc>::select());
     ASSERT_EQ("a,b,c", Statement<Abc>::fields());
     ASSERT_EQ("$1,$2,$3", Statement<Abc>::placeholders());
-    ASSERT_EQ("a=$1,b=$2,c=$3", Statement<Abc>::assigments());
+    ASSERT_EQ("a=$1,b=$2,c=$3", Statement<Abc>::assignments());
 }
 
 }  // namespace postgres

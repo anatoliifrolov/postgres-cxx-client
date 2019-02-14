@@ -19,7 +19,7 @@ struct Statement {
     }
 
     static std::string const& update() {
-        static auto const cache = "UPDATE " + std::string{table()} + " SET " + assigments();
+        static auto const cache = "UPDATE " + std::string{table()} + " SET " + assignments();
         return cache;
     }
 
@@ -46,9 +46,9 @@ struct Statement {
         return cache;
     }
 
-    static std::string const& assigments() {
+    static std::string const& assignments() {
         static auto const cache = [] {
-            internal::AssigmentsCollector<T> coll{};
+            internal::AssignmentsCollector<T> coll{};
             T::visitPostgresDefinition(coll);
             return coll.res_;
         }();
@@ -61,26 +61,25 @@ struct Statement {
 };
 
 struct RangeStatement {
-    template <typename Iter> using Value = std::remove_pointer_t<typename Iter::value_type>;
-
-    template <typename Iter> using Statement = Statement<Value<Iter>>;
-
-    template <typename Iter>
-    static std::string insert(Iter const it, Iter const end) {
+    template <typename I>
+    static std::string insert(I const it, I const end) {
+        using T = std::remove_pointer_t<typename I::value_type>;
+        using S = Statement<T>;
         return "INSERT INTO "
-               + std::string{Statement<Iter>::table()}
+               + std::string{S::table()}
                + " ("
-               + Statement<Iter>::fields()
+               + S::fields()
                + ") VALUES "
                + placeholders(it, end);
     }
 
-    template <typename Iter>
-    static std::string placeholders(Iter it, Iter const end) {
-        std::string                                  res{};
-        internal::PlaceholdersCollector<Value<Iter>> coll{};
+    template <typename I>
+    static std::string placeholders(I it, I const end) {
+        using T = std::remove_pointer_t<typename I::value_type>;
+        std::string                        res{};
+        internal::PlaceholdersCollector<T> coll{};
         for (; it != end; ++it) {
-            Value<Iter>::visitPostgresDefinition(coll);
+            T::visitPostgresDefinition(coll);
             res += res.empty() ? "(" : ",(";
             res += coll.res_;
             res += ")";

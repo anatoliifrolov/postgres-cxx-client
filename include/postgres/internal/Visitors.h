@@ -30,7 +30,7 @@ struct PlaceholdersCollector {
 };
 
 template <typename T>
-struct AssigmentsCollector {
+struct AssignmentsCollector {
     void accept(char const* const name) {
         if (!res_.empty()) {
             res_ += ",";
