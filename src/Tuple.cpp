@@ -1,5 +1,5 @@
 #include <utility>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 #include <postgres/Tuple.h>
 
 namespace postgres {

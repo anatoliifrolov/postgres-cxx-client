@@ -1,6 +1,6 @@
 #include <postgres/Transaction.h>
 #include <postgres/Client.h>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 

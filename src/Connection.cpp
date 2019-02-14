@@ -3,7 +3,7 @@
 #include <postgres/PrepareData.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 

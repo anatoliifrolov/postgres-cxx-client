@@ -1,5 +1,5 @@
 #include <postgres/Status.h>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 

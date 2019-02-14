@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <optional>
 #include <libpq-fe.h>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 #include <postgres/Oid.h>
 #include <postgres/internal/Bytes.h>
 #include <postgres/internal/Classifier.h>

@@ -1,7 +1,7 @@
 #include <postgres/Time.h>
 #include <regex>
 #include <utility>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 

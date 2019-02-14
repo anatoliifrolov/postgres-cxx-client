@@ -1,8 +1,8 @@
 #include <postgres/Client.h>
 #include <postgres/Config.h>
 #include <postgres/Command.h>
+#include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/internal/Assert.h>
 
 namespace postgres {
 

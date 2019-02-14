@@ -1,6 +1,6 @@
 #include <utility>
 #include <cstring>
-#include <postgres/internal/Assert.h>
+#include <postgres/Error.h>
 #include <postgres/Field.h>
 #include <postgres/Time.h>
 
