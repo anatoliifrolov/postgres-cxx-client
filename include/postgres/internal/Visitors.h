@@ -5,42 +5,24 @@
 namespace postgres {
 namespace internal {
 
-template <typename T>
 struct FieldsCollector {
-    void accept(char const* const name) {
-        if (!res_.empty()) {
-            res_ += ",";
-        }
-        res_ += name;
-    };
+    void accept(char const* name);
 
-    std::string res_;
+    std::string res;
 };
 
-template <typename T>
 struct PlaceholdersCollector {
-    void accept(char const* const name) {
-        res_ += res_.empty() ? "$" : ",$";
-        res_ += std::to_string(++idx_);
-    };
+    void accept(char const* name);
 
-    std::string res_;
-    int         idx_ = 0;
+    std::string res;
+    int         idx = 0;
 };
 
-template <typename T>
 struct AssignmentsCollector {
-    void accept(char const* const name) {
-        if (!res_.empty()) {
-            res_ += ",";
-        }
-        res_ += name;
-        res_ += "=$";
-        res_ += std::to_string(++idx_);
-    };
+    void accept(char const* name);
 
-    std::string res_;
-    int         idx_ = 0;
+    std::string res;
+    int         idx = 0;
 };
 
 }  // namespace internal

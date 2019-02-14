@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <type_traits>
 #include <postgres/internal/Visitors.h>
 
@@ -29,40 +30,36 @@ struct Statement {
     }
 
     static std::string const& fields() {
-        static auto const cache = [] {
-            internal::FieldsCollector<T> coll{};
-            T::visitPostgresDefinition(coll);
-            return coll.res_;
-        }();
+        static auto const cache = collect<internal::FieldsCollector>();
         return cache;
     }
 
     static std::string const& placeholders() {
-        static auto const cache = [] {
-            internal::PlaceholdersCollector<T> coll{};
-            T::visitPostgresDefinition(coll);
-            return coll.res_;
-        }();
+        static auto const cache = collect<internal::PlaceholdersCollector>();
         return cache;
     }
 
     static std::string const& assignments() {
-        static auto const cache = [] {
-            internal::AssignmentsCollector<T> coll{};
-            T::visitPostgresDefinition(coll);
-            return coll.res_;
-        }();
+        static auto const cache = collect<internal::AssignmentsCollector>();
         return cache;
     }
 
     static char const* table() {
         return T::_POSTGRES_CXX_TABLE_NAME;
     }
+
+private:
+    template <typename C>
+    static std::string collect() {
+        C coll{};
+        T::visitPostgresDefinition(coll);
+        return coll.res;
+    }
 };
 
 struct RangeStatement {
     template <typename Iter>
-    static std::string insert(Iter const it, Iter const end) {
+    static std::string insert(Iter const beg, Iter const end) {
         using T = std::remove_pointer_t<typename Iter::value_type>;
         using S = Statement<T>;
         return "INSERT INTO "
@@ -70,20 +67,21 @@ struct RangeStatement {
                + " ("
                + S::fields()
                + ") VALUES "
-               + placeholders(it, end);
+               + placeholders(beg, end);
     }
 
     template <typename Iter>
-    static std::string placeholders(Iter it, Iter const end) {
+    static std::string placeholders(Iter const beg, Iter const end) {
         using T = std::remove_pointer_t<typename Iter::value_type>;
-        std::string                        res{};
-        internal::PlaceholdersCollector<T> coll{};
-        for (; it != end; ++it) {
+        internal::PlaceholdersCollector coll{};
+        std::string                     res{};
+
+        for (auto it = beg; it != end; ++it) {
             T::visitPostgresDefinition(coll);
             res += res.empty() ? "(" : ",(";
-            res += coll.res_;
+            res += coll.res;
             res += ")";
-            coll.res_.clear();
+            coll.res.clear();
         }
         return res;
     }
