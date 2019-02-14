@@ -59,8 +59,6 @@ public:
     std::basic_string<unsigned char> escBytes(std::basic_string<unsigned char> const& in);
 
 private:
-    bool onSend(int res, AsyncMode mode);
-
     std::unique_ptr<PGconn, void (*)(PGconn*)> handle_;
 };
 

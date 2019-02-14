@@ -114,14 +114,18 @@ bool Connection::send(char const* const stmt, AsyncMode const mode) {
 }
 
 bool Connection::send(Command const& cmd, AsyncMode const mode) {
-    return onSend(PQsendQueryParams(native(),
-                                    cmd.statement(),
-                                    cmd.count(),
-                                    cmd.types(),
-                                    cmd.values(),
-                                    cmd.lengths(),
-                                    cmd.formats(),
-                                    RESULT_FORMAT), mode);
+    auto const res = PQsendQueryParams(native(),
+                                       cmd.statement(),
+                                       cmd.count(),
+                                       cmd.types(),
+                                       cmd.values(),
+                                       cmd.lengths(),
+                                       cmd.formats(),
+                                       RESULT_FORMAT) == 1;
+    if (res && (mode == AsyncMode::SINGLE_ROW)) {
+        PQsetSingleRowMode(native());
+    }
+    return res;
 }
 
 bool Connection::send(PrepareData const& stmt) {
@@ -133,24 +137,17 @@ bool Connection::send(PrepareData const& stmt) {
 }
 
 bool Connection::send(PreparedCommand const& cmd, AsyncMode const mode) {
-    return onSend(PQsendQueryPrepared(native(),
-                                      cmd.statement(),
-                                      cmd.count(),
-                                      cmd.values(),
-                                      cmd.lengths(),
-                                      cmd.formats(),
-                                      RESULT_FORMAT), mode);
-}
-
-bool Connection::onSend(int const res, postgres::AsyncMode const mode) {
-    if (res != 1) {
-        return false;
+    auto const res = PQsendQueryPrepared(native(),
+                                         cmd.statement(),
+                                         cmd.count(),
+                                         cmd.values(),
+                                         cmd.lengths(),
+                                         cmd.formats(),
+                                         RESULT_FORMAT) == 1;
+    if (res && (mode == AsyncMode::SINGLE_ROW)) {
+        PQsetSingleRowMode(native());
     }
-    if (mode != AsyncMode::SINGLE_ROW) {
-        return true;
-    }
-    PQsetSingleRowMode(native());
-    return true;
+    return res;
 }
 
 bool Connection::cancel() {
