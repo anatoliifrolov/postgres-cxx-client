@@ -42,11 +42,19 @@ Connection& Connection::operator=(Connection&& other) noexcept = default;
 
 Connection::~Connection() = default;
 
-Result Connection::execute(char const* const stmt) {
-    return execute(Command{stmt});
+Result Connection::execute(std::string&& stmt) {
+    return execute(Command{std::move(stmt)});
 }
 
 Result Connection::execute(std::string const& stmt) {
+    return execute(Command{stmt});
+}
+
+Result Connection::execute(std::string_view const stmt) {
+    return execute(Command{stmt});
+}
+
+Result Connection::execute(char const* const stmt) {
     return execute(Command{stmt});
 }
 
@@ -87,11 +95,19 @@ Status Connection::executeRaw(std::string const& stmt) {
     return executeRaw(stmt.c_str());
 }
 
-bool Connection::send(char const* const stmt, AsyncMode const mode) {
-    return send(Command{stmt}, mode);
+bool Connection::send(std::string&& stmt, AsyncMode const mode) {
+    return send(Command{std::move(stmt)}, mode);
 }
 
 bool Connection::send(std::string const& stmt, AsyncMode const mode) {
+    return send(Command{stmt}, mode);
+}
+
+bool Connection::send(std::string_view const stmt, AsyncMode const mode) {
+    return send(Command{stmt}, mode);
+}
+
+bool Connection::send(char const* const stmt, AsyncMode const mode) {
     return send(Command{stmt}, mode);
 }
 

@@ -7,6 +7,30 @@
 
 namespace postgres {
 
+TEST(TestCommand, Stmt) {
+    auto const    stmt = "STMT";
+    Command const cmd{stmt};
+    ASSERT_EQ(stmt, cmd.statement());
+}
+
+TEST(TestCommand, StmtView) {
+    std::string const      stmt = "STMT";
+    std::string_view const view = stmt;
+    Command const          cmd{view};
+    ASSERT_EQ(stmt.data(), cmd.statement());
+}
+
+TEST(TestCommand, StmtRef) {
+    std::string const stmt = "STMT";
+    Command const     cmd{stmt};
+    ASSERT_EQ(stmt.data(), cmd.statement());
+}
+
+TEST(TestCommand, StmtOwn) {
+    Command const cmd{std::string{"STMT"}};
+    ASSERT_STREQ("STMT", cmd.statement());
+}
+
 TEST(TestCommand, NoArgs) {
     Command const cmd{"STMT"};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -153,19 +177,30 @@ TEST(TestCommand, CStr) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, RefStr) {
-    std::string const str = "STR";
-    Command const     cmd{"STMT", str};
+TEST(TestCommand, StrView) {
+    std::string const      str  = "STR";
+    std::string_view const view = str;
+    Command const          cmd{"STMT", view};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(0u, cmd.types()[0]);
-    ASSERT_STREQ("STR", cmd.values()[0]);
     ASSERT_EQ(str.data(), cmd.values()[0]);
     ASSERT_EQ(0, cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, MoveStr) {
+TEST(TestCommand, StrRef) {
+    std::string const str = "STR";
+    Command const     cmd{"STMT", str};
+    ASSERT_STREQ("STMT", cmd.statement());
+    ASSERT_EQ(1, cmd.count());
+    ASSERT_EQ(0u, cmd.types()[0]);
+    ASSERT_EQ(str.data(), cmd.values()[0]);
+    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(0, cmd.formats()[0]);
+}
+
+TEST(TestCommand, StrOwn) {
     Command const cmd{"STMT", std::string{"STR"}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());

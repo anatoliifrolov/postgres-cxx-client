@@ -10,7 +10,7 @@ Command& Command::operator=(Command&& other) noexcept = default;
 Command::~Command() = default;
 
 char const* Command::statement() const {
-    return stmt_.c_str();
+    return stmt_;
 }
 
 int Command::count() const {
@@ -53,12 +53,16 @@ void Command::add(Time const& t) {
     types_.back() = TIMESTAMPOID;
 }
 
-void Command::add(std::string const& s) {
-    add(s.c_str());
+void Command::add(std::string&& s) {
+    addText(s.data(), s.size() + 1);
 }
 
-void Command::add(std::string&& s) {
-    addText(s.c_str(), s.size() + 1);
+void Command::add(std::string const& s) {
+    add(s.data());
+}
+
+void Command::add(std::string_view const s) {
+    add(s.data());
 }
 
 void Command::add(char const* const s) {
@@ -78,12 +82,12 @@ void Command::setMeta(Oid const id, int const len, int const fmt) {
 }
 
 void Command::storeData(void const* const arg, size_t const len) {
-    auto       storage = buffer_.data();
-    auto const old_len = buffer_.size();
+    auto       storage = buf_.data();
+    auto const old_len = buf_.size();
     auto const new_len = old_len + len;
-    buffer_.resize(new_len);
-    if (buffer_.data() != storage) {
-        storage = buffer_.data();
+    buf_.resize(new_len);
+    if (buf_.data() != storage) {
+        storage = buf_.data();
         for (auto i = 0u; i < values_.size(); ++i) {
             if (values_[i] && lengths_[i]) {
                 values_[i] = storage;
@@ -95,6 +99,23 @@ void Command::storeData(void const* const arg, size_t const len) {
     }
     memcpy(storage, arg, len);
     values_.push_back(storage);
+}
+
+void Command::setStatement(std::string&& stmt) {
+    stmt_buf_ = std::move(stmt);
+    stmt_ = stmt_buf_.data();
+}
+
+void Command::setStatement(std::string const& stmt) {
+    stmt_ = stmt.data();
+}
+
+void Command::setStatement(std::string_view const stmt) {
+    stmt_ = stmt.data();
+}
+
+void Command::setStatement(char const* const stmt) {
+    stmt_ = stmt;
 }
 
 }  // namespace postgres

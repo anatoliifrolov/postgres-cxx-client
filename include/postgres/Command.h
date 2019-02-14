@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -15,8 +16,8 @@ namespace postgres {
 class Command {
 public:
     template <typename Stmt, typename... Args>
-    explicit Command(Stmt&& stmt, Args&& ... args)
-        : stmt_{std::forward<Stmt>(stmt)} {
+    explicit Command(Stmt&& stmt, Args&& ... args) {
+        setStatement(std::forward<Stmt>(stmt));
         unwind(std::forward<Args>(args)...);
     }
 
@@ -113,19 +114,26 @@ private:
     void add(std::nullptr_t);
     void add(std::chrono::system_clock::time_point t);
     void add(Time const& t);
-    void add(std::string const& s);
     void add(std::string&& s);
+    void add(std::string const& s);
+    void add(std::string_view s);
     void add(char const* s);
     void addText(char const* s, size_t len);
     void setMeta(Oid id, int len, int fmt);
     void storeData(void const* arg, size_t len);
 
-    std::string              stmt_;
+    void setStatement(std::string&& stmt);
+    void setStatement(std::string const& stmt);
+    void setStatement(std::string_view stmt);
+    void setStatement(char const* stmt);
+
+    char const* stmt_ = nullptr;
+    std::string              stmt_buf_;
     std::vector<Oid>         types_;
     std::vector<char const*> values_;
     std::vector<int>         lengths_;
     std::vector<int>         formats_;
-    std::vector<char>        buffer_;
+    std::vector<char>        buf_;
 };
 
 }  // namespace postgres
