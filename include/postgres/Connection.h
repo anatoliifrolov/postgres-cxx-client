@@ -3,14 +3,9 @@
 #include <memory>
 #include <string>
 #include <libpq-fe.h>
-#include <postgres/Result.h>
+#include <postgres/Fwd.h>
 
 namespace postgres {
-
-class Config;
-class Command;
-class PreparedCommand;
-struct PrepareData;
 
 enum class AsyncMode {
     MULTI_ROW,
@@ -19,52 +14,43 @@ enum class AsyncMode {
 
 class Connection {
 public:
+    static bool ping(Config const& cfg);
+
     explicit Connection();
-    explicit Connection(const Config& config);
-    Connection(const Connection& other) = delete;
-    Connection(Connection&& other);
-    Connection& operator=(const Connection& other) = delete;
-    Connection& operator=(Connection&& other);
+    explicit Connection(Config const& cfg);
+    Connection(Connection const& other) = delete;
+    Connection& operator=(Connection const& other) = delete;
+    Connection(Connection&& other) noexcept;
+    Connection& operator=(Connection&& other) noexcept;
     ~Connection();
 
-    static bool ping(const Config& config);
+    Result execute(char const* stmt);
+    Result execute(std::string const& stmt);
+    Result execute(Command const& cmd);
+    Result execute(PrepareData const& stmt);
+    Result execute(PreparedCommand const& cmd);
+    Status executeRaw(char const* stmt);
+    Status executeRaw(std::string const& stmt);
 
-    // Status info.
+    bool send(char const* stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(std::string const& stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(Command const& cmd, AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool send(PrepareData const& stmt);
+    bool send(PreparedCommand const& cmd, AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool cancel();
+    Result receive();
+
+    bool reset();
     bool isOk();
     bool isBusy();
-    std::string errorMessage();
-
-    // Escaping.
-    std::string esc(const std::string& in);
-    std::string escId(const std::string& in);
-    std::basic_string<unsigned char> escBytes(const std::basic_string<unsigned char>& in);
-
-    // Statement execution.
-    Status executeRaw(const std::string& statement);
-    Status executeRaw(const char* const statement);
-    Result execute(const PrepareData& statement);
-    Result execute(const std::string& statement);
-    Result execute(const char* const statement);
-    Result execute(const PreparedCommand& command);
-    Result execute(const Command& command);
-
-    // Async interface.
-    bool send(const PrepareData& statement);
-    bool send(const std::string& statement, const AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(const char* const statement, const AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(const PreparedCommand& command, const AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(const Command& command, const AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool cancel();
-    Result nextResult();
-
-    // Connection management.
-    bool reset();
+    std::string error();
     PGconn* native() const;
 
-private:
-    template <typename Char>
-    std::basic_string<Char> doEsc(Char* const res);
+    std::string esc(std::string const& in);
+    std::string escId(std::string const& in);
+    std::basic_string<unsigned char> esc(std::basic_string<unsigned char> const& in);
 
+private:
     std::unique_ptr<PGconn, void (*)(PGconn*)> handle_;
 };
 

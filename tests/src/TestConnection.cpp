@@ -43,14 +43,14 @@ TEST_F(TestConnection, Raw) {
 
 TEST_F(TestConnection, Async) {
     ASSERT_TRUE(conn_->send(PrepareData{"prepared_insert", "INSERT INTO test(flag) VALUES($1)"}));
-    ASSERT_TRUE(conn_->nextResult());
-    ASSERT_TRUE(conn_->nextResult().isDone());
+    ASSERT_TRUE(conn_->receive());
+    ASSERT_TRUE(conn_->receive().isDone());
     ASSERT_TRUE(conn_->send("SELECT 1::INTEGER"));
-    ASSERT_EQ(1, (int) conn_->nextResult()[0][0]);
-    ASSERT_TRUE(conn_->nextResult().isDone());
+    ASSERT_EQ(1, (int) conn_->receive()[0][0]);
+    ASSERT_TRUE(conn_->receive().isDone());
     ASSERT_TRUE(conn_->send(PreparedCommand{"prepared_insert", true}));
-    ASSERT_EQ(1, conn_->nextResult().affected());
-    ASSERT_TRUE(conn_->nextResult().isDone());
+    ASSERT_EQ(1, conn_->receive().affected());
+    ASSERT_TRUE(conn_->receive().isDone());
 }
 
 TEST_F(TestConnection, Busy) {
@@ -58,11 +58,11 @@ TEST_F(TestConnection, Busy) {
     while (conn_->isBusy()) {
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
-    auto res = conn_->nextResult();
+    auto res = conn_->receive();
     ASSERT_EQ(1, (int) res[0][0]);
     ASSERT_EQ(2, (int) res[0][1]);
     ASSERT_EQ(3, (int) res[0][2]);
-    ASSERT_TRUE(conn_->nextResult().isDone());
+    ASSERT_TRUE(conn_->receive().isDone());
 }
 
 TEST_F(TestConnection, RowByRow) {
@@ -70,7 +70,7 @@ TEST_F(TestConnection, RowByRow) {
     ASSERT_TRUE(conn_->send("SELECT int4 FROM test", AsyncMode::SINGLE_ROW));
     std::set<int> data{};
 
-    for (auto res = conn_->nextResult(); !res.isDone(); res = conn_->nextResult()) {
+    for (auto res = conn_->receive(); !res.isDone(); res = conn_->receive()) {
         if (!res.empty()) {
             ASSERT_EQ(1, res.size());
             data.insert((int) res[0][0]);

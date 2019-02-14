@@ -60,7 +60,7 @@ Result Client::completeTransaction(Result res) {
 }
 
 void Client::reconnect() {
-    _POSTGRES_CXX_ASSERT(tryReconnect(), connection_.errorMessage());
+    _POSTGRES_CXX_ASSERT(tryReconnect(), connection_.error());
 }
 
 bool Client::tryReconnect() {
@@ -86,7 +86,7 @@ Result Client::validate(postgres::Result res) {
     }
     std::string msg = res.errorMessage();
     if (msg.empty()) {
-        msg = connection().errorMessage();
+        msg = connection().error();
     }
     _POSTGRES_CXX_FAIL(msg);
 }

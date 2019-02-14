@@ -1,31 +1,21 @@
 #include <postgres/Connection.h>
-#include <postgres/Config.h>
-#include <postgres/PrepareData.h>
+
 #include <postgres/Command.h>
-#include <postgres/PreparedCommand.h>
+#include <postgres/Config.h>
 #include <postgres/Error.h>
+#include <postgres/PreparedCommand.h>
+#include <postgres/PrepareData.h>
+#include <postgres/Result.h>
 
 namespace postgres {
 
-static constexpr auto RESULT_FORMAT = 1;
+enum {
+    EXPAND_DB_NAME = 0,
+    RESULT_FORMAT  = 1,
+};
 
-Connection::Connection()
-    : Connection{Config::make()} {
-}
-
-Connection::Connection(const Config& config)
-    : handle_{PQconnectdbParams(config.keys(), config.values(), 0), PQfinish} {
-}
-
-Connection::Connection(Connection&& other) = default;
-
-Connection& Connection::operator=(Connection&& other) = default;
-
-Connection::~Connection() = default;
-
-bool Connection::ping(const Config& config) {
-    auto const status = PQpingParams(config.keys(), config.values(), 0);
-    switch (status) {
+bool Connection::ping(Config const& cfg) {
+    switch (PQpingParams(cfg.keys(), cfg.values(), EXPAND_DB_NAME)) {
         case PGPing::PQPING_OK:
         case PGPing::PQPING_REJECT: {
             return true;
@@ -38,120 +28,104 @@ bool Connection::ping(const Config& config) {
     return false;
 }
 
-bool Connection::isOk() {
-    return PQstatus(native()) == ConnStatusType::CONNECTION_OK;
+Connection::Connection()
+    : Connection{Config::make()} {
 }
 
-bool Connection::isBusy() {
-    PQconsumeInput(native());
-    return PQisBusy(native()) == 1;
+Connection::Connection(Config const& cfg)
+    : handle_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DB_NAME), PQfinish} {
 }
 
-std::string Connection::errorMessage() {
-    return PQerrorMessage(native());
+Connection::Connection(Connection&& other) noexcept = default;
+
+Connection& Connection::operator=(Connection&& other) noexcept = default;
+
+Connection::~Connection() = default;
+
+Result Connection::execute(char const* const stmt) {
+    return execute(Command{stmt});
 }
 
-std::string Connection::esc(const std::string& in) {
-    return doEsc(PQescapeLiteral(native(), in.c_str(), in.size()));
+Result Connection::execute(std::string const& stmt) {
+    return execute(Command{stmt});
 }
 
-std::string Connection::escId(const std::string& in) {
-    return doEsc(PQescapeIdentifier(native(), in.c_str(), in.size()));
-}
-
-std::basic_string<unsigned char> Connection::escBytes(const std::basic_string<unsigned char>& in) {
-    auto len = size_t{};
-    return doEsc(PQescapeByteaConn(native(), in.c_str(), in.size(), &len));
-}
-
-template <typename Char>
-std::basic_string<Char> Connection::doEsc(Char* const escaped) {
-    _POSTGRES_CXX_ASSERT(escaped, errorMessage());
-    std::basic_string<Char> res = escaped;
-    PQfreemem(escaped);
-    return res;
-}
-
-Status Connection::executeRaw(const std::string& statement) {
-    return executeRaw(statement.c_str());
-}
-
-Status Connection::executeRaw(const char* const statement) {
-    return Status{PQexec(native(), statement)};
-}
-
-Result Connection::execute(const PrepareData& statement) {
-    return Result{PQprepare(native(),
-                            statement.name_.c_str(),
-                            statement.body_.c_str(),
-                            statement.types_.size(),
-                            statement.types_.empty() ? nullptr : statement.types_.data())};
-}
-
-Result Connection::execute(const std::string& statement) {
-    return execute(Command{statement});
-}
-
-Result Connection::execute(const char* const statement) {
-    return execute(Command{statement});
-}
-
-Result Connection::execute(const PreparedCommand& command) {
-    return Result{PQexecPrepared(native(),
-                                 command.statement(),
-                                 command.count(),
-                                 command.values(),
-                                 command.lengths(),
-                                 command.formats(), RESULT_FORMAT)};
-}
-
-Result Connection::execute(const Command& command) {
+Result Connection::execute(Command const& cmd) {
     return Result{PQexecParams(native(),
-                               command.statement(),
-                               command.count(),
-                               command.types(),
-                               command.values(),
-                               command.lengths(),
-                               command.formats(), RESULT_FORMAT)};
+                               cmd.statement(),
+                               cmd.count(),
+                               cmd.types(),
+                               cmd.values(),
+                               cmd.lengths(),
+                               cmd.formats(),
+                               RESULT_FORMAT)};
 }
 
-bool Connection::send(const PrepareData& statement) {
-    return PQsendPrepare(native(),
-                         statement.name_.c_str(),
-                         statement.body_.c_str(),
-                         statement.types_.size(),
-                         statement.types_.empty() ? nullptr : statement.types_.data()) == 1;
+Result Connection::execute(PrepareData const& stmt) {
+    return Result{PQprepare(native(),
+                            stmt.name.c_str(),
+                            stmt.body.c_str(),
+                            static_cast<int>(stmt.types.size()),
+                            stmt.types.empty() ? nullptr : stmt.types.data())};
 }
 
-bool Connection::send(const std::string& statement, const AsyncMode mode) {
-    return send(Command{statement}, mode);
+Result Connection::execute(PreparedCommand const& cmd) {
+    return Result{PQexecPrepared(native(),
+                                 cmd.statement(),
+                                 cmd.count(),
+                                 cmd.values(),
+                                 cmd.lengths(),
+                                 cmd.formats(),
+                                 RESULT_FORMAT)};
 }
 
-bool Connection::send(const char* const statement, const AsyncMode mode) {
-    return send(Command{statement}, mode);
+Status Connection::executeRaw(char const* const stmt) {
+    return Status{PQexec(native(), stmt)};
 }
 
-bool Connection::send(const PreparedCommand& command, const AsyncMode mode) {
-    auto const res = PQsendQueryPrepared(native(),
-                                         command.statement(),
-                                         command.count(),
-                                         command.values(),
-                                         command.lengths(),
-                                         command.formats(), RESULT_FORMAT) == 1;
+Status Connection::executeRaw(std::string const& stmt) {
+    return executeRaw(stmt.c_str());
+}
+
+bool Connection::send(char const* const stmt, AsyncMode const mode) {
+    return send(Command{stmt}, mode);
+}
+
+bool Connection::send(std::string const& stmt, AsyncMode const mode) {
+    return send(Command{stmt}, mode);
+}
+
+bool Connection::send(Command const& cmd, AsyncMode const mode) {
+    auto const res = PQsendQueryParams(native(),
+                                       cmd.statement(),
+                                       cmd.count(),
+                                       cmd.types(),
+                                       cmd.values(),
+                                       cmd.lengths(),
+                                       cmd.formats(),
+                                       RESULT_FORMAT) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
     return res;
 }
 
-bool Connection::send(const Command& command, const AsyncMode mode) {
-    auto const res = PQsendQueryParams(native(),
-                                       command.statement(),
-                                       command.count(),
-                                       command.types(),
-                                       command.values(),
-                                       command.lengths(),
-                                       command.formats(), RESULT_FORMAT) == 1;
+bool Connection::send(PrepareData const& stmt) {
+    return PQsendPrepare(native(),
+                         stmt.name.c_str(),
+                         stmt.body.c_str(),
+                         static_cast<int>(stmt.types.size()),
+                         stmt.types.empty() ? nullptr : stmt.types.data()) == 1;
+}
+
+bool Connection::send(PreparedCommand const& cmd, AsyncMode const mode) {
+    auto const res = PQsendQueryPrepared(native(),
+                                         cmd.statement(),
+                                         cmd.count(),
+                                         cmd.values(),
+                                         cmd.lengths(),
+                                         cmd.formats(),
+                                         RESULT_FORMAT) == 1;
     if (res && (mode == AsyncMode::SINGLE_ROW)) {
         PQsetSingleRowMode(native());
     }
@@ -167,7 +141,7 @@ bool Connection::cancel() {
     return res;
 }
 
-Result Connection::nextResult() {
+Result Connection::receive() {
     return Result{PQgetResult(native())};
 }
 
@@ -176,8 +150,42 @@ bool Connection::reset() {
     return isOk();
 }
 
+bool Connection::isOk() {
+    return PQstatus(native()) == ConnStatusType::CONNECTION_OK;
+}
+
+bool Connection::isBusy() {
+    PQconsumeInput(native());
+    return PQisBusy(native()) == 1;
+}
+
+std::string Connection::error() {
+    return PQerrorMessage(native());
+}
+
 PGconn* Connection::native() const {
     return handle_.get();
+}
+
+template <typename C>
+std::basic_string<C> doEsc(Connection& conn, C* const escaped) {
+    _POSTGRES_CXX_ASSERT(escaped, conn.error());
+    std::basic_string<C> res = escaped;
+    PQfreemem(escaped);
+    return res;
+}
+
+std::string Connection::esc(std::string const& in) {
+    return doEsc(*this, PQescapeLiteral(native(), in.c_str(), in.size()));
+}
+
+std::string Connection::escId(std::string const& in) {
+    return doEsc(*this, PQescapeIdentifier(native(), in.c_str(), in.size()));
+}
+
+std::basic_string<unsigned char> Connection::esc(std::basic_string<unsigned char> const& in) {
+    auto len = size_t{};
+    return doEsc(*this, PQescapeByteaConn(native(), in.c_str(), in.size(), &len));
 }
 
 }  // namespace postgres

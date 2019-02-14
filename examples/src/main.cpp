@@ -154,10 +154,10 @@ void executeAsync(Connection& conn) {
     // send() does NOT block contrary to execute().
     conn.send("SELECT 1");
     // But result() DOES block.
-    auto const res = conn.nextResult();
+    auto const res = conn.receive();
     // Process result...
     // You MUST ALWAYS read result until Result::isDone() returns true.
-    while (!conn.nextResult().isDone()) {
+    while (!conn.receive().isDone()) {
     }
 }
 
@@ -169,16 +169,16 @@ void executeAsyncNonBlocking(Connection& conn) {
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     // Guaranteed not to block here.
-    auto const res = conn.nextResult();
+    auto const res = conn.receive();
     // Process result...
-    while (!conn.nextResult().isDone()) {
+    while (!conn.receive().isDone()) {
     }
 }
 
 void executeAsyncRowByRow(Connection& conn) {
     // Rows of large result set could be obtained one by one as they are ready.
     conn.send("SELECT * FROM example", postgres::AsyncMode::SINGLE_ROW);
-    for (auto res = conn.nextResult(); !res.isDone(); res = conn.nextResult()) {
+    for (auto res = conn.receive(); !res.isDone(); res = conn.receive()) {
         // Note that the last result will be empty while isDone() will be still false.
         if (!res.empty()) {
             // Process result...
@@ -191,7 +191,7 @@ void cancelAsync(Connection& conn) {
     // Just tries to cancel, does not guarantee to succeed.
     // Returns whether cancel request has been dispatched.
     conn.cancel();
-    while (!conn.nextResult().isDone()) {
+    while (!conn.receive().isDone()) {
     }
 }
 
