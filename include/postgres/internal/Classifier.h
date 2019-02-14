@@ -8,12 +8,12 @@ struct Tag {
     char placeholder[N];
 };
 
-using ReadableTag = Tag<1>;
+using PlainTag = Tag<1>;
 using VisitableTag = Tag<2>;
 
 template <typename T>
-constexpr ReadableTag classify(...) {
-    return ReadableTag{};
+constexpr PlainTag classify(...) {
+    return PlainTag{};
 }
 
 template <typename T>
@@ -27,8 +27,8 @@ constexpr bool isTagged() {
 }
 
 template <typename T>
-constexpr bool isReadable() {
-    return isTagged<T, ReadableTag>();
+constexpr bool isPlain() {
+    return isTagged<T, PlainTag>();
 }
 
 template <typename T>

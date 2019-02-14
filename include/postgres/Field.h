@@ -47,7 +47,7 @@ public:
     }
 
     template <typename Dst>
-    std::enable_if_t<internal::isReadable<Dst>()> operator>>(Dst& dst) const {
+    std::enable_if_t<internal::isPlain<Dst>()> operator>>(Dst& dst) const {
         auto ptr = &dst;
         *this >> ptr;
         _POSTGRES_CXX_ASSERT(ptr,
@@ -55,7 +55,7 @@ public:
     }
 
     template <typename Dst>
-    std::enable_if_t<internal::isReadable<Dst>()> operator>>(Dst*& dst) const {
+    std::enable_if_t<internal::isPlain<Dst>()> operator>>(Dst*& dst) const {
         if (isNull()) {
             dst = nullptr;
             return;
