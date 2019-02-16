@@ -17,6 +17,11 @@ class Command {
 public:
     template <typename Stmt, typename... Args>
     explicit Command(Stmt&& stmt, Args&& ... args) {
+        auto constexpr NARGS = sizeof... (Args);
+        types_.reserve(NARGS);
+        values_.reserve(NARGS);
+        lengths_.reserve(NARGS);
+        formats_.reserve(NARGS);
         setStatement(std::forward<Stmt>(stmt));
         unwind(std::forward<Args>(args)...);
     }
