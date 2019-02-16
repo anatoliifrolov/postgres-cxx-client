@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <postgres/Command.h>
 #include <postgres/Result.h>
 #include "Migration.h"
 
@@ -25,7 +26,7 @@ TEST_F(TestResult, NullPtr) {
 }
 
 TEST_F(TestResult, Invalid) {
-    auto const res = conn_->execute("BAD STATEMENT");
+    auto const res = conn_->exec(Command{"BAD STATEMENT"});
     ASSERT_FALSE(res.isOk());
     ASSERT_FALSE(res);
     ASSERT_EQ(0, res.size());
@@ -38,7 +39,7 @@ TEST_F(TestResult, Invalid) {
 }
 
 TEST_F(TestResult, Empty) {
-    auto const res = conn_->execute("SELECT * FROM test");
+    auto const res = conn_->exec(Command{"SELECT * FROM test"});
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(0, res.size());
     ASSERT_EQ(0, res.affected());
@@ -51,7 +52,7 @@ TEST_F(TestResult, Empty) {
 }
 
 TEST_F(TestResult, Survival) {
-    auto const res = conn_->execute("SELECT 123::INTEGER");
+    auto const res = conn_->exec(Command{"SELECT 123::INTEGER"});
     {
         conn_->~Connection();
     }
@@ -62,8 +63,8 @@ TEST_F(TestResult, Survival) {
 
 TEST_F(TestResult, Iteration) {
     std::vector<int32_t> data{};
-    conn_->execute("INSERT INTO test(int4) VALUES(1), (2), (3)");
-    for (auto tuple : conn_->execute("SELECT int4 FROM test")) {
+    conn_->exec(Command{"INSERT INTO test(int4) VALUES(1), (2), (3)"});
+    for (auto tuple : conn_->exec(Command{"SELECT int4 FROM test"})) {
         data.emplace_back();
         tuple >> data.back();
     }
@@ -81,12 +82,12 @@ TEST_F(TestResult, Cast) {
         ASSERT_EQ("INFO", s);
     };
 
-    auto const res = conn_->execute("SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'");
+    auto const res = conn_->exec(Command{"SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'"});
     f(res[0][0], res[0][1], res[0][2], res[0][3]);
 }
 
 TEST_F(TestResult, ColumnName) {
-    auto const res = conn_->execute("SELECT 1 AS one, 2 AS two");
+    auto const res = conn_->exec(Command{"SELECT 1 AS one, 2 AS two"});
     ASSERT_STREQ("one", res[0][0].name());
     ASSERT_STREQ("two", res[0][1].name());
 }

@@ -44,11 +44,11 @@ CREATE TABLE example(
 ))";
 
 void makeTestTable(Connection& conn) {
-    conn.execute(DROP_TABLE_SQL) && conn.execute(CREATE_TABLE_SQL);
+    conn.prepare(DROP_TABLE_SQL) && conn.prepare(CREATE_TABLE_SQL);
 }
 
 void basicUsage(Connection& conn) {
-    auto const res = conn.execute("SELECT 1");
+    auto const res = conn.prepare("SELECT 1");
 
     // Something went wrong:
     if (!res) {
@@ -76,27 +76,27 @@ void basicUsage(Connection& conn) {
 
 void parametrizedInsert(Connection& conn) {
     // Recommended way to pass statement parameters is using Command:
-    conn.execute(Command{R"(INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5))",
-                         1,
-                         2.34,
-                         true,
-                         "T'EXT",  // No need for escape!
-                         std::chrono::system_clock::now()});
+    conn.exec(Command{R"(INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5))",
+                      1,
+                      2.34,
+                      true,
+                      "T'EXT",  // No need for escape!
+                      std::chrono::system_clock::now()});
 
     // Take parameters from range:
     std::vector<int> vals{1, 2, 3};
-    conn.execute(Command{"INSERT INTO example(n) VALUES($1), ($2), ($3)",
-                         std::make_pair(vals.begin(), vals.end())});
+    conn.exec(Command{"INSERT INTO example(n) VALUES($1), ($2), ($3)",
+                      std::make_pair(vals.begin(), vals.end())});
 }
 
 void insertTimestamps(Connection& conn) {
     // You can also insert timestamp with time zone specified.
     // Call postgres::Time constructor with second parameter set to true for that.
     // But there would be no way to read it back using this library.
-    conn.execute(Command{"INSERT INTO example(t) VALUES($1), ($2), ($3)",
-                         std::chrono::system_clock::now(),  // Implicitly recognized.
-                         postgres::Time{time(nullptr)},  // Must be explicitly converted to timestamp.
-                         postgres::Time{"2017-08-25T13:03:35"}});
+    conn.exec(Command{"INSERT INTO example(t) VALUES($1), ($2), ($3)",
+                      std::chrono::system_clock::now(),  // Implicitly recognized.
+                      postgres::Time{time(nullptr)},  // Must be explicitly converted to timestamp.
+                      postgres::Time{"2017-08-25T13:03:35"}});
 }
 
 void nonCopyingInsert(Connection& conn) {
@@ -104,21 +104,21 @@ void nonCopyingInsert(Connection& conn) {
     // Make sure that object is staying alive during execution.
     // Pass rvalue reference to force Command to store parameter internally.
     std::string s = "SOME TEXT THAT IS TO BE GONE OUT OF SCOPE";
-    conn.execute(Command{"INSERT INTO example(s) VALUES($1)", std::move(s)});
+    conn.exec(Command{"INSERT INTO example(s) VALUES($1)", std::move(s)});
 }
 
 void insertNULLs(Connection& conn, const int* const n_ptr) {
-    conn.execute(Command{"INSERT INTO example(n) VALUES($1), ($2)",
-                         nullptr,  // Will be inserted as NULL.
-                         n_ptr  // Pointed value will be inserted if pointer is valid, or NULL otherwise.
+    conn.exec(Command{"INSERT INTO example(n) VALUES($1), ($2)",
+                      nullptr,  // Will be inserted as NULL.
+                      n_ptr  // Pointed value will be inserted if pointer is valid, or NULL otherwise.
     });
 }
 
 void insertSpecialType(Connection& conn) {
     // Most parameter types are automatically recognized by the library.
     // But you can tell parameter type explicitly if needed:
-    conn.execute(Command{"INSERT INTO example(s) VALUES($1)",
-                         postgres::bindOid("WITH SPECIAL OID", TEXTOID)});
+    conn.exec(Command{"INSERT INTO example(s) VALUES($1)",
+                      postgres::bindOid("WITH SPECIAL OID", TEXTOID)});
 }
 
 struct Example {
@@ -139,20 +139,20 @@ void insertVisitable(Connection& conn) {
     v.b = true;
     v.s = "VISITABLE";
     v.t = std::chrono::system_clock::now();
-    conn.execute(Command{"INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5)", v});
+    conn.exec(Command{"INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5)", v});
 }
 
 void executePrepared(Connection& conn) {
     // PreparedCommand is exactly the same as plain Command,
     // but accepting prepared statement name instead of statement text.
-    if (conn.execute(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
-        conn.execute(PreparedCommand{"insert_s", "PREPARED"});
+    if (conn.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
+        conn.execPrepared(PreparedCommand{"insert_s", "PREPARED"});
     }
 }
 
 void executeAsync(Connection& conn) {
     // send() does NOT block contrary to execute().
-    conn.send("SELECT 1");
+    conn.prepareAsync("SELECT 1");
     // But result() DOES block.
     auto const res = conn.receive();
     // Process result...
@@ -162,7 +162,7 @@ void executeAsync(Connection& conn) {
 }
 
 void executeAsyncNonBlocking(Connection& conn) {
-    conn.send("SELECT 1");
+    conn.prepareAsync("SELECT 1");
     // Wait until result is ready:
     while (conn.isBusy()) {
         // Do some other stuff...
@@ -187,7 +187,7 @@ void executeAsyncRowByRow(Connection& conn) {
 }
 
 void cancelAsync(Connection& conn) {
-    conn.send("INSERT INTO example(s) VALUES('CANCELED')");
+    conn.prepareAsync("INSERT INTO example(s) VALUES('CANCELED')");
     // Just tries to cancel, does not guarantee to succeed.
     // Returns whether cancel request has been dispatched.
     conn.cancel();
@@ -205,7 +205,7 @@ void readResultIntoVariables(Connection& conn) {
     int* p = &n;  // Possibly NULL values must be read into pointers.
 
     // Result stays valid event after connection was destroyed.
-    auto const res = conn.execute(R"(SELECT
+    auto const res = conn.prepare(R"(SELECT
             1 AS n,
             2.34::REAL AS f,
             TRUE AS b,
@@ -280,7 +280,7 @@ void passResultToFunction(Connection& conn) {
         std::cout << "n = " << n << ", s = " << s << std::endl;
     };
 
-    auto const res = conn.execute("SELECT 1, 'TEXT'");
+    auto const res = conn.prepare("SELECT 1, 'TEXT'");
     // Result fields are implicitly converted to function argument types:
     someFunc(res[0][0], res[0][1]);
 }
@@ -290,7 +290,7 @@ void prepareClient(Client& client) {
     // true as second argument tells to cache schema name to set it again after reconnect.
     client.setSchema("public", true);
     // Will be cached and automatically prepared again as well.
-    client.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"}, true);
+    client.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"});
 }
 
 void executeTransaction(Client& client) {

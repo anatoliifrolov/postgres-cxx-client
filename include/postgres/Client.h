@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <type_traits>
 #include <postgres/Result.h>
@@ -25,10 +26,8 @@ public:
     Client& operator=(Client&&);
     ~Client();
 
-    Result setSchema(const std::string& schema, const bool cache = true);
-    Result trySetSchema(const std::string& schema, const bool cache = true);
-    Result prepare(const PrepareData& statement, const bool cache = true);
-    Result tryPrepare(const PrepareData& statement, const bool cache = true);
+    Result prepare(const PrepareData& statement);
+    Result tryPrepare(const PrepareData& statement);
 
     Transaction begin();
 
@@ -101,24 +100,23 @@ public:
     }
 
     // Async interface.
-    template <typename... Ts>
-    Connection& send(Ts&& ... args) {
-        _POSTGRES_CXX_ASSERT(connection_.send(std::forward<Ts>(args)...), connection_.error());
-        return connection_;
-    }
-
-    template <typename... Ts>
-    Connection* trySend(Ts&& ... args) {
-        return connection_.send(std::forward<Ts>(args)...) ? &connection_ : nullptr;
-    }
+//    template <typename... Ts>
+//    Connection& send(Ts&& ... args) {
+//        _POSTGRES_CXX_ASSERT(conn_.send(std::forward<Ts>(args)...), conn_.error());
+//        return conn_;
+//    }
+//
+//    template <typename... Ts>
+//    Connection* trySend(Ts&& ... args) {
+//        return conn_.send(std::forward<Ts>(args)...) ? &conn_ : nullptr;
+//    }
 
     void reconnect();
     bool tryReconnect();
     Connection& connection();
 
 private:
-    template <typename T,
-              typename... Ts>
+    template <typename T, typename... Ts>
     std::enable_if_t<(sizeof... (Ts) > 0), Result>
     doTryExecute(const T& statement, const Ts& ... statements) {
         auto res = doTryExecute(statement);
@@ -128,23 +126,16 @@ private:
         return res;
     };
 
-    template <typename T,
-              typename = decltype(T::operator std::string)>
-    Result doTryExecute(const T& statement) {
-        return doTryExecute(statement.operator std::string());
-    }
-
-    template <typename T>
-    Result doTryExecute(const T& statement) {
-        return connection_.execute(statement);
-    }
-
+    Result doTryExecute(std::string&& stmt);
+    Result doTryExecute(std::string const& stmt);
+    Result doTryExecute(std::string_view stmt);
+    Result doTryExecute(char const* stmt);
+    Result doTryExecute(PreparedCommand const& cmd);
+    Result doTryExecute(Command const& cmd);
     Result completeTransaction(Result res);
     Result validate(Result res);
 
-    Connection               connection_;
-    std::string              schema_;
-    std::vector<PrepareData> prepared_;
+    Connection conn_;
 };
 
 }  // namespace postgres

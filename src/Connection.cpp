@@ -3,7 +3,6 @@
 #include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Error.h>
-#include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Result.h>
 
@@ -22,10 +21,6 @@ PGPing Connection::ping(std::string const& uri) {
     return PQping(uri.data());
 }
 
-Connection::Connection()
-    : Connection{Config::make()} {
-}
-
 Connection::Connection(Config const& cfg)
     : handle_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
 }
@@ -38,25 +33,17 @@ Connection::Connection(Connection&& other) noexcept = default;
 
 Connection& Connection::operator=(Connection&& other) noexcept = default;
 
-Connection::~Connection() = default;
+Connection::~Connection() noexcept = default;
 
-Result Connection::execute(std::string&& stmt) {
-    return execute(Command{std::move(stmt)});
+Result Connection::prepare(PrepareData const& data) {
+    return Result{PQprepare(native(),
+                            data.name.data(),
+                            data.statement.data(),
+                            static_cast<int>(data.types.size()),
+                            data.types.data())};
 }
 
-Result Connection::execute(std::string const& stmt) {
-    return execute(Command{stmt});
-}
-
-Result Connection::execute(std::string_view const stmt) {
-    return execute(Command{stmt});
-}
-
-Result Connection::execute(char const* const stmt) {
-    return execute(Command{stmt});
-}
-
-Result Connection::execute(Command const& cmd) {
+Result Connection::exec(Command const& cmd) {
     return Result{PQexecParams(native(),
                                cmd.statement(),
                                cmd.count(),
@@ -67,15 +54,7 @@ Result Connection::execute(Command const& cmd) {
                                RESULT_FORMAT)};
 }
 
-Result Connection::execute(PrepareData const& stmt) {
-    return Result{PQprepare(native(),
-                            stmt.name.data(),
-                            stmt.body.data(),
-                            static_cast<int>(stmt.types.size()),
-                            stmt.types.empty() ? nullptr : stmt.types.data())};
-}
-
-Result Connection::execute(PreparedCommand const& cmd) {
+Result Connection::execPrepared(Command const& cmd) {
     return Result{PQexecPrepared(native(),
                                  cmd.statement(),
                                  cmd.count(),
@@ -85,69 +64,45 @@ Result Connection::execute(PreparedCommand const& cmd) {
                                  RESULT_FORMAT)};
 }
 
-Status Connection::executeRaw(std::string const& stmt) {
-    return executeRaw(stmt.data());
+Status Connection::execRaw(std::string_view const stmt) {
+    return Status{PQexec(native(), stmt.data())};
 }
 
-Status Connection::executeRaw(std::string_view const stmt) {
-    return executeRaw(stmt.data());
-}
-
-Status Connection::executeRaw(char const* const stmt) {
-    return Status{PQexec(native(), stmt)};
-}
-
-bool Connection::send(std::string&& stmt, AsyncMode const mode) {
-    return send(Command{std::move(stmt)}, mode);
-}
-
-bool Connection::send(std::string const& stmt, AsyncMode const mode) {
-    return send(Command{stmt}, mode);
-}
-
-bool Connection::send(std::string_view const stmt, AsyncMode const mode) {
-    return send(Command{stmt}, mode);
-}
-
-bool Connection::send(char const* const stmt, AsyncMode const mode) {
-    return send(Command{stmt}, mode);
-}
-
-bool Connection::send(Command const& cmd, AsyncMode const mode) {
-    auto const res = PQsendQueryParams(native(),
-                                       cmd.statement(),
-                                       cmd.count(),
-                                       cmd.types(),
-                                       cmd.values(),
-                                       cmd.lengths(),
-                                       cmd.formats(),
-                                       RESULT_FORMAT) == 1;
-    if (res && (mode == AsyncMode::SINGLE_ROW)) {
-        PQsetSingleRowMode(native());
-    }
-    return res;
-}
-
-bool Connection::send(PrepareData const& stmt) {
+bool Connection::prepareAsync(PrepareData const& data) {
     return PQsendPrepare(native(),
-                         stmt.name.data(),
-                         stmt.body.data(),
-                         static_cast<int>(stmt.types.size()),
-                         stmt.types.empty() ? nullptr : stmt.types.data()) == 1;
+                         data.name.data(),
+                         data.statement.data(),
+                         static_cast<int>(data.types.size()),
+                         data.types.data()) == 1;
 }
 
-bool Connection::send(PreparedCommand const& cmd, AsyncMode const mode) {
-    auto const res = PQsendQueryPrepared(native(),
-                                         cmd.statement(),
-                                         cmd.count(),
-                                         cmd.values(),
-                                         cmd.lengths(),
-                                         cmd.formats(),
-                                         RESULT_FORMAT) == 1;
-    if (res && (mode == AsyncMode::SINGLE_ROW)) {
-        PQsetSingleRowMode(native());
-    }
-    return res;
+bool Connection::execAsync(Command const& cmd) {
+    return PQsendQueryParams(native(),
+                             cmd.statement(),
+                             cmd.count(),
+                             cmd.types(),
+                             cmd.values(),
+                             cmd.lengths(),
+                             cmd.formats(),
+                             RESULT_FORMAT) == 1;
+}
+
+bool Connection::execPreparedAsync(Command const& cmd) {
+    return PQsendQueryPrepared(native(),
+                               cmd.statement(),
+                               cmd.count(),
+                               cmd.values(),
+                               cmd.lengths(),
+                               cmd.formats(),
+                               RESULT_FORMAT) == 1;
+}
+
+bool Connection::execRowByRow(Command const& cmd) {
+    return execAsync(cmd) && (PQsetSingleRowMode(native()) == 1);
+}
+
+bool Connection::execPreparedRowByRow(Command const& cmd) {
+    return execPreparedAsync(cmd) && (PQsetSingleRowMode(native()) == 1);
 }
 
 bool Connection::cancel() {

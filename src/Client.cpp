@@ -6,10 +6,12 @@
 
 namespace postgres {
 
-Client::Client() = default;
+Client::Client()
+    : conn_{Config::make()} {
+}
 
 Client::Client(const Config& config)
-    : connection_{config} {
+    : conn_{config} {
 }
 
 Client::Client(Client&& other) = default;
@@ -18,36 +20,45 @@ Client& Client::operator=(Client&& other) = default;
 
 Client::~Client() = default;
 
-Result Client::setSchema(const std::string& schema, const bool cache) {
-    return validate(trySetSchema(schema, cache));
+Result Client::prepare(const PrepareData& statement) {
+    return validate(tryPrepare(statement));
 }
 
-Result Client::trySetSchema(const std::string& schema, const bool cache) {
-    auto res = tryExecute("CREATE SCHEMA IF NOT EXISTS " + schema, "SET SCHEMA '" + schema + "'");
-    if (cache && res) {
-        schema_ = schema;
-    }
-    return res;
-}
-
-Result Client::prepare(const PrepareData& statement, const bool cache) {
-    return validate(tryPrepare(statement, cache));
-}
-
-Result Client::tryPrepare(const PrepareData& statement, const bool cache) {
-    if (cache) {
-        prepared_.push_back(statement);
-    }
-    return connection_.execute(statement);
+Result Client::tryPrepare(const PrepareData& statement) {
+    return conn_.prepare(statement);
 }
 
 Transaction Client::begin() {
     return Transaction{*this};
 }
 
+Result Client::doTryExecute(std::string&& stmt) {
+    return conn_.exec(Command{std::move(stmt)});
+}
+
+Result Client::doTryExecute(std::string const& stmt) {
+    return conn_.exec(Command{stmt});
+}
+
+Result Client::doTryExecute(std::string_view stmt) {
+    return conn_.exec(Command{stmt});
+}
+
+Result Client::doTryExecute(char const* stmt) {
+    return conn_.exec(Command{stmt});
+}
+
+Result Client::doTryExecute(PreparedCommand const& cmd) {
+    return conn_.execPrepared(cmd);
+}
+
+Result Client::doTryExecute(Command const& cmd) {
+    return conn_.exec(cmd);
+}
+
 Result Client::completeTransaction(Result res) {
     if (!res) {
-        if (connection_.isOk()) {
+        if (conn_.isOk()) {
             tryExecute("ROLLBACK");
         }
         return res;
@@ -60,24 +71,15 @@ Result Client::completeTransaction(Result res) {
 }
 
 void Client::reconnect() {
-    _POSTGRES_CXX_ASSERT(tryReconnect(), connection_.error());
+    _POSTGRES_CXX_ASSERT(tryReconnect(), conn_.error());
 }
 
 bool Client::tryReconnect() {
-    if (!connection_.reset()) {
-        return false;
-    }
-    if (!schema_.empty() && !trySetSchema(schema_, false)) {
-        return false;
-    }
-    for (auto const& statement : prepared_) {
-        tryPrepare(statement, false);
-    }
-    return true;
+    return conn_.reset();
 }
 
 Connection& Client::connection() {
-    return connection_;
+    return conn_;
 }
 
 Result Client::validate(postgres::Result res) {

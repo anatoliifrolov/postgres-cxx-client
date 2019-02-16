@@ -8,43 +8,29 @@
 
 namespace postgres {
 
-enum class AsyncMode {
-    MULTI_ROW,
-    SINGLE_ROW,
-};
-
 class Connection {
 public:
     static PGPing ping(Config const& cfg);
     static PGPing ping(std::string const& uri);
 
-    explicit Connection();
     explicit Connection(Config const& cfg);
     explicit Connection(std::string const& uri);
     Connection(Connection const& other) = delete;
     Connection& operator=(Connection const& other) = delete;
     Connection(Connection&& other) noexcept;
     Connection& operator=(Connection&& other) noexcept;
-    ~Connection();
+    ~Connection() noexcept;
 
-    Result execute(std::string&& stmt);
-    Result execute(std::string const& stmt);
-    Result execute(std::string_view stmt);
-    Result execute(char const* stmt);
-    Result execute(Command const& cmd);
-    Result execute(PrepareData const& stmt);
-    Result execute(PreparedCommand const& cmd);
-    Status executeRaw(std::string const& stmt);
-    Status executeRaw(std::string_view stmt);
-    Status executeRaw(char const* stmt);
+    Result prepare(PrepareData const& data);
+    Result exec(Command const& cmd);
+    Result execPrepared(Command const& cmd);
+    Status execRaw(std::string_view stmt);
 
-    bool send(std::string&& stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(std::string const& stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(std::string_view stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(char const* stmt, AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(Command const& cmd, AsyncMode mode = AsyncMode::MULTI_ROW);
-    bool send(PrepareData const& stmt);
-    bool send(PreparedCommand const& cmd, AsyncMode mode = AsyncMode::MULTI_ROW);
+    bool prepareAsync(PrepareData const& data);
+    bool execAsync(Command const& cmd);
+    bool execPreparedAsync(Command const& cmd);
+    bool execRowByRow(Command const& cmd);
+    bool execPreparedRowByRow(Command const& cmd);
     bool cancel();
     Result receive();
 

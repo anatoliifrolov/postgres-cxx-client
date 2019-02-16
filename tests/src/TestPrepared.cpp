@@ -16,9 +16,4 @@ TEST_F(TestPrepared, Basic) {
     ASSERT_EQ(true, (bool) res[0][0]);
 }
 
-TEST_F(TestPrepared, Reconnect) {
-    client_.reconnect();
-    client_.execute(PreparedCommand{"prepared_insert", true});
-}
-
 }  // namespace postgres
