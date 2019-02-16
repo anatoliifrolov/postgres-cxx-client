@@ -11,7 +11,7 @@ struct TestVisitor : Migration, testing::Test {
 };
 
 TEST_F(TestVisitor, Manual) {
-    test pinged{};
+    Table pinged{};
     pinged.int2   = 2;
     pinged.int4   = 4;
     pinged.int8   = 8;
@@ -21,7 +21,7 @@ TEST_F(TestVisitor, Manual) {
     pinged.info   = "INFO";
     pinged.time   = timePointSample();
 
-    test ponged{};
+    Table ponged{};
 
     auto const res = client_.execute(Command{R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8))", pinged},
@@ -38,8 +38,8 @@ TEST_F(TestVisitor, Manual) {
     ASSERT_EQ(timePointSample(), ponged.time);
 }
 
-static std::vector<test> makeDataToInsert() {
-    std::vector<test> data{};
+static std::vector<Table> makeDataToInsert() {
+    std::vector<Table> data{};
 
     data.emplace_back();
     data.back().int2   = 2;
@@ -104,7 +104,7 @@ TEST_F(TestVisitor, AutoInsert) {
 }
 
 TEST_F(TestVisitor, AutoUpdate) {
-    std::vector<test> data{};
+    std::vector<Table> data{};
 
     data.emplace_back();
     data.back().int2   = 2;

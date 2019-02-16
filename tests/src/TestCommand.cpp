@@ -265,22 +265,22 @@ TEST(TestCommand, Range) {
     ASSERT_EQ(1, cmd.formats()[2]);
 }
 
-struct Visitable {
+struct CTable {
     std::string s;
     int32_t     n = 0;
     double      f = 0.0;
 
-    POSTGRES_CXX_TABLE(Visitable, s, n, f);
+    POSTGRES_CXX_TABLE("test", s, n, f);
 };
 
 TEST(TestCommand, Visit) {
-    Visitable const v{"TEXT", 3, 4.56};
-    Command const   cmd{"STMT", v};
+    CTable const  tbl{"TEXT", 3, 4.56};
+    Command const cmd{"STMT", tbl};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(3, cmd.count());
 
     ASSERT_EQ(0u, cmd.types()[0]);
-    ASSERT_EQ(v.s.data(), cmd.values()[0]);
+    ASSERT_EQ(tbl.s.data(), cmd.values()[0]);
     ASSERT_EQ(0, cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 

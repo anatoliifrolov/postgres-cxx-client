@@ -65,7 +65,7 @@ TEST_F(TestData, Types) {
         true,
         "INFO"}, "SELECT int2, int4, int8, float4, float8, flag, info FROM test");
 
-    test row{};
+    Table row{};
 
     // Normal.
     res[0]["int2"] >> row.int2;
