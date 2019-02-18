@@ -88,7 +88,7 @@ public:
     template <typename T>
     std::enable_if_t<internal::isVisitable<T>(), Result> trySelect(std::vector<T>& vals) {
         auto res = tryExecute(Statement<T>::select());
-        if (!res) {
+        if (!res.isOk()) {
             return res;
         }
         vals.reserve(res.size());
@@ -120,7 +120,7 @@ private:
     std::enable_if_t<(sizeof... (Ts) > 0), Result>
     doTryExecute(const T& statement, const Ts& ... statements) {
         auto res = doTryExecute(statement);
-        if (res) {
+        if (res.isOk()) {
             return doTryExecute(statements...);
         }
         return res;

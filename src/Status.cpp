@@ -7,59 +7,59 @@ Status::Status(PGresult* const handle)
     : handle_{handle, PQclear} {
 }
 
-Status::Status(Status&& other) = default;
+Status::Status(Status&& other) noexcept = default;
 
-Status& Status::operator=(Status&& other) = default;
+Status& Status::operator=(Status&& other) noexcept = default;
 
-Status::~Status() = default;
+Status::~Status() noexcept = default;
+
+Status const& Status::valid() const {
+    _POSTGRES_CXX_ASSERT(isOk(), message());
+    return *this;
+}
 
 bool Status::isOk() const {
-    switch (status()) {
-        case ExecStatusType::PGRES_COMMAND_OK:
-        case ExecStatusType::PGRES_TUPLES_OK:
-        case ExecStatusType::PGRES_SINGLE_TUPLE:
-        case ExecStatusType::PGRES_NONFATAL_ERROR:
+    switch (type()) {
+        case PGRES_COMMAND_OK:
+        case PGRES_TUPLES_OK:
+        case PGRES_SINGLE_TUPLE:
+        case PGRES_NONFATAL_ERROR: {
             return true;
-        default:
-            return false;
+        }
+        default: {
+            break;
+        }
     }
+    return false;
 }
 
 bool Status::isDone() const {
-    return !native();
+    return native() == nullptr;
 }
 
-void Status::validate() const {
-    _POSTGRES_CXX_ASSERT(isOk(), errorMessage());
-}
-
-Status::operator bool() const {
-    return isOk();
-}
-
-ExecStatusType Status::status() const {
-    return PQresultStatus(native());
-}
-
-const char* Status::statusName() const {
-    return PQresStatus(status());
-}
-
-const char* Status::errorMessage() const {
-    return PQresultErrorMessage(native());
+bool Status::isEmpty() const {
+    return size() == 0;
 }
 
 int Status::size() const {
     return PQntuples(native());
 }
 
-int Status::affected() const {
-    const std::string n = PQcmdTuples(native());
-    return n.empty() ? 0 : std::stoi(n);
+int Status::effect() const {
+    std::string const s = PQcmdTuples(native());
+    return s.empty() ? 0 : std::stoi(s);
 }
 
-bool Status::empty() const {
-    return size() == 0;
+const char* Status::message() const {
+    return PQresultErrorMessage(native());
+}
+
+const char* Status::describe() const {
+    return PQresStatus(type());
+}
+
+ExecStatusType Status::type() const {
+    return PQresultStatus(native());
 }
 
 PGresult* Status::native() const {

@@ -57,14 +57,14 @@ Result Client::doTryExecute(Command const& cmd) {
 }
 
 Result Client::completeTransaction(Result res) {
-    if (!res) {
+    if (!res.isOk()) {
         if (conn_.isOk()) {
             tryExecute("ROLLBACK");
         }
         return res;
     }
     auto commit_res = tryExecute("COMMIT");
-    if (!commit_res) {
+    if (!commit_res.isOk()) {
         return commit_res;
     }
     return res;
@@ -86,7 +86,7 @@ Result Client::validate(postgres::Result res) {
     if (res.isOk()) {
         return res;
     }
-    std::string msg = res.errorMessage();
+    std::string msg = res.message();
     if (msg.empty()) {
         msg = connection().error();
     }

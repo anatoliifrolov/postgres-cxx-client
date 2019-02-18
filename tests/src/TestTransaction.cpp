@@ -39,7 +39,7 @@ TEST_F(TestTransaction, Rollback) {
 TEST_F(TestTransaction, AutoCommit) {
     auto res = client_.execute("INSERT INTO test(int4) VALUES(1)",
                                "INSERT INTO test(int4) VALUES(2), (3)");
-    ASSERT_EQ(2, res.affected());
+    ASSERT_EQ(2, res.effect());
     res = client_.execute("SELECT int4 FROM test ORDER BY int4");
     ASSERT_EQ(1, (int) res[0][0]);
     ASSERT_EQ(2, (int) res[1][0]);

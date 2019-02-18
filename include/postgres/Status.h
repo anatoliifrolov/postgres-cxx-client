@@ -7,28 +7,22 @@ namespace postgres {
 
 class Status {
 public:
-    explicit Status(PGresult* const handle);
-    Status(const Status& other) = delete;
-    Status(Status&& other);
-    Status& operator=(const Status& other) = delete;
-    Status& operator=(Status&& other);
-    ~Status();
+    explicit Status(PGresult* handle);
+    Status(Status const& other) = delete;
+    Status& operator=(Status const& other) = delete;
+    Status(Status&& other) noexcept;
+    Status& operator=(Status&& other) noexcept;
+    ~Status() noexcept;
 
-    // Status.
+    Status const& valid() const;
     bool isOk() const;
     bool isDone() const;
-    void validate() const;
-    operator bool() const;
-    ExecStatusType status() const;
-    const char* statusName() const;
-    const char* errorMessage() const;
-
-    // Result size info.
-    // Safe to be called in any status.
+    bool isEmpty() const;
     int size() const;
-    int affected() const;
-    bool empty() const;
-
+    int effect() const;
+    const char* message() const;
+    const char* describe() const;
+    ExecStatusType type() const;
     PGresult* native() const;
 
 protected:

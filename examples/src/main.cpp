@@ -57,19 +57,19 @@ void basicUsage(Connection& conn) {
             // Reestablish it using all the same parameters.
             conn.reset();
         }
-        std::cerr << res.errorMessage() << std::endl;
+        std::cerr << res.message() << std::endl;
         return;
     }
 
     // Another way to check the result:
     try {
-        res.validate();
+        res.valid();
     } catch (const std::exception& ex) {
         std::cerr << ex.what() << std::endl;
         return;
     }
 
-    if (!res.empty()) {
+    if (!res.isEmpty()) {
         // Process result...
     }
 }
@@ -180,7 +180,7 @@ void executeAsyncRowByRow(Connection& conn) {
     conn.send("SELECT * FROM example", postgres::AsyncMode::SINGLE_ROW);
     for (auto res = conn.receive(); !res.isDone(); res = conn.receive()) {
         // Note that the last result will be empty while isDone() will be still false.
-        if (!res.empty()) {
+        if (!res.isEmpty()) {
             // Process result...
         }
     }

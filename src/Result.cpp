@@ -14,12 +14,12 @@ Result& Result::operator=(Result&& other) = default;
 Result::~Result() = default;
 
 Result::iterator Result::begin() const {
-    validate();
+    valid();
     return iterator{*handle_, 0};
 }
 
 Result::iterator Result::end() const {
-    validate();
+    valid();
     return iterator{*handle_, size()};
 }
 
@@ -28,7 +28,7 @@ Tuple Result::front() const {
 }
 
 Tuple Result::operator[](const int index) const {
-    validate();
+    valid();
     return *iterator{*handle_, index};
 }
 

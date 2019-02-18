@@ -10,15 +10,14 @@ struct TestResult : Migration, testing::Test {
 
 TEST_F(TestResult, NullPtr) {
     Result res{nullptr};
-    res.status();
-    res.statusName();
-    res.errorMessage();
+    res.type();
+    res.describe();
+    res.message();
     ASSERT_FALSE(res.isOk());
-    ASSERT_FALSE(res);
     ASSERT_TRUE(res.isDone());
     ASSERT_EQ(0, res.size());
-    ASSERT_EQ(0, res.affected());
-    ASSERT_TRUE(res.empty());
+    ASSERT_EQ(0, res.effect());
+    ASSERT_TRUE(res.isEmpty());
     ASSERT_THROW(res.begin(), std::exception);
     ASSERT_THROW(res.end(), std::exception);
     ASSERT_THROW(res.front(), std::exception);
@@ -28,10 +27,9 @@ TEST_F(TestResult, NullPtr) {
 TEST_F(TestResult, Invalid) {
     auto const res = conn_->exec(Command{"BAD STATEMENT"});
     ASSERT_FALSE(res.isOk());
-    ASSERT_FALSE(res);
     ASSERT_EQ(0, res.size());
-    ASSERT_EQ(0, res.affected());
-    ASSERT_TRUE(res.empty());
+    ASSERT_EQ(0, res.effect());
+    ASSERT_TRUE(res.isEmpty());
     ASSERT_THROW(res.begin(), std::exception);
     ASSERT_THROW(res.end(), std::exception);
     ASSERT_THROW(res.front(), std::exception);
@@ -42,8 +40,8 @@ TEST_F(TestResult, Empty) {
     auto const res = conn_->exec(Command{"SELECT * FROM test"});
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(0, res.size());
-    ASSERT_EQ(0, res.affected());
-    ASSERT_TRUE(res.empty());
+    ASSERT_EQ(0, res.effect());
+    ASSERT_TRUE(res.isEmpty());
 
     for (auto const tuple : res) {
         // Must not reach here.
