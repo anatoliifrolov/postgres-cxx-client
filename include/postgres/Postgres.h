@@ -10,6 +10,7 @@
 #include <postgres/Postgres.h>
 #include <postgres/PrepareData.h>
 #include <postgres/PreparedCommand.h>
+#include <postgres/Receiver.h>
 #include <postgres/Result.h>
 #include <postgres/Statement.h>
 #include <postgres/Status.h>

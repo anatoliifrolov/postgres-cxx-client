@@ -15,8 +15,8 @@ public:
 
     explicit Connection(Config const& cfg);
     explicit Connection(std::string const& uri);
-    Connection(Connection const& other) = delete;
-    Connection& operator=(Connection const& other) = delete;
+    Connection(Connection const& other);
+    Connection& operator=(Connection const& other);
     Connection(Connection&& other) noexcept;
     Connection& operator=(Connection&& other) noexcept;
     ~Connection() noexcept;
@@ -26,17 +26,12 @@ public:
     Result execPrepared(Command const& cmd);
     Status execRaw(std::string_view stmt);
 
-    bool prepareAsync(PrepareData const& data);
-    bool execAsync(Command const& cmd);
-    bool execPreparedAsync(Command const& cmd);
-    bool execRowByRow(Command const& cmd);
-    bool execPreparedRowByRow(Command const& cmd);
-    bool cancel();
-    Result receive();
+    Receiver prepareAsync(PrepareData const& data);
+    Receiver execAsync(Command const& cmd);
+    Receiver execPreparedAsync(Command const& cmd);
 
     bool reset();
     bool isOk();
-    bool isBusy();
     std::string error();
     PGconn* native() const;
 
@@ -45,7 +40,7 @@ public:
     std::basic_string<unsigned char> escBytes(std::basic_string<unsigned char> const& in);
 
 private:
-    std::unique_ptr<PGconn, void (*)(PGconn*)> handle_;
+    std::shared_ptr<PGconn> handle_;
 };
 
 }  // namespace postgres

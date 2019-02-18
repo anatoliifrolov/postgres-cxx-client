@@ -4,6 +4,7 @@
 #include <postgres/Config.h>
 #include <postgres/Error.h>
 #include <postgres/PrepareData.h>
+#include <postgres/Receiver.h>
 #include <postgres/Result.h>
 
 namespace postgres {
@@ -28,6 +29,10 @@ Connection::Connection(Config const& cfg)
 Connection::Connection(std::string const& uri)
     : handle_{PQconnectdb(uri.data()), PQfinish} {
 }
+
+Connection::Connection(Connection const& other) = default;
+
+Connection& Connection::operator=(Connection const& other) = default;
 
 Connection::Connection(Connection&& other) noexcept = default;
 
@@ -68,54 +73,36 @@ Status Connection::execRaw(std::string_view const stmt) {
     return Status{PQexec(native(), stmt.data())};
 }
 
-bool Connection::prepareAsync(PrepareData const& data) {
-    return PQsendPrepare(native(),
-                         data.name.data(),
-                         data.statement.data(),
-                         static_cast<int>(data.types.size()),
-                         data.types.data()) == 1;
+Receiver Connection::prepareAsync(PrepareData const& data) {
+    return Receiver{handle_,
+                    PQsendPrepare(native(),
+                                  data.name.data(),
+                                  data.statement.data(),
+                                  static_cast<int>(data.types.size()),
+                                  data.types.data())};
 }
 
-bool Connection::execAsync(Command const& cmd) {
-    return PQsendQueryParams(native(),
-                             cmd.statement(),
-                             cmd.count(),
-                             cmd.types(),
-                             cmd.values(),
-                             cmd.lengths(),
-                             cmd.formats(),
-                             RESULT_FORMAT) == 1;
+Receiver Connection::execAsync(Command const& cmd) {
+    return Receiver{handle_,
+                    PQsendQueryParams(native(),
+                                      cmd.statement(),
+                                      cmd.count(),
+                                      cmd.types(),
+                                      cmd.values(),
+                                      cmd.lengths(),
+                                      cmd.formats(),
+                                      RESULT_FORMAT)};
 }
 
-bool Connection::execPreparedAsync(Command const& cmd) {
-    return PQsendQueryPrepared(native(),
-                               cmd.statement(),
-                               cmd.count(),
-                               cmd.values(),
-                               cmd.lengths(),
-                               cmd.formats(),
-                               RESULT_FORMAT) == 1;
-}
-
-bool Connection::execRowByRow(Command const& cmd) {
-    return execAsync(cmd) && (PQsetSingleRowMode(native()) == 1);
-}
-
-bool Connection::execPreparedRowByRow(Command const& cmd) {
-    return execPreparedAsync(cmd) && (PQsetSingleRowMode(native()) == 1);
-}
-
-bool Connection::cancel() {
-    auto constexpr BUF_LEN          = 256;
-    char           err_buf[BUF_LEN] = {0};
-    auto const     info             = PQgetCancel(native());
-    auto const     res              = PQcancel(info, err_buf, BUF_LEN) == 1;
-    PQfreeCancel(info);
-    return res;
-}
-
-Result Connection::receive() {
-    return Result{PQgetResult(native())};
+Receiver Connection::execPreparedAsync(Command const& cmd) {
+    return Receiver{handle_,
+                    PQsendQueryPrepared(native(),
+                                        cmd.statement(),
+                                        cmd.count(),
+                                        cmd.values(),
+                                        cmd.lengths(),
+                                        cmd.formats(),
+                                        RESULT_FORMAT)};
 }
 
 bool Connection::reset() {
@@ -125,11 +112,6 @@ bool Connection::reset() {
 
 bool Connection::isOk() {
     return PQstatus(native()) == CONNECTION_OK;
-}
-
-bool Connection::isBusy() {
-    PQconsumeInput(native());
-    return PQisBusy(native()) == 1;
 }
 
 std::string Connection::error() {
