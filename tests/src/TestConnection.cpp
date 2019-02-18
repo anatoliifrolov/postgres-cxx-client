@@ -1,12 +1,9 @@
-//#include <stdexcept>
-//#include <thread>
-//#include <set>
 #include <gtest/gtest.h>
+#include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
-//#include <postgres/Command.h>
-//#include <postgres/PreparedCommand.h>
-//#include "Migration.h"
+#include <postgres/PrepareData.h>
+#include <postgres/Result.h>
 
 namespace postgres {
 
@@ -77,6 +74,111 @@ TEST(TestConnection, Reset) {
     Connection conn{Config::build()};
     ASSERT_TRUE(conn.reset());
     ASSERT_TRUE(conn.isOk());
+}
+
+TEST(TestConnection, Exec) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.exec(Command{"SELECT 1"}).isOk());
+    ASSERT_FALSE(conn.exec(Command{"SELECT 1; SELECT 2"}).isOk());
+    ASSERT_FALSE(conn.exec(Command{"BAD"}).isOk());
+}
+
+TEST(TestConnection, ExecRaw) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.execRaw("SELECT 1").isOk());
+    ASSERT_TRUE(conn.execRaw("SELECT 1; SELECT 2").isOk());
+    ASSERT_FALSE(conn.execRaw("BAD").isOk());
+}
+
+TEST(TestConnection, Prepare) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.prepare(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.execPrepared(Command{"select1"}).isOk());
+    ASSERT_FALSE(conn.execPrepared(Command{"BAD"}).isOk());
+}
+
+TEST(TestConnection, Async) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.execAsync(Command{"SELECT 1"}));
+
+    auto res = conn.receive();
+    ASSERT_TRUE(res.isOk());
+    ASSERT_FALSE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
+}
+
+TEST(TestConnection, AsyncBad) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.execAsync(Command{"BAD"}));
+
+    auto res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
+}
+
+TEST(TestConnection, PrepareAsync) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.prepareAsync(PrepareData{"select1", "SELECT 1"}));
+
+    auto res = conn.receive();
+    ASSERT_TRUE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
+
+    ASSERT_TRUE(conn.execPreparedAsync(Command{"select1"}));
+
+    res = conn.receive();
+    ASSERT_TRUE(res.isOk());
+    ASSERT_FALSE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
+}
+
+TEST(TestConnection, PrepareAsyncBad) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.prepareAsync(PrepareData{"select1", "BAD"}));
+
+    auto res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
+
+    ASSERT_TRUE(conn.execPreparedAsync(Command{"select1"}));
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_FALSE(res.isDone());
+
+    res = conn.receive();
+    ASSERT_FALSE(res.isOk());
+    ASSERT_TRUE(res.isEmpty());
+    ASSERT_TRUE(res.isDone());
 }
 
 //TEST_F(TestConnection, Esc) {
