@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <postgres/Command.h>
 #include <postgres/Result.h>
+#include <postgres/Tuple.h>
 #include "Migration.h"
 
 namespace postgres {
@@ -20,7 +21,6 @@ TEST_F(TestResult, NullPtr) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_THROW(res.begin(), std::exception);
     ASSERT_THROW(res.end(), std::exception);
-    ASSERT_THROW(res.front(), std::exception);
     ASSERT_THROW(res[0], std::exception);
 }
 
@@ -32,7 +32,6 @@ TEST_F(TestResult, Invalid) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_THROW(res.begin(), std::exception);
     ASSERT_THROW(res.end(), std::exception);
-    ASSERT_THROW(res.front(), std::exception);
     ASSERT_THROW(res[0], std::exception);
 }
 

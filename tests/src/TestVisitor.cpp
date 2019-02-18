@@ -2,6 +2,7 @@
 #include <set>
 #include <gtest/gtest.h>
 #include <postgres/Command.h>
+#include <postgres/Tuple.h>
 #include "Migration.h"
 #include "Timestamps.h"
 
@@ -26,7 +27,7 @@ TEST_F(TestVisitor, Manual) {
     auto const res = client_.execute(Command{R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8))", pinged},
                                      "SELECT int2, int4, int8, float4, float8, flag, info, time FROM test");
-    res.front() >> ponged;
+    res[0] >> ponged;
 
     ASSERT_EQ(2, ponged.int2);
     ASSERT_EQ(4, ponged.int4);

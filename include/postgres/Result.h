@@ -1,27 +1,42 @@
 #pragma once
 
-#include <postgres/Tuple.h>
-#include <postgres/Status.h>
+#include <memory>
+#include <libpq-fe.h>
 
 namespace postgres {
 
-class Result : public Status {
+class Tuple;
+
+class Result {
 public:
     class iterator;
 
-    explicit Result(PGresult* const handle);
-    Result(const Result& other) = delete;
-    Result(Result&& other);
-    Result& operator=(const Result& other) = delete;
-    Result& operator=(Result&& other);
-    ~Result();
+    explicit Result(PGresult* handle);
+    Result(Result const& other) = delete;
+    Result& operator=(Result const& other) = delete;
+    Result(Result&& other) noexcept;
+    Result& operator=(Result&& other) noexcept;
+    ~Result() noexcept;
 
-    // Data access methods.
-    // Must be called only if isOk() returns true.
+    Result const& valid() const;
+    bool isOk() const;
+    bool isDone() const;
+    bool isEmpty() const;
+
     iterator begin() const;
     iterator end() const;
-    Tuple front() const;
-    Tuple operator[](const int index) const;
+    Tuple operator[](int idx) const;
+
+    int size() const;
+    int effect() const;
+    const char* message() const;
+    const char* describe() const;
+    ExecStatusType type() const;
+
+    PGresult* native() const;
+
+private:
+    std::unique_ptr<PGresult, void (*)(PGresult*)> handle_;
 };
 
 class Result::iterator {
@@ -34,25 +49,24 @@ public:
     using pointer = Tuple*;
     using reference = Tuple&;
 
-    iterator(const iterator& other);
-    iterator(iterator&& other);
-    iterator& operator=(const iterator& other);
-    iterator& operator=(iterator&& other);
-    ~iterator();
+    iterator(iterator const& other);
+    iterator& operator=(iterator const& other);
+    iterator(iterator&& other) noexcept;
+    iterator& operator=(iterator&& other) noexcept;
+    ~iterator() noexcept;
 
-    bool operator==(const iterator& other) const;
-    bool operator!=(const iterator& other) const;
+    bool operator==(iterator const& other) const;
+    bool operator!=(iterator const& other) const;
     void operator++();
-    iterator operator++(int);
-    Tuple operator*() const;
+    iterator const operator++(int);
     Tuple operator->() const;
+    Tuple operator*() const;
 
 private:
-    explicit iterator(PGresult& handle, const int row_index);
-    int size() const;
+    explicit iterator(PGresult& handle, int idx);
 
-    PGresult* handle_;
-    int row_index_;
+    PGresult* handle_ = nullptr;
+    int idx_ = 0;
 };
 
 }  // namespace postgres

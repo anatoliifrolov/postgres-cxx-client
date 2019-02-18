@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 #include <type_traits>
+#include <postgres/internal/Classifier.h>
 #include <postgres/Result.h>
 #include <postgres/Transaction.h>
 #include <postgres/PrepareData.h>

@@ -13,7 +13,6 @@
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 #include <postgres/Statement.h>
-#include <postgres/Status.h>
 #include <postgres/Time.h>
 #include <postgres/Transaction.h>
 #include <postgres/Tuple.h>

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
+#include <postgres/Tuple.h>
 #include "Migration.h"
 
 namespace postgres {

@@ -24,11 +24,12 @@ public:
     Result prepare(PrepareData const& data);
     Result exec(Command const& cmd);
     Result execPrepared(Command const& cmd);
-    Status execRaw(std::string_view stmt);
+    Result execRaw(std::string_view stmt);
 
     Receiver prepareAsync(PrepareData const& data);
     Receiver execAsync(Command const& cmd);
     Receiver execPreparedAsync(Command const& cmd);
+    Receiver execRawAsync(std::string_view stmt);
 
     bool reset();
     bool isOk();

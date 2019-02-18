@@ -69,8 +69,8 @@ Result Connection::execPrepared(Command const& cmd) {
                                  RESULT_FORMAT)};
 }
 
-Status Connection::execRaw(std::string_view const stmt) {
-    return Status{PQexec(native(), stmt.data())};
+Result Connection::execRaw(std::string_view stmt) {
+    return Result{PQexec(native(), stmt.data())};
 }
 
 Receiver Connection::prepareAsync(PrepareData const& data) {
@@ -103,6 +103,10 @@ Receiver Connection::execPreparedAsync(Command const& cmd) {
                                         cmd.lengths(),
                                         cmd.formats(),
                                         RESULT_FORMAT)};
+}
+
+Receiver Connection::execRawAsync(std::string_view const stmt) {
+    return Receiver{handle_, PQsendQuery(native(), stmt.data())};
 }
 
 bool Connection::reset() {

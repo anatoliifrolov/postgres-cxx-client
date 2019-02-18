@@ -10,7 +10,6 @@ class Field;
 class PreparedCommand;
 class Receiver;
 class Result;
-class Status;
 class Time;
 class Transaction;
 class Tuple;
