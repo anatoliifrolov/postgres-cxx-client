@@ -30,10 +30,6 @@ Connection::Connection(std::string const& uri)
     : handle_{PQconnectdb(uri.data()), PQfinish} {
 }
 
-Connection::Connection(Connection const& other) = default;
-
-Connection& Connection::operator=(Connection const& other) = default;
-
 Connection::Connection(Connection&& other) noexcept = default;
 
 Connection& Connection::operator=(Connection&& other) noexcept = default;
@@ -82,7 +78,7 @@ Receiver Connection::prepareAsync(PrepareData const& data) {
                                   data.types.data())};
 }
 
-Receiver Connection::execAsync(Command const& cmd) {
+Receiver Connection::send(Command const& cmd) {
     return Receiver{handle_,
                     PQsendQueryParams(native(),
                                       cmd.statement(),
@@ -94,7 +90,7 @@ Receiver Connection::execAsync(Command const& cmd) {
                                       RESULT_FORMAT)};
 }
 
-Receiver Connection::execPreparedAsync(Command const& cmd) {
+Receiver Connection::sendPrepared(Command const& cmd) {
     return Receiver{handle_,
                     PQsendQueryPrepared(native(),
                                         cmd.statement(),
@@ -105,7 +101,7 @@ Receiver Connection::execPreparedAsync(Command const& cmd) {
                                         RESULT_FORMAT)};
 }
 
-Receiver Connection::execRawAsync(std::string_view const stmt) {
+Receiver Connection::sendRaw(std::string_view stmt) {
     return Receiver{handle_, PQsendQuery(native(), stmt.data())};
 }
 
@@ -118,33 +114,28 @@ bool Connection::isOk() {
     return PQstatus(native()) == CONNECTION_OK;
 }
 
-std::string Connection::error() {
+std::string Connection::message() {
     return PQerrorMessage(native());
 }
 
-PGconn* Connection::native() const {
-    return handle_.get();
-}
-
-template <typename C>
-std::basic_string<C> doEsc(Connection& conn, C* const escaped) {
-    _POSTGRES_CXX_ASSERT(escaped, conn.error());
-    std::basic_string<C> res = escaped;
+std::string Connection::esc(std::string const& in) {
+    auto const escaped = PQescapeLiteral(native(), in.data(), in.size());
+    _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
+    std::string res = escaped;
     PQfreemem(escaped);
     return res;
 }
 
-std::string Connection::esc(std::string const& in) {
-    return doEsc(*this, PQescapeLiteral(native(), in.data(), in.size()));
-}
-
 std::string Connection::escId(std::string const& in) {
-    return doEsc(*this, PQescapeIdentifier(native(), in.data(), in.size()));
+    auto const escaped = PQescapeIdentifier(native(), in.data(), in.size());
+    _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
+    std::string res = escaped;
+    PQfreemem(escaped);
+    return res;
 }
 
-std::basic_string<unsigned char> Connection::escBytes(std::basic_string<unsigned char> const& in) {
-    size_t len = 0;
-    return doEsc(*this, PQescapeByteaConn(native(), in.data(), in.size(), &len));
+PGconn* Connection::native() const {
+    return handle_.get();
 }
 
 }  // namespace postgres

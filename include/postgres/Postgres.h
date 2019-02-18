@@ -5,7 +5,6 @@
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
 #include <postgres/Field.h>
-#include <postgres/Fwd.h>
 #include <postgres/Oid.h>
 #include <postgres/Postgres.h>
 #include <postgres/PrepareData.h>

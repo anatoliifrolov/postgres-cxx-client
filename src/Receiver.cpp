@@ -9,10 +9,6 @@ Receiver::Receiver(std::shared_ptr<PGconn> handle, int const res)
     : handle_{std::move(handle)}, is_ok_{res == 1} {
 }
 
-Receiver::Receiver(Receiver const& other) = default;
-
-Receiver& Receiver::operator=(Receiver const& other) = default;
-
 Receiver::Receiver(Receiver&& other) noexcept = default;
 
 Receiver& Receiver::operator=(Receiver&& other) noexcept = default;

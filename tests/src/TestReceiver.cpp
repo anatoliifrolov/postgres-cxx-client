@@ -10,7 +10,7 @@ namespace postgres {
 
 TEST(TestReceiver, Exec) {
     Connection conn{Config::build()};
-    auto rcvr = conn.execAsync(Command{"SELECT 1"});
+    auto rcvr = conn.send(Command{"SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -26,7 +26,7 @@ TEST(TestReceiver, Exec) {
 
 TEST(TestReceiver, ExecBad) {
     Connection conn{Config::build()};
-    auto rcvr = conn.execAsync(Command{"BAD"});
+    auto rcvr = conn.send(Command{"BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -55,7 +55,7 @@ TEST(TestReceiver, Prepare) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.execPreparedAsync(Command{"select1"});
+    rcvr = conn.sendPrepared(Command{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
@@ -84,7 +84,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.execPreparedAsync(Command{"select1"});
+    rcvr = conn.sendPrepared(Command{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
