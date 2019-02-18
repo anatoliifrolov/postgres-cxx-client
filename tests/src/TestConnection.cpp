@@ -1,46 +1,96 @@
-#include <stdexcept>
-#include <thread>
-#include <set>
+//#include <stdexcept>
+//#include <thread>
+//#include <set>
 #include <gtest/gtest.h>
-#include <postgres/Connection.h>
 #include <postgres/Config.h>
-#include <postgres/Command.h>
-#include <postgres/PreparedCommand.h>
-#include "Migration.h"
+#include <postgres/Connection.h>
+//#include <postgres/Command.h>
+//#include <postgres/PreparedCommand.h>
+//#include "Migration.h"
 
 namespace postgres {
 
-struct TestConnection : Migration, testing::Test {
-};
+static constexpr auto CONNECT_STR = "user=cxx_client password=cxx_client dbname=cxx_client";
+static constexpr auto CONNECT_URI = "postgresql://cxx_client:cxx_client@/cxx_client";
 
-TEST_F(TestConnection, Ping) {
-    ASSERT_EQ(PQPING_OK, Connection::ping(Config::make()));
-    ASSERT_EQ(PQPING_NO_RESPONSE, Connection::ping(Config::Builder{}.port(1234).build()));
+TEST(TestConnection, Ping) {
+    ASSERT_EQ(PQPING_OK, Connection::ping(Config::build()));
+    ASSERT_EQ(PQPING_NO_RESPONSE, Connection::ping(Config::Builder{}.port(2345).build()));
+    ASSERT_EQ(PQPING_NO_ATTEMPT, Connection::ping(Config::Builder{}.set("k", "v").build()));
 }
 
-TEST_F(TestConnection, Bad) {
-    Connection conn{Config::Builder{}.dbname("BADDB").user("BADUSER").password("BADPASSW").build()};
+TEST(TestConnection, PingStr) {
+    ASSERT_EQ(PQPING_OK, Connection::ping(CONNECT_STR));
+    ASSERT_EQ(PQPING_NO_RESPONSE, Connection::ping("port=2345"));
+    ASSERT_EQ(PQPING_NO_ATTEMPT, Connection::ping("k=v"));
+}
+
+TEST(TestConnection, PingUri) {
+    ASSERT_EQ(PQPING_OK, Connection::ping(CONNECT_URI));
+    ASSERT_EQ(PQPING_NO_RESPONSE, Connection::ping("postgresql://:2345"));
+    ASSERT_EQ(PQPING_NO_ATTEMPT, Connection::ping("postgresql://?k=v"));
+}
+
+TEST(TestConnection, Connect) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.isOk());
+    ASSERT_TRUE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
+}
+
+TEST(TestConnection, ConnectBad) {
+    Connection conn{Config::Builder{}.port(2345).build()};
     ASSERT_FALSE(conn.isOk());
+    ASSERT_FALSE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
 }
 
-TEST_F(TestConnection, Good) {
-    ASSERT_TRUE(conn_->isOk());
-    conn_->reset();
-    ASSERT_TRUE(conn_->isOk());
+TEST(TestConnection, ConnectStr) {
+    Connection conn{CONNECT_STR};
+    ASSERT_TRUE(conn.isOk());
+    ASSERT_TRUE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
 }
 
-TEST_F(TestConnection, Esc) {
-    ASSERT_EQ("'H''UERAGA'", conn_->esc("H'UERAGA"));
-    ASSERT_EQ("\"h'ueRaga\"", conn_->escId("h'ueRaga"));
+TEST(TestConnection, ConnectStrBad) {
+    Connection conn{"port=2345"};
+    ASSERT_FALSE(conn.isOk());
+    ASSERT_FALSE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
 }
 
-TEST_F(TestConnection, Raw) {
-    auto status = conn_->execRaw("SELECT 1; SELECT 2, 3;");
-    ASSERT_TRUE(status.isOk());
-    ASSERT_EQ(1, status.size());
-    ASSERT_FALSE(status.empty());
+TEST(TestConnection, ConnectUri) {
+    Connection conn{CONNECT_URI};
+    ASSERT_TRUE(conn.isOk());
+    ASSERT_TRUE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
 }
 
+TEST(TestConnection, ConnectUriBad) {
+    Connection conn{"postgresql://:2345"};
+    ASSERT_FALSE(conn.isOk());
+    ASSERT_FALSE(conn.error().empty());
+    ASSERT_NE(nullptr, conn.native());
+}
+
+TEST(TestConnection, Reset) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.reset());
+    ASSERT_TRUE(conn.isOk());
+}
+
+//TEST_F(TestConnection, Esc) {
+//    ASSERT_EQ("'H''UERAGA'", conn_->esc("H'UERAGA"));
+//    ASSERT_EQ("\"h'ueRaga\"", conn_->escId("h'ueRaga"));
+//}
+//
+//TEST_F(TestConnection, Raw) {
+//    auto status = conn_->execRaw("SELECT 1; SELECT 2, 3;");
+//    ASSERT_TRUE(status.isOk());
+//    ASSERT_EQ(1, status.size());
+//    ASSERT_FALSE(status.empty());
+//}
+//
 //TEST_F(TestConnection, Async) {
 //    ASSERT_TRUE(conn_->prepareAsync(PrepareData{"prepared_insert",
 //                                                "INSERT INTO test(flag) VALUES($1)"}));

@@ -7,7 +7,7 @@
 namespace postgres {
 
 Client::Client()
-    : conn_{Config::make()} {
+    : conn_{Config::build()} {
 }
 
 Client::Client(const Config& config)

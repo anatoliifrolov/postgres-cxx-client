@@ -33,7 +33,7 @@ public:
     Config& operator=(Config&& other) noexcept;
     ~Config();
 
-    static Config make();
+    static Config build();
 
     // libpq interface adapters.
     char const* const* keys() const;

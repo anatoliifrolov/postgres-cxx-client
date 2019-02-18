@@ -10,7 +10,7 @@ Config& Config::operator=(Config&& other) noexcept = default;
 
 Config::~Config() = default;
 
-Config Config::make() {
+Config Config::build() {
     return Builder{}.build();
 }
 
