@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
+#include <postgres/Client.h>
 #include <postgres/Command.h>
 #include <postgres/Config.h>
-#include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
@@ -10,8 +10,8 @@
 namespace postgres {
 
 TEST(TestReceiver, Exec) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(Command{"SELECT 1"});
+    Client cl{Config::build()};
+    auto rcvr = cl.send(Command{"SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -26,8 +26,8 @@ TEST(TestReceiver, Exec) {
 }
 
 TEST(TestReceiver, ExecBad) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(Command{"BAD"});
+    Client cl{Config::build()};
+    auto rcvr = cl.send(Command{"BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -42,8 +42,8 @@ TEST(TestReceiver, ExecBad) {
 }
 
 TEST(TestReceiver, Prepare) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(PrepareData{"select1", "SELECT 1"});
+    Client cl{Config::build()};
+    auto rcvr = cl.send(PrepareData{"select1", "SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -56,7 +56,7 @@ TEST(TestReceiver, Prepare) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.send(PreparedCommand{"select1"});
+    rcvr = cl.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
@@ -71,8 +71,8 @@ TEST(TestReceiver, Prepare) {
 }
 
 TEST(TestReceiver, PrepareAsyncBad) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(PrepareData{"select1", "BAD"});
+    Client cl{Config::build()};
+    auto rcvr = cl.send(PrepareData{"select1", "BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -85,7 +85,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.send(PreparedCommand{"select1"});
+    rcvr = cl.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();

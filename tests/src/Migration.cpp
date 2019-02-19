@@ -3,7 +3,7 @@
 namespace postgres {
 
 Migration::Migration()
-    : client_{}, conn_{&client_.connection()} {
+    : client_{}, conn_{&client_} {
     migrate();
     conn_->exec("DELETE FROM test");
 }

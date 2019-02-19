@@ -3,7 +3,6 @@
 #include <postgres/Client.h>
 #include <postgres/Command.h>
 #include <postgres/Config.h>
-#include <postgres/Connection.h>
 #include <postgres/Field.h>
 #include <postgres/Oid.h>
 #include <postgres/Postgres.h>

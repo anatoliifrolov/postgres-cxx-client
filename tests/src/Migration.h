@@ -25,7 +25,7 @@ struct Migration {
     Migration();
 
     Client client_;
-    Connection* conn_;
+    Client* conn_;
 
 private:
     void migrate();

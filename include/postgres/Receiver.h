@@ -8,7 +8,7 @@ namespace postgres {
 class Result;
 
 class Receiver {
-    friend class Connection;
+    friend class Client;
 
 public:
     Receiver(Receiver const& other) = delete;

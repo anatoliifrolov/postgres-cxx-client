@@ -6,7 +6,7 @@
 #include <thread>
 #include <iostream>
 #include <postgres/Config.h>
-#include <postgres/Connection.h>
+#include <postgres/Client.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
@@ -16,7 +16,7 @@
 using postgres::Client;
 using postgres::Command;
 using postgres::Config;
-using postgres::Connection;
+using postgres::Client;
 using postgres::PreparedCommand;
 using postgres::PrepareData;
 
@@ -43,11 +43,11 @@ CREATE TABLE example(
     t TIMESTAMP
 ))";
 
-void makeTestTable(Connection& conn) {
+void makeTestTable(Client& conn) {
     conn.exec(DROP_TABLE_SQL) && conn.exec(CREATE_TABLE_SQL);
 }
 
-void basicUsage(Connection& conn) {
+void basicUsage(Client& conn) {
     auto const res = conn.exec("SELECT 1");
 
     // Something went wrong:
@@ -74,7 +74,7 @@ void basicUsage(Connection& conn) {
     }
 }
 
-void parametrizedInsert(Connection& conn) {
+void parametrizedInsert(Client& conn) {
     // Recommended way to pass statement parameters is using Command:
     conn.exec(Command{R"(INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5))",
                       1,
@@ -89,7 +89,7 @@ void parametrizedInsert(Connection& conn) {
                       std::make_pair(vals.begin(), vals.end())});
 }
 
-void insertTimestamps(Connection& conn) {
+void insertTimestamps(Client& conn) {
     // You can also insert timestamp with time zone specified.
     // Call postgres::Time constructor with second parameter set to true for that.
     // But there would be no way to read it back using this library.
@@ -99,7 +99,7 @@ void insertTimestamps(Connection& conn) {
                       postgres::Time{"2017-08-25T13:03:35"}});
 }
 
-void nonCopyingInsert(Connection& conn) {
+void nonCopyingInsert(Client& conn) {
     // By default Command stores string parameters by reference.
     // Make sure that object is staying alive during execution.
     // Pass rvalue reference to force Command to store parameter internally.
@@ -107,14 +107,14 @@ void nonCopyingInsert(Connection& conn) {
     conn.exec(Command{"INSERT INTO example(s) VALUES($1)", std::move(s)});
 }
 
-void insertNULLs(Connection& conn, const int* const n_ptr) {
+void insertNULLs(Client& conn, const int* const n_ptr) {
     conn.exec(Command{"INSERT INTO example(n) VALUES($1), ($2)",
                       nullptr,  // Will be inserted as NULL.
                       n_ptr  // Pointed value will be inserted if pointer is valid, or NULL otherwise.
     });
 }
 
-void insertSpecialType(Connection& conn) {
+void insertSpecialType(Client& conn) {
     // Most parameter types are automatically recognized by the library.
     // But you can tell parameter type explicitly if needed:
     conn.exec(Command{"INSERT INTO example(s) VALUES($1)",
@@ -131,7 +131,7 @@ struct Example {
     POSTGRES_CXX_TABLE(Example, n, f, b, s, t)
 };
 
-void insertVisitable(Connection& conn) {
+void insertVisitable(Client& conn) {
     // Visitable fields n and s will be bound to $1 and $2 respectively.
     Example v{};
     v.n = 1;
@@ -142,7 +142,7 @@ void insertVisitable(Connection& conn) {
     conn.exec(Command{"INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5)", v});
 }
 
-void executePrepared(Connection& conn) {
+void executePrepared(Client& conn) {
     // PreparedCommand is exactly the same as plain Command,
     // but accepting prepared statement name instead of statement text.
     if (conn.exec(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
@@ -150,7 +150,7 @@ void executePrepared(Connection& conn) {
     }
 }
 
-void executeAsync(Connection& conn) {
+void executeAsync(Client& conn) {
     // send() does NOT block contrary to execute().
     conn.send("SELECT 1");
     // But result() DOES block.
@@ -161,7 +161,7 @@ void executeAsync(Connection& conn) {
     }
 }
 
-void executeAsyncNonBlocking(Connection& conn) {
+void executeAsyncNonBlocking(Client& conn) {
     conn.send("SELECT 1");
     // Wait until result is ready:
     while (conn.isBusy()) {
@@ -175,7 +175,7 @@ void executeAsyncNonBlocking(Connection& conn) {
     }
 }
 
-void executeAsyncRowByRow(Connection& conn) {
+void executeAsyncRowByRow(Client& conn) {
     // Rows of large result set could be obtained one by one as they are ready.
     conn.send("SELECT * FROM example", postgres::AsyncMode::SINGLE_ROW);
     for (auto res = conn.receive(); !res.isDone(); res = conn.receive()) {
@@ -186,7 +186,7 @@ void executeAsyncRowByRow(Connection& conn) {
     }
 }
 
-void cancelAsync(Connection& conn) {
+void cancelAsync(Client& conn) {
     conn.send("INSERT INTO example(s) VALUES('CANCELED')");
     // Just tries to cancel, does not guarantee to succeed.
     // Returns whether cancel request has been dispatched.
@@ -195,7 +195,7 @@ void cancelAsync(Connection& conn) {
     }
 }
 
-void readResultIntoVariables(Connection& conn) {
+void readResultIntoVariables(Client& conn) {
     int                                   n;
     double                                f;
     bool                                  b;
@@ -275,7 +275,7 @@ void readResultIntoVariables(Connection& conn) {
         << std::endl;
 }
 
-void passResultToFunction(Connection& conn) {
+void passResultToFunction(Client& conn) {
     auto const someFunc = [](const int n, const std::string s) {
         std::cout << "n = " << n << ", s = " << s << std::endl;
     };
@@ -355,7 +355,7 @@ void selectVisitable(Client& client) {
 int main() {
     // postgres::Connection is relatively low level.
     // Better use postgres::Client instead.
-    Connection conn{};
+    Client conn{};
 
     makeTestTable(conn);
     basicUsage(conn);

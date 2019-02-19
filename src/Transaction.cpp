@@ -1,11 +1,11 @@
 #include <postgres/Transaction.h>
 
-#include <postgres/Connection.h>
+#include <postgres/Client.h>
 #include <postgres/Error.h>
 
 namespace postgres {
 
-Transaction::Transaction(Connection& cl)
+Transaction::Transaction(Client& cl)
     : cl_{&cl} {
     cl.exec("BEGIN");
 }
