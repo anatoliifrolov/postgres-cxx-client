@@ -105,6 +105,18 @@ Receiver Connection::sendRaw(std::string_view stmt) {
     return Receiver{handle_, PQsendQuery(native(), stmt.data())};
 }
 
+Receiver Connection::iter(Command const& cmd) {
+    auto rcvr = send(cmd);
+    rcvr.setRowByRow();
+    return rcvr;
+}
+
+Receiver Connection::iterPrepared(Command const& cmd) {
+    auto rcvr = sendPrepared(cmd);
+    rcvr.setRowByRow();
+    return rcvr;
+}
+
 bool Connection::reset() {
     PQreset(native());
     return isOk();

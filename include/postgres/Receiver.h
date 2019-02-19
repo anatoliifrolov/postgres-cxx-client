@@ -23,7 +23,9 @@ public:
     bool isBusy();
 
 private:
-    explicit Receiver(std::shared_ptr<PGconn> handle, int res);
+    explicit Receiver(std::shared_ptr<PGconn> handle, int is_ok);
+
+    bool setRowByRow();
 
     std::shared_ptr<PGconn> handle_;
     bool                    is_ok_ = false;

@@ -111,6 +111,21 @@ TEST(TestConnection, PrepareAsync) {
     ASSERT_FALSE(conn.sendPrepared(Command{"bad"}).receive().isOk());
 }
 
+TEST(TestConnection, RowByRow) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.iter(Command{"SELECT 1"}).receive().isOk());
+    ASSERT_FALSE(conn.iter(Command{"SELECT 1; SELECT 2"}).receive().isOk());
+    ASSERT_FALSE(conn.iter(Command{"BAD"}).receive().isOk());
+}
+
+TEST(TestConnection, PrepareRowByRow) {
+    Connection conn{Config::build()};
+    ASSERT_TRUE(conn.prepare(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.iterPrepared(Command{"select1"}).receive().isOk());
+    ASSERT_FALSE(conn.prepare(PrepareData{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(conn.iterPrepared(Command{"bad"}).receive().isOk());
+}
+
 TEST(TestConnection, Esc) {
     Connection conn{Config::build()};
     ASSERT_EQ("'E''SCAPE_ME'", conn.esc("E'SCAPE_ME"));

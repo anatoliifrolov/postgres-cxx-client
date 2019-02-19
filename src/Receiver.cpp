@@ -5,8 +5,8 @@
 
 namespace postgres {
 
-Receiver::Receiver(std::shared_ptr<PGconn> handle, int const res)
-    : handle_{std::move(handle)}, is_ok_{res == 1} {
+Receiver::Receiver(std::shared_ptr<PGconn> handle, int const is_ok)
+    : handle_{std::move(handle)}, is_ok_{is_ok == 1} {
 }
 
 Receiver::Receiver(Receiver&& other) noexcept = default;
@@ -36,12 +36,9 @@ bool Receiver::isBusy() {
     return PQisBusy(handle_.get()) == 1;
 }
 
-//Receiver Receiver::execRowByRow(Command const& cmd) {
-//    return execAsync(cmd) && (PQsetSingleRowMode(handle_.get()) == 1);
-//}
-//
-//Receiver Receiver::execPreparedRowByRow(Command const& cmd) {
-//    return execPreparedAsync(cmd) && (PQsetSingleRowMode(handle_.get()) == 1);
-//}
+bool Receiver::setRowByRow() {
+    is_ok_ = is_ok_ && (PQsetSingleRowMode(handle_.get()) == 1);
+    return is_ok_;
+}
 
 }  // namespace postgres

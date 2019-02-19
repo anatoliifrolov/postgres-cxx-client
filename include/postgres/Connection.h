@@ -36,6 +36,9 @@ public:
     Receiver sendPrepared(Command const& cmd);
     Receiver sendRaw(std::string_view stmt);
 
+    Receiver iter(Command const& cmd);
+    Receiver iterPrepared(Command const& cmd);
+
     bool reset();
     bool isOk();
     std::string message();
