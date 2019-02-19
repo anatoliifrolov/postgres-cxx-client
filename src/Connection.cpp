@@ -1,11 +1,10 @@
 #include <postgres/Connection.h>
 
-#include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Error.h>
+#include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
-#include <postgres/Result.h>
 
 namespace postgres {
 
@@ -22,12 +21,16 @@ PGPing Connection::ping(std::string const& uri) {
     return PQping(uri.data());
 }
 
+Connection::Connection()
+    : Connection{Config::build()} {
+}
+
 Connection::Connection(Config const& cfg)
-    : handle_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
+    : conn_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
 }
 
 Connection::Connection(std::string const& uri)
-    : handle_{PQconnectdb(uri.data()), PQfinish} {
+    : conn_{PQconnectdb(uri.data()), PQfinish} {
 }
 
 Connection::Connection(Connection&& other) noexcept = default;
@@ -36,7 +39,7 @@ Connection& Connection::operator=(Connection&& other) noexcept = default;
 
 Connection::~Connection() noexcept = default;
 
-Result Connection::prepare(PrepareData const& data) {
+Result Connection::exec(PrepareData const& data) {
     return Result{PQprepare(native(),
                             data.name.data(),
                             data.statement.data(),
@@ -55,7 +58,7 @@ Result Connection::exec(Command const& cmd) {
                                RESULT_FORMAT)};
 }
 
-Result Connection::execPrepared(Command const& cmd) {
+Result Connection::exec(PreparedCommand const& cmd) {
     return Result{PQexecPrepared(native(),
                                  cmd.statement(),
                                  cmd.count(),
@@ -69,8 +72,8 @@ Result Connection::execRaw(std::string_view stmt) {
     return Result{PQexec(native(), stmt.data())};
 }
 
-Receiver Connection::prepareAsync(PrepareData const& data) {
-    return Receiver{handle_,
+Receiver Connection::send(PrepareData const& data) {
+    return Receiver{conn_,
                     PQsendPrepare(native(),
                                   data.name.data(),
                                   data.statement.data(),
@@ -79,7 +82,7 @@ Receiver Connection::prepareAsync(PrepareData const& data) {
 }
 
 Receiver Connection::send(Command const& cmd) {
-    return Receiver{handle_,
+    return Receiver{conn_,
                     PQsendQueryParams(native(),
                                       cmd.statement(),
                                       cmd.count(),
@@ -90,8 +93,8 @@ Receiver Connection::send(Command const& cmd) {
                                       RESULT_FORMAT)};
 }
 
-Receiver Connection::sendPrepared(Command const& cmd) {
-    return Receiver{handle_,
+Receiver Connection::send(PreparedCommand const& cmd) {
+    return Receiver{conn_,
                     PQsendQueryPrepared(native(),
                                         cmd.statement(),
                                         cmd.count(),
@@ -102,7 +105,7 @@ Receiver Connection::sendPrepared(Command const& cmd) {
 }
 
 Receiver Connection::sendRaw(std::string_view stmt) {
-    return Receiver{handle_, PQsendQuery(native(), stmt.data())};
+    return Receiver{conn_, PQsendQuery(native(), stmt.data())};
 }
 
 Receiver Connection::iter(Command const& cmd) {
@@ -111,8 +114,8 @@ Receiver Connection::iter(Command const& cmd) {
     return rcvr;
 }
 
-Receiver Connection::iterPrepared(Command const& cmd) {
-    auto rcvr = sendPrepared(cmd);
+Receiver Connection::iter(PreparedCommand const& cmd) {
+    auto rcvr = send(cmd);
     rcvr.setRowByRow();
     return rcvr;
 }
@@ -147,7 +150,7 @@ std::string Connection::escId(std::string const& in) {
 }
 
 PGconn* Connection::native() const {
-    return handle_.get();
+    return conn_.get();
 }
 
 }  // namespace postgres

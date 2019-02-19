@@ -44,11 +44,11 @@ CREATE TABLE example(
 ))";
 
 void makeTestTable(Connection& conn) {
-    conn.prepare(DROP_TABLE_SQL) && conn.prepare(CREATE_TABLE_SQL);
+    conn.exec(DROP_TABLE_SQL) && conn.exec(CREATE_TABLE_SQL);
 }
 
 void basicUsage(Connection& conn) {
-    auto const res = conn.prepare("SELECT 1");
+    auto const res = conn.exec("SELECT 1");
 
     // Something went wrong:
     if (!res) {
@@ -145,14 +145,14 @@ void insertVisitable(Connection& conn) {
 void executePrepared(Connection& conn) {
     // PreparedCommand is exactly the same as plain Command,
     // but accepting prepared statement name instead of statement text.
-    if (conn.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
-        conn.execPrepared(PreparedCommand{"insert_s", "PREPARED"});
+    if (conn.exec(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
+        conn.exec(PreparedCommand{"insert_s", "PREPARED"});
     }
 }
 
 void executeAsync(Connection& conn) {
     // send() does NOT block contrary to execute().
-    conn.prepareAsync("SELECT 1");
+    conn.send("SELECT 1");
     // But result() DOES block.
     auto const res = conn.receive();
     // Process result...
@@ -162,7 +162,7 @@ void executeAsync(Connection& conn) {
 }
 
 void executeAsyncNonBlocking(Connection& conn) {
-    conn.prepareAsync("SELECT 1");
+    conn.send("SELECT 1");
     // Wait until result is ready:
     while (conn.isBusy()) {
         // Do some other stuff...
@@ -187,7 +187,7 @@ void executeAsyncRowByRow(Connection& conn) {
 }
 
 void cancelAsync(Connection& conn) {
-    conn.prepareAsync("INSERT INTO example(s) VALUES('CANCELED')");
+    conn.send("INSERT INTO example(s) VALUES('CANCELED')");
     // Just tries to cancel, does not guarantee to succeed.
     // Returns whether cancel request has been dispatched.
     conn.cancel();
@@ -205,7 +205,7 @@ void readResultIntoVariables(Connection& conn) {
     int* p = &n;  // Possibly NULL values must be read into pointers.
 
     // Result stays valid event after connection was destroyed.
-    auto const res = conn.prepare(R"(SELECT
+    auto const res = conn.exec(R"(SELECT
             1 AS n,
             2.34::REAL AS f,
             TRUE AS b,
@@ -280,7 +280,7 @@ void passResultToFunction(Connection& conn) {
         std::cout << "n = " << n << ", s = " << s << std::endl;
     };
 
-    auto const res = conn.prepare("SELECT 1, 'TEXT'");
+    auto const res = conn.exec("SELECT 1, 'TEXT'");
     // Result fields are implicitly converted to function argument types:
     someFunc(res[0][0], res[0][1]);
 }
@@ -288,9 +288,9 @@ void passResultToFunction(Connection& conn) {
 void prepareClient(Client& client) {
     // Creates schema if not exists and sets it for current connection.
     // true as second argument tells to cache schema name to set it again after reconnect.
-    client.setSchema("public", true);
+//    client.setSchema("public", true);
     // Will be cached and automatically prepared again as well.
-    client.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"});
+//    client.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"});
 }
 
 void executeTransaction(Client& client) {

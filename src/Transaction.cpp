@@ -24,7 +24,7 @@ Transaction& Transaction::operator=(Transaction&& other) {
 
 Transaction::~Transaction() {
     if (client_) {
-        client_->tryExecute("ROLLBACK");
+        client_->execute("ROLLBACK");
     }
 }
 

@@ -48,9 +48,9 @@ TEST_F(TestTransaction, AutoCommit) {
 }
 
 TEST_F(TestTransaction, AutoRollback) {
-    ASSERT_THROW(client_.execute("INSERT INTO test(int4) VALUES(1)", "BAD STATEMENT"),
+    ASSERT_THROW(client_.execute("INSERT INTO test(int4) VALUES(1)", "BAD STATEMENT").valid(),
                  std::exception);
-    auto res = client_.tryExecute("INSERT INTO test(int4) VALUES(1)",
+    auto res = client_.execute("INSERT INTO test(int4) VALUES(1)",
                                   "BAD STATEMENT",
                                   "INSERT INTO test(int4) VALUES(2), (3)");
     ASSERT_FALSE(res.isOk());

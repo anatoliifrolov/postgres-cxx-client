@@ -16,7 +16,7 @@ namespace postgres {
 class Command {
 public:
     template <typename Stmt, typename... Args>
-    explicit Command(Stmt&& stmt, Args&& ... args) {
+    /*explicit*/ Command(Stmt&& stmt, Args&& ... args) {
         auto constexpr NARGS = sizeof... (Args);
         types_.reserve(NARGS);
         values_.reserve(NARGS);

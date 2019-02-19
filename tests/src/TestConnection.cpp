@@ -2,6 +2,7 @@
 #include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
+#include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
@@ -26,7 +27,7 @@ TEST(TestConnection, Ping) {
 }
 
 TEST(TestConnection, Connect) {
-    Connection conn{Config::build()};
+    Connection conn{};
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
@@ -68,66 +69,66 @@ TEST(TestConnection, ConnectUriBad) {
 }
 
 TEST(TestConnection, Exec) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.exec(Command{"SELECT 1"}).isOk());
-    ASSERT_FALSE(conn.exec(Command{"SELECT 1; SELECT 2"}).isOk());
-    ASSERT_FALSE(conn.exec(Command{"BAD"}).isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.exec("SELECT 1").isOk());
+    ASSERT_FALSE(conn.exec("SELECT 1; SELECT 2").isOk());
+    ASSERT_FALSE(conn.exec("BAD").isOk());
 }
 
 TEST(TestConnection, ExecRaw) {
-    Connection conn{Config::build()};
+    Connection conn{};
     ASSERT_TRUE(conn.execRaw("SELECT 1").isOk());
     ASSERT_TRUE(conn.execRaw("SELECT 1; SELECT 2").isOk());
     ASSERT_FALSE(conn.execRaw("BAD").isOk());
 }
 
 TEST(TestConnection, Prepare) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.prepare(PrepareData{"select1", "SELECT 1"}).isOk());
-    ASSERT_TRUE(conn.execPrepared(Command{"select1"}).isOk());
-    ASSERT_FALSE(conn.prepare(PrepareData{"bad", "BAD"}).isOk());
-    ASSERT_FALSE(conn.execPrepared(Command{"bad"}).isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.exec(PreparedCommand{"select1"}).isOk());
+    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(conn.exec(PreparedCommand{"bad"}).isOk());
 }
 
 TEST(TestConnection, ExecAsync) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.send(Command{"SELECT 1"}).receive().isOk());
-    ASSERT_FALSE(conn.send(Command{"SELECT 1; SELECT 2"}).receive().isOk());
-    ASSERT_FALSE(conn.send(Command{"BAD"}).receive().isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.send("SELECT 1").receive().isOk());
+    ASSERT_FALSE(conn.send("SELECT 1; SELECT 2").receive().isOk());
+    ASSERT_FALSE(conn.send("BAD").receive().isOk());
 }
 
 TEST(TestConnection, ExecRawAsync) {
-    Connection conn{Config::build()};
+    Connection conn{};
     ASSERT_TRUE(conn.sendRaw("SELECT 1").receive().isOk());
     ASSERT_TRUE(conn.sendRaw("SELECT 1; SELECT 2").receive().isOk());
     ASSERT_FALSE(conn.sendRaw("BAD").receive().isOk());
 }
 
 TEST(TestConnection, PrepareAsync) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.prepareAsync(PrepareData{"select1", "SELECT 1"}).receive().isOk());
-    ASSERT_TRUE(conn.sendPrepared(Command{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.prepareAsync(PrepareData{"bad", "BAD"}).receive().isOk());
-    ASSERT_FALSE(conn.sendPrepared(Command{"bad"}).receive().isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.send(PrepareData{"select1", "SELECT 1"}).receive().isOk());
+    ASSERT_TRUE(conn.send(PreparedCommand{"select1"}).receive().isOk());
+    ASSERT_FALSE(conn.send(PrepareData{"bad", "BAD"}).receive().isOk());
+    ASSERT_FALSE(conn.send(PreparedCommand{"bad"}).receive().isOk());
 }
 
 TEST(TestConnection, RowByRow) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.iter(Command{"SELECT 1"}).receive().isOk());
-    ASSERT_FALSE(conn.iter(Command{"SELECT 1; SELECT 2"}).receive().isOk());
-    ASSERT_FALSE(conn.iter(Command{"BAD"}).receive().isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.iter("SELECT 1").receive().isOk());
+    ASSERT_FALSE(conn.iter("SELECT 1; SELECT 2").receive().isOk());
+    ASSERT_FALSE(conn.iter("BAD").receive().isOk());
 }
 
 TEST(TestConnection, PrepareRowByRow) {
-    Connection conn{Config::build()};
-    ASSERT_TRUE(conn.prepare(PrepareData{"select1", "SELECT 1"}).isOk());
-    ASSERT_TRUE(conn.iterPrepared(Command{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.prepare(PrepareData{"bad", "BAD"}).isOk());
-    ASSERT_FALSE(conn.iterPrepared(Command{"bad"}).receive().isOk());
+    Connection conn{};
+    ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.iter(PreparedCommand{"select1"}).receive().isOk());
+    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(conn.iter(PreparedCommand{"bad"}).receive().isOk());
 }
 
 TEST(TestConnection, Esc) {
-    Connection conn{Config::build()};
+    Connection conn{};
     ASSERT_EQ("'E''SCAPE_ME'", conn.esc("E'SCAPE_ME"));
     ASSERT_EQ("\"e'scapeMe\"", conn.escId("e'scapeMe"));
 }

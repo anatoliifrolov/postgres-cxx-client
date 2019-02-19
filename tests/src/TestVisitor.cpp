@@ -24,9 +24,9 @@ TEST_F(TestVisitor, Manual) {
 
     Table ponged{};
 
-    auto const res = client_.execute(Command{R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8))", pinged},
-                                     "SELECT int2, int4, int8, float4, float8, flag, info, time FROM test");
+    auto res = conn_->exec(Command{R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info, time)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8))", pinged}).valid();
+    res = conn_->exec(Command{"SELECT int2, int4, int8, float4, float8, flag, info, time FROM test"});
     res[0] >> ponged;
 
     ASSERT_EQ(2, ponged.int2);
@@ -87,12 +87,12 @@ static std::vector<Table> makeDataToInsert() {
 
 TEST_F(TestVisitor, AutoInsert) {
     auto data = makeDataToInsert();
-    client_.insert(data[0]);
-    client_.insert(data.begin() + 1, data.begin() + 2);
-    client_.insert(data.begin() + 2, data.end());
+    conn_->insert(data[0]);
+    conn_->insert(data.begin() + 1, data.begin() + 2);
+    conn_->insert(data.begin() + 2, data.end());
 
     data.clear();
-    auto const res = client_.select(data);
+    auto const res = conn_->select(data);
     ASSERT_EQ(4, res.size());
     ASSERT_EQ(4u, data.size());
     ASSERT_EQ((std::set<int16_t>{2, 22, 32, 42}),
@@ -116,7 +116,7 @@ TEST_F(TestVisitor, AutoUpdate) {
     data.back().flag   = true;
     data.back().info   = "INFO";
     data.back().time   = timePointSample();
-    client_.insert(data.back());
+    conn_->insert(data.back());
 
     data.back().int2   = 22;
     data.back().int4   = 24;
@@ -126,10 +126,10 @@ TEST_F(TestVisitor, AutoUpdate) {
     data.back().flag   = false;
     data.back().info   = "INFO2";
     data.back().time   = timePointSample();
-    client_.update(data.back());
+    conn_->update(data.back());
 
     data.clear();
-    auto const res = client_.select(data);
+    auto const res = conn_->select(data);
 
     ASSERT_EQ(1u, data.size());
     ASSERT_EQ(22, data.back().int2);

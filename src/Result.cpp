@@ -15,6 +15,11 @@ Result& Result::operator=(Result&& other) noexcept = default;
 
 Result::~Result() noexcept = default;
 
+Result Result::valid() {
+    _POSTGRES_CXX_ASSERT(isOk(), message());
+    return std::move(*this);
+}
+
 Result const& Result::valid() const {
     _POSTGRES_CXX_ASSERT(isOk(), message());
     return *this;

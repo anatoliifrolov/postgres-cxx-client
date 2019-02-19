@@ -18,6 +18,7 @@ public:
     Result& operator=(Result&& other) noexcept;
     ~Result() noexcept;
 
+    Result valid();
     Result const& valid() const;
     bool isOk() const;
     bool isDone() const;

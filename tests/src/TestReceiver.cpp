@@ -2,6 +2,7 @@
 #include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
+#include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
@@ -42,7 +43,7 @@ TEST(TestReceiver, ExecBad) {
 
 TEST(TestReceiver, Prepare) {
     Connection conn{Config::build()};
-    auto rcvr = conn.prepareAsync(PrepareData{"select1", "SELECT 1"});
+    auto rcvr = conn.send(PrepareData{"select1", "SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -55,7 +56,7 @@ TEST(TestReceiver, Prepare) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.sendPrepared(Command{"select1"});
+    rcvr = conn.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
@@ -71,7 +72,7 @@ TEST(TestReceiver, Prepare) {
 
 TEST(TestReceiver, PrepareAsyncBad) {
     Connection conn{Config::build()};
-    auto rcvr = conn.prepareAsync(PrepareData{"select1", "BAD"});
+    auto rcvr = conn.send(PrepareData{"select1", "BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -84,7 +85,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.sendPrepared(Command{"select1"});
+    rcvr = conn.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
