@@ -11,9 +11,9 @@ struct TestData : Migration, testing::Test {
 
 TEST_F(TestData, Null) {
     const bool* const some_ptr = nullptr;
-    auto const res = client_.execute(Command{"INSERT INTO test(flag) VALUES(NULL), ($1), ($2)",
-                                             nullptr,
-                                             some_ptr}, "SELECT flag FROM test");
+    auto const res = client_.transact(Command{"INSERT INTO test(flag) VALUES(NULL), ($1), ($2)",
+                                              nullptr,
+                                              some_ptr}, "SELECT flag FROM test");
 
     // Reading NULLs into pointers allowed only.
     auto val = true;
@@ -30,8 +30,7 @@ TEST_F(TestData, Null) {
 
 TEST_F(TestData, NullOptional) {
     std::optional<int> opt;
-    client_.execute(Command{"INSERT INTO test (int4) VALUES ($1)", opt},
-                    "SELECT int4 FROM test")[0][0] >> opt;
+    client_.transact(Command{"INSERT INTO test (int4) VALUES ($1)", opt}, "SELECT int4 FROM test")[0][0] >> opt;
     ASSERT_FALSE(opt.has_value());
 }
 
@@ -41,22 +40,21 @@ TEST_F(TestData, OptionalValue) {
     ASSERT_TRUE(opt.has_value());
     ASSERT_EQ(2, opt.value());
     ASSERT_FALSE(opt2.has_value());
-    client_.execute(Command{"INSERT INTO test (int4) VALUES ($1)", opt},
-                    "SELECT int4 FROM test")[0][0] >> opt2;
+    client_.transact(Command{"INSERT INTO test (int4) VALUES ($1)", opt}, "SELECT int4 FROM test")[0][0] >> opt2;
     ASSERT_TRUE(opt2.has_value());
     ASSERT_EQ(2, opt2.value());
 }
 
 TEST_F(TestData, OptionalTuple) {
     std::optional<int> opt, opt2;
-    client_.execute("SELECT 2, NULL::INT")[0] >> opt >> opt2;
+    conn_->exec("SELECT 2, NULL::INT")[0] >> opt >> opt2;
     ASSERT_TRUE(opt.has_value());
     ASSERT_EQ(2, opt.value());
     ASSERT_FALSE(opt2.has_value());
 }
 
 TEST_F(TestData, Types) {
-    auto const res = client_.execute(Command{
+    auto const res = client_.transact(Command{
         R"(INSERT INTO test(int2, int4, int8, float4, float8, flag, info) VALUES($1, $2, $3, $4, $5, $6, $7))",
         int16_t{2},
         int32_t{4},
@@ -110,8 +108,8 @@ TEST_F(TestData, Timestamp) {
     time_t                                time{};
     std::chrono::system_clock::time_point time_point{};
 
-    auto const res = client_.execute(Command{"INSERT INTO test(time) VALUES($1)",
-                                             timeFormatSampleNano()}, "SELECT time FROM test");
+    auto const res = client_.transact(Command{"INSERT INTO test(time) VALUES($1)",
+                                              timeFormatSampleNano()}, "SELECT time FROM test");
 
     res[0][0] >> time;
     ASSERT_EQ(timeSample(), time);
@@ -120,16 +118,17 @@ TEST_F(TestData, Timestamp) {
 }
 
 TEST_F(TestData, Esc) {
-    auto const res = client_.execute(Command{"INSERT INTO test(info) VALUES($1)",
-                                             "'QUOTED_STRING's"}, "SELECT info FROM test");
+    auto const res = client_.transact(Command{"INSERT INTO test(info) VALUES($1)",
+                                              "'QUOTED_STRING's"}, "SELECT info FROM test");
 
     const std::string s = res[0][0];
     ASSERT_EQ("'QUOTED_STRING's", s);
 }
 
 TEST_F(TestData, MultiRef) {
-    auto const res = client_.execute(Command{"INSERT INTO test(int2, int4, int8) VALUES($1, $1, $1)",
-                                             2}, "SELECT int2, int4, int8 FROM test");
+    auto const res = client_.transact(Command{
+        "INSERT INTO test(int2, int4, int8) VALUES($1, $1, $1)",
+        2}, "SELECT int2, int4, int8 FROM test");
     ASSERT_EQ(2, (int16_t) res[0][0]);
     ASSERT_EQ(2, (int32_t) res[0][1]);
     ASSERT_EQ(2, (int64_t) res[0][2]);

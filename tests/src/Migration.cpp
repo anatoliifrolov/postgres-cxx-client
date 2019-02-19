@@ -5,7 +5,7 @@ namespace postgres {
 Migration::Migration()
     : client_{}, conn_{&client_.connection()} {
     migrate();
-    client_.execute("DELETE FROM test");
+    conn_->exec("DELETE FROM test");
 }
 
 void Migration::migrate() {
@@ -14,7 +14,7 @@ void Migration::migrate() {
         return;
     }
 
-    client_.execute("DROP TABLE IF EXISTS test", R"(
+    client_.transact("DROP TABLE IF EXISTS test", R"(
             CREATE TABLE test(
                 int2 SMALLINT,
                 int4 INTEGER,

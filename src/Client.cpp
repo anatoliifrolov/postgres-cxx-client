@@ -20,30 +20,12 @@ Client& Client::operator=(Client&& other) = default;
 
 Client::~Client() = default;
 
-Transaction Client::begin() {
-    return Transaction{*this};
-}
-
 Result Client::exec(PreparedCommand const& cmd) {
     return conn_.exec(cmd);
 }
 
 Result Client::exec(Command const& cmd) {
     return conn_.exec(cmd);
-}
-
-Result Client::completeTransaction(Result res) {
-    if (!res.isOk()) {
-        if (conn_.isOk()) {
-            execute("ROLLBACK");
-        }
-        return res;
-    }
-    auto commit_res = execute("COMMIT");
-    if (!commit_res.isOk()) {
-        return commit_res;
-    }
-    return res;
 }
 
 Connection& Client::connection() {

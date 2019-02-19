@@ -1,37 +1,56 @@
 #include <postgres/Transaction.h>
-#include <postgres/Client.h>
+
+#include <postgres/Connection.h>
 #include <postgres/Error.h>
 
 namespace postgres {
 
-Transaction::Transaction(Client& client)
-    : client_{&client} {
-    client.execute("BEGIN");
+Transaction::Transaction(Connection& cl)
+    : cl_{&cl} {
+    cl.exec("BEGIN");
 }
 
-Transaction::Transaction(Transaction&& other) {
-    client_ = other.client_;
-    other.client_ = nullptr;
+Transaction::Transaction(Transaction&& other) noexcept {
+    cl_ = other.cl_;
+    other.cl_ = nullptr;
 }
 
-Transaction& Transaction::operator=(Transaction&& other) {
+Transaction& Transaction::operator=(Transaction&& other) noexcept {
     if (this != &other) {
-        client_ = other.client_;
-        other.client_ = nullptr;
+        cl_ = other.cl_;
+        other.cl_ = nullptr;
     }
     return *this;
 }
 
-Transaction::~Transaction() {
-    if (client_) {
-        client_->execute("ROLLBACK");
+Transaction::~Transaction() noexcept {
+    if (cl_) {
+        cl_->exec("ROLLBACK");
     }
 }
 
 void Transaction::commit() {
-    _POSTGRES_CXX_ASSERT(client_, "Transaction expired");
-    client_->execute("COMMIT");
-    client_ = nullptr;
+    _POSTGRES_CXX_ASSERT(cl_, "Transaction expired");
+    cl_->exec("COMMIT");
+    cl_ = nullptr;
+}
+
+Result Transaction::complete(Result res) {
+    auto const cl = cl_;
+    cl_ = nullptr;
+    if (!res.isOk()) {
+        if (cl->isOk()) {
+            cl->exec("ROLLBACK");
+        }
+        return res;
+    }
+
+    auto commit_res = cl->exec("COMMIT");
+    if (!commit_res.isOk()) {
+        return commit_res;
+    }
+
+    return res;
 }
 
 }  // namespace postgres

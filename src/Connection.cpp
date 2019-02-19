@@ -120,6 +120,10 @@ Receiver Connection::iter(PreparedCommand const& cmd) {
     return rcvr;
 }
 
+Transaction Connection::begin() {
+    return Transaction{*this};
+}
+
 bool Connection::reset() {
     PQreset(native());
     return isOk();

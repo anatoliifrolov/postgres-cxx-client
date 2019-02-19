@@ -3,23 +3,27 @@
 namespace postgres {
 
 class Client;
+class Connection;
+class Result;
 
 class Transaction {
     friend class Client;
+    friend class Connection;
 
 public:
-    Transaction(const Transaction& other) = delete;
-    Transaction(Transaction&& other);
-    Transaction& operator=(const Transaction& other) = delete;
-    Transaction& operator=(Transaction&& other);
-    ~Transaction();
+    Transaction(Transaction const& other) = delete;
+    Transaction& operator=(Transaction const& other) = delete;
+    Transaction(Transaction&& other) noexcept;
+    Transaction& operator=(Transaction&& other) noexcept;
+    ~Transaction() noexcept;
 
     void commit();
+    Result complete(Result res);
 
 private:
-    explicit Transaction(Client& client);
+    explicit Transaction(Connection& cl);
 
-    Client* client_;
+    Connection* cl_;
 };
 
 }  // namespace postgres

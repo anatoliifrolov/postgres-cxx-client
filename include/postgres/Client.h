@@ -6,10 +6,10 @@
 #include <type_traits>
 #include <postgres/internal/Classifier.h>
 #include <postgres/Result.h>
-#include <postgres/Transaction.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Connection.h>
 #include <postgres/Statement.h>
+#include <postgres/Transaction.h>
 
 namespace postgres {
 
@@ -27,34 +27,26 @@ public:
     Client& operator=(Client&&);
     ~Client();
 
-    Transaction begin();
-
     template <typename... Ts>
-    std::enable_if_t<(sizeof... (Ts) > 1), Result> execute(Ts const& ... statements) {
-        return completeTransaction(exec("BEGIN", statements...));
-    }
-
-    template <typename T>
-    Result execute(T const& statement) {
-        return exec(statement);
+    std::enable_if_t<(1 < sizeof... (Ts)), Result> transact(Ts&& ... args) {
+        auto tx = conn_.begin();
+        return tx.complete(exec(std::forward<Ts>(args)...));
     }
 
     Connection& connection();
 
 private:
     template <typename T, typename... Ts>
-    std::enable_if_t<(sizeof... (Ts) > 0), Result>
-    exec(T const& statement, Ts const& ... statements) {
-        auto res = exec(statement);
-        if (res.isOk()) {
-            return exec(statements...);
+    std::enable_if_t<(0 < sizeof... (Ts)), Result> exec(T&& arg, Ts&& ... args) {
+        auto res = exec(std::forward<T>(arg));
+        if (!res.isOk()) {
+            return res;
         }
-        return res;
+        return exec(std::forward<Ts>(args)...);
     };
 
     Result exec(PreparedCommand const& cmd);
     Result exec(Command const& cmd);
-    Result completeTransaction(Result res);
 
     Connection conn_;
 };

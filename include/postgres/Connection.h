@@ -11,6 +11,7 @@
 #include <postgres/Command.h>
 #include <postgres/Result.h>
 #include <postgres/Statement.h>
+#include <postgres/Transaction.h>
 
 namespace postgres {
 
@@ -64,6 +65,12 @@ public:
         return res;
     }
 
+    template <typename... Ts>
+    std::enable_if_t<(1 < sizeof... (Ts)), Result> transact(Ts&& ... args) {
+        auto tx = begin();
+        return tx.complete(exec(std::forward<Ts>(args)...));
+    }
+
     Result exec(PrepareData const& data);
     Result exec(Command const& cmd);
     Result exec(PreparedCommand const& cmd);
@@ -77,6 +84,8 @@ public:
     Receiver iter(Command const& cmd);
     Receiver iter(PreparedCommand const& cmd);
 
+    Transaction begin();
+
     bool reset();
     bool isOk();
     std::string message();
@@ -87,6 +96,15 @@ public:
     PGconn* native() const;
 
 private:
+    template <typename T, typename... Ts>
+    std::enable_if_t<(0 < sizeof... (Ts)), Result> exec(T&& arg, Ts&& ... args) {
+        auto res = exec(std::forward<T>(arg));
+        if (!res.isOk()) {
+            return res;
+        }
+        return exec(std::forward<Ts>(args)...);
+    };
+
     std::shared_ptr<PGconn> conn_;
 };
 

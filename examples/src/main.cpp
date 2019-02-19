@@ -296,9 +296,9 @@ void prepareClient(Client& client) {
 void executeTransaction(Client& client) {
     // Passing multiple commands to execute() will force client to
     // wrap them into BEGIN and COMMIT/ROLLBACK if no transaction is in progress already.
-    client.execute(PreparedCommand{"insert_s", "PREPARED BY CLIENT"},
-                   Command{"INSERT INTO example(s) VALUES($1)", "INSERTED BY CLIENT COMMAND"},
-                   "INSERT INTO example(s) VALUES('INSERTED BY CLIENT')");
+    client.transact(PreparedCommand{"insert_s", "PREPARED BY CLIENT"},
+                    Command{"INSERT INTO example(s) VALUES($1)", "INSERTED BY CLIENT COMMAND"},
+                    "INSERT INTO example(s) VALUES('INSERTED BY CLIENT')");
 }
 
 void executeTransactionBlock(Client& client) try {
