@@ -13,6 +13,10 @@ enum {
     RESULT_FORMAT = 1,
 };
 
+PGPing Client::ping() {
+    return ping(Config::build());
+}
+
 PGPing Client::ping(Config const& cfg) {
     return PQpingParams(cfg.keys(), cfg.values(), EXPAND_DBNAME);
 }
@@ -138,15 +142,14 @@ std::string Client::message() {
 }
 
 std::string Client::esc(std::string const& in) {
-    auto const escaped = PQescapeLiteral(native(), in.data(), in.size());
-    _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
-    std::string res = escaped;
-    PQfreemem(escaped);
-    return res;
+    return postEsc(PQescapeLiteral(native(), in.data(), in.size()));
 }
 
 std::string Client::escId(std::string const& in) {
-    auto const escaped = PQescapeIdentifier(native(), in.data(), in.size());
+    return postEsc(PQescapeIdentifier(native(), in.data(), in.size()));
+}
+
+std::string Client::postEsc(char* const escaped) {
     _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
     std::string res = escaped;
     PQfreemem(escaped);

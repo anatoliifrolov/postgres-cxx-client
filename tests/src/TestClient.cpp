@@ -13,7 +13,7 @@ static constexpr auto CONNECT_STR = "user=cxx_client password=cxx_client dbname=
 static constexpr auto CONNECT_URI = "postgresql://cxx_client:cxx_client@/cxx_client";
 
 TEST(TestClient, Ping) {
-    ASSERT_EQ(PQPING_OK, Client::ping(Config::build()));
+    ASSERT_EQ(PQPING_OK, Client::ping());
     ASSERT_EQ(PQPING_OK, Client::ping(CONNECT_STR));
     ASSERT_EQ(PQPING_OK, Client::ping(CONNECT_URI));
 

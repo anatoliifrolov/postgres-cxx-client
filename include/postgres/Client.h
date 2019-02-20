@@ -12,6 +12,7 @@
 #include <postgres/Result.h>
 #include <postgres/Statement.h>
 #include <postgres/Transaction.h>
+#include <postgres/Tuple.h>
 
 namespace postgres {
 
@@ -22,6 +23,7 @@ struct PrepareData;
 
 class Client {
 public:
+    static PGPing ping();
     static PGPing ping(Config const& cfg);
     static PGPing ping(std::string const& uri);
 
@@ -104,6 +106,8 @@ private:
         }
         return exec(std::forward<Ts>(args)...);
     };
+
+    std::string postEsc(char* escaped);
 
     std::shared_ptr<PGconn> conn_;
 };
