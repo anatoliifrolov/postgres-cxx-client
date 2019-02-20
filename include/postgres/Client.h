@@ -20,7 +20,7 @@ class Config;
 class Consumer;
 class PreparedCommand;
 class Receiver;
-struct PrepareData;
+struct PreparingStatement;
 
 class Client {
 public:
@@ -74,12 +74,12 @@ public:
         return tx.complete(exec(std::forward<Ts>(args)...));
     }
 
-    Result exec(PrepareData const& data);
+    Result exec(PreparingStatement const& stmt);
     Result exec(Command const& cmd);
     Result exec(PreparedCommand const& cmd);
     Status execRaw(std::string_view stmt);
 
-    Receiver send(PrepareData const& data);
+    Receiver send(PreparingStatement const& stmt);
     Receiver send(Command const& cmd);
     Receiver send(PreparedCommand const& cmd);
     Consumer sendRaw(std::string_view stmt);

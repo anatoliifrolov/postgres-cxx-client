@@ -13,6 +13,6 @@ class Time;
 class Transaction;
 class Tuple;
 
-struct PrepareData;
+struct PreparingStatement;
 
 }  // namespace postgres

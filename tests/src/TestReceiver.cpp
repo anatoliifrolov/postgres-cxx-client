@@ -3,7 +3,7 @@
 #include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PrepareData.h>
+#include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 
@@ -43,7 +43,7 @@ TEST(TestReceiver, ExecBad) {
 
 TEST(TestReceiver, Prepare) {
     Client cl{Config::build()};
-    auto rcvr = cl.send(PrepareData{"select1", "SELECT 1"});
+    auto rcvr = cl.send(PreparingStatement{"select1", "SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -72,7 +72,7 @@ TEST(TestReceiver, Prepare) {
 
 TEST(TestReceiver, PrepareAsyncBad) {
     Client cl{Config::build()};
-    auto rcvr = cl.send(PrepareData{"select1", "BAD"});
+    auto rcvr = cl.send(PreparingStatement{"select1", "BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();

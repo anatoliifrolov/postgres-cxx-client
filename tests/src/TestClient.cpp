@@ -3,7 +3,7 @@
 #include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PrepareData.h>
+#include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 
@@ -84,9 +84,9 @@ TEST(TestClient, ExecRaw) {
 
 TEST(TestClient, Prepare) {
     Client cl{};
-    ASSERT_TRUE(cl.exec(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(cl.exec(PreparingStatement{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(cl.exec(PreparedCommand{"select1"}).isOk());
-    ASSERT_FALSE(cl.exec(PrepareData{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(cl.exec(PreparingStatement{"bad", "BAD"}).isOk());
     ASSERT_FALSE(cl.exec(PreparedCommand{"bad"}).isOk());
 }
 
@@ -106,9 +106,9 @@ TEST(TestClient, ExecRawAsync) {
 
 TEST(TestClient, PrepareAsync) {
     Client cl{};
-    ASSERT_TRUE(cl.send(PrepareData{"select1", "SELECT 1"}).receive().isOk());
+    ASSERT_TRUE(cl.send(PreparingStatement{"select1", "SELECT 1"}).receive().isOk());
     ASSERT_TRUE(cl.send(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(cl.send(PrepareData{"bad", "BAD"}).receive().isOk());
+    ASSERT_FALSE(cl.send(PreparingStatement{"bad", "BAD"}).receive().isOk());
     ASSERT_FALSE(cl.send(PreparedCommand{"bad"}).receive().isOk());
 }
 
@@ -121,9 +121,9 @@ TEST(TestClient, RowByRow) {
 
 TEST(TestClient, PrepareRowByRow) {
     Client cl{};
-    ASSERT_TRUE(cl.exec(PrepareData{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(cl.exec(PreparingStatement{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(cl.iter(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(cl.exec(PrepareData{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(cl.exec(PreparingStatement{"bad", "BAD"}).isOk());
     ASSERT_FALSE(cl.iter(PreparedCommand{"bad"}).receive().isOk());
 }
 

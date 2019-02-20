@@ -6,9 +6,9 @@
 
 namespace postgres {
 
-struct PrepareData {
+struct PreparingStatement {
     std::string      name;
-    std::string      statement;
+    std::string      body;
     std::vector<Oid> types;
 };
 

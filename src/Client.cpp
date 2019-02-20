@@ -4,7 +4,7 @@
 #include <postgres/Consumer.h>
 #include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PrepareData.h>
+#include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
 
 namespace postgres {
@@ -44,12 +44,12 @@ Client& Client::operator=(Client&& other) noexcept = default;
 
 Client::~Client() noexcept = default;
 
-Result Client::exec(PrepareData const& data) {
+Result Client::exec(PreparingStatement const& stmt) {
     return Result{PQprepare(native(),
-                            data.name.data(),
-                            data.statement.data(),
-                            static_cast<int>(data.types.size()),
-                            data.types.data())};
+                            stmt.name.data(),
+                            stmt.body.data(),
+                            static_cast<int>(stmt.types.size()),
+                            stmt.types.data())};
 }
 
 Result Client::exec(Command const& cmd) {
@@ -77,13 +77,13 @@ Status Client::execRaw(std::string_view stmt) {
     return Status{PQexec(native(), stmt.data())};
 }
 
-Receiver Client::send(PrepareData const& data) {
+Receiver Client::send(PreparingStatement const& stmt) {
     return Receiver{conn_,
                     PQsendPrepare(native(),
-                                  data.name.data(),
-                                  data.statement.data(),
-                                  static_cast<int>(data.types.size()),
-                                  data.types.data())};
+                                  stmt.name.data(),
+                                  stmt.body.data(),
+                                  static_cast<int>(stmt.types.size()),
+                                  stmt.types.data())};
 }
 
 Receiver Client::send(Command const& cmd) {
