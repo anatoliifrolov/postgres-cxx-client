@@ -1,106 +1,65 @@
-#include <utility>
-#include <cstring>
-#include <postgres/Error.h>
 #include <postgres/Field.h>
-#include <postgres/Time.h>
 
 namespace postgres {
 
-Field::Field(PGresult& result, const int row_index, const int column_index)
-    : result_{&result}, row_index_{row_index}, column_index_{column_index} {
+Field::Field(PGresult& res, int const row_idx, int const col_idx)
+    : res_{&res}, row_idx_{row_idx}, col_idx_{col_idx} {
 }
 
-Field::Field(const Field& other) = default;
+Field::Field(Field const& other) = default;
 
-Field::Field(Field&& other) = default;
+Field& Field::operator=(Field const& other) = default;
 
-Field& Field::operator=(const Field& other) = default;
+Field::Field(Field&& other) noexcept = default;
 
-Field& Field::operator=(Field&& other) = default;
+Field& Field::operator=(Field&& other) noexcept = default;
 
-Field::~Field() = default;
+Field::~Field() noexcept = default;
 
-void Field::read(bool& dst) const {
-    if (isBinary()) {
-        read<bool>(dst);
-        return;
-    }
-    static const char* vals[] = {"1",
-                                 "0",
-                                 "t",
-                                 "f",
-                                 "y",
-                                 "n",
-                                 "true",
-                                 "false",
-                                 "yes",
-                                 "no",
-                                 "on",
-                                 "off"};
-    auto const src = value();
-    for (auto const& val : vals) {
-        if (std::strcmp(val, src) == 0) {
-            dst = ((val - *vals) % 2 == 0);
-            return;
-        }
-    }
-    _POSTGRES_CXX_FAIL("Cannot treat '" << src << "' as boolean");
+void Field::read(Time::Point& out) const {
+    Time tmp{};
+    read(tmp);
+    out = tmp.point();
 }
 
-void Field::read(std::string& dst) const {
-    dst.assign(value(), PQgetlength(result_, row_index_, column_index_));
+void Field::read(Time& out) const {
+    _POSTGRES_CXX_ASSERT(type() == TIMESTAMPOID,
+                         "cannot cast field '"
+                             << name()
+                             << "' of type "
+                             << type()
+                             << " to timestamp without time zone");
+
+    using ms = std::chrono::microseconds;
+    out = Time{Time::EPOCH + ms{internal::orderBytes<int64_t>(value())}};
 }
 
-void Field::read(time_t& dst) const {
-    switch (PQftype(result_, column_index_)) {
-        case TIMESTAMPOID:
-        case TIMESTAMPTZOID: {
-            auto src = std::chrono::system_clock::time_point{};
-            read(src);
-            dst = std::chrono::system_clock::to_time_t(src);
-            break;
-        }
-        default: {
-            read<time_t>(dst);
-            break;
-        }
-    }
-}
-
-void Field::read(std::chrono::system_clock::time_point& dst) const {
-    auto const type = PQftype(result_, column_index_);
-    _POSTGRES_CXX_ASSERT(type == TIMESTAMPOID, "Unexpected column type " << type);
-
-    if (!isBinary()) {
-        dst = (Time{value()}).point();
-        return;
-    }
-
-    using std::chrono::microseconds;
-    dst = Time{Time::EPOCH + microseconds{internal::orderBytes<int64_t>(value())}}.point();
+void Field::read(std::string& out) const {
+    out.assign(value(), static_cast<size_t>(length()));
 }
 
 bool Field::isNull() const {
-    return PQgetisnull(result_, row_index_, column_index_);
+    return PQgetisnull(res_, row_idx_, col_idx_) == 1;
 }
 
-const char* const Field::name() const {
-    return PQfname(result_, column_index_);
+char const* Field::name() const {
+    return PQfname(res_, col_idx_);
 }
 
-bool Field::isBinary() const {
-    auto const format = PQfformat(result_, column_index_);
-    if (format == 0) {
-        return false;
-    }
-    if (format == 1) {
-        return true;
-    }
-    _POSTGRES_CXX_FAIL("Unexpected column data format " << format);
+char const* Field::value() const {
+    return PQgetvalue(res_, row_idx_, col_idx_);
 }
 
-const char* Field::value() const {
-    return PQgetvalue(result_, row_index_, column_index_);
+Oid Field::type() const {
+    return PQftype(res_, col_idx_);
+}
+
+int Field::length() const {
+    return PQgetlength(res_, row_idx_, col_idx_);
+}
+
+int Field::format() const {
+    return PQfformat(res_, col_idx_);
 }
 
 }  // namespace postgres

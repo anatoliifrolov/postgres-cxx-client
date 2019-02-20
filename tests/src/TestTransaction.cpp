@@ -24,7 +24,7 @@ TEST_F(TestTransaction, Commit) {
     conn_->exec("INSERT INTO test(flag) VALUES(TRUE)");
     transaction.commit();
     auto const res = conn_->exec("SELECT flag FROM test");
-    ASSERT_EQ(true, (bool) res[0][0]);
+    ASSERT_EQ(true, res[0][0].as<bool>());
 }
 
 TEST_F(TestTransaction, Rollback) {
@@ -42,9 +42,9 @@ TEST_F(TestTransaction, AutoCommit) {
                                 "INSERT INTO test(int4) VALUES(2), (3)");
     ASSERT_EQ(2, res.effect());
     res = conn_->exec("SELECT int4 FROM test ORDER BY int4");
-    ASSERT_EQ(1, (int) res[0][0]);
-    ASSERT_EQ(2, (int) res[1][0]);
-    ASSERT_EQ(3, (int) res[2][0]);
+    ASSERT_EQ(1, res[0][0].as<int>());
+    ASSERT_EQ(2, res[1][0].as<int>());
+    ASSERT_EQ(3, res[2][0].as<int>());
 }
 
 TEST_F(TestTransaction, AutoRollback) {

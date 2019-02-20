@@ -55,7 +55,7 @@ TEST_F(TestResult, Survival) {
     }
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(1, res.size());
-    ASSERT_EQ(123, (int) res[0][0]);
+    ASSERT_EQ(123, res[0][0].as<int>());
 }
 
 TEST_F(TestResult, Iteration) {
@@ -69,18 +69,6 @@ TEST_F(TestResult, Iteration) {
     ASSERT_EQ(1, data[0]);
     ASSERT_EQ(2, data[1]);
     ASSERT_EQ(3, data[2]);
-}
-
-TEST_F(TestResult, Cast) {
-    auto const f = [](const int n, const double d, const bool b, const std::string& s) {
-        ASSERT_EQ(4, n);
-        ASSERT_DOUBLE_EQ(8.88, d);
-        ASSERT_EQ(true, b);
-        ASSERT_EQ("INFO", s);
-    };
-
-    auto const res = conn_->exec(Command{"SELECT 4::INTEGER, 8.88::FLOAT, TRUE, 'INFO'"});
-    f(res[0][0], res[0][1], res[0][2], res[0][3]);
 }
 
 TEST_F(TestResult, ColumnName) {

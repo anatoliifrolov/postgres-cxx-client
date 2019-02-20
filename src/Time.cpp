@@ -15,6 +15,8 @@ inline bool isLeap(long const year) {
     return !(year % 4) && ((year % 100) || !(year % 400));
 }
 
+Time::Time() = default;
+
 Time::Time(time_t const uni, bool const has_zone)
     : Time{Clock::from_time_t(uni), has_zone} {
 }
@@ -23,8 +25,7 @@ Time::Time(Point const pnt, bool const has_zone)
     : pnt_{pnt}, has_zone_{has_zone} {
 }
 
-Time::Time(std::string const& s)
-    : has_zone_{false} {
+Time::Time(std::string const& s) {
     // 2017-08-25T13:03:35
     // 2017-08-25T13:03:35.123456789
     // 2017-08-25 13:03:35

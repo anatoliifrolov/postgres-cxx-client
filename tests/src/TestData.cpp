@@ -91,12 +91,6 @@ TEST_F(TestData, Types) {
     res[0]["float4"] >> row.float8;
     ASSERT_NEAR(4.44, row.float8, 0.001);
 
-    // Cast.
-    res[0]["int8"] >> row.float8;
-    ASSERT_DOUBLE_EQ(8, row.float8);
-    res[0]["float8"] >> row.int8;
-    ASSERT_EQ(8, row.int8);
-
     // Narrowing.
     ASSERT_THROW(res[0]["int2"] >> row.flag, std::exception);
     ASSERT_THROW(res[0]["int4"] >> row.int2, std::exception);
@@ -111,8 +105,7 @@ TEST_F(TestData, Timestamp) {
     auto const res = client_.transact(Command{"INSERT INTO test(time) VALUES($1)",
                                               timeFormatSampleNano()}, "SELECT time FROM test");
 
-    res[0][0] >> time;
-    ASSERT_EQ(timeSample(), time);
+    ASSERT_THROW(res[0][0] >> time, Error);
     res[0][0] >> time_point;
     ASSERT_EQ(timePointSampleMicro(), time_point);
 }
@@ -121,7 +114,7 @@ TEST_F(TestData, Esc) {
     auto const res = client_.transact(Command{"INSERT INTO test(info) VALUES($1)",
                                               "'QUOTED_STRING's"}, "SELECT info FROM test");
 
-    const std::string s = res[0][0];
+    const auto s = res[0][0].as<std::string>();
     ASSERT_EQ("'QUOTED_STRING's", s);
 }
 
@@ -129,9 +122,9 @@ TEST_F(TestData, MultiRef) {
     auto const res = client_.transact(Command{
         "INSERT INTO test(int2, int4, int8) VALUES($1, $1, $1)",
         2}, "SELECT int2, int4, int8 FROM test");
-    ASSERT_EQ(2, (int16_t) res[0][0]);
-    ASSERT_EQ(2, (int32_t) res[0][1]);
-    ASSERT_EQ(2, (int64_t) res[0][2]);
+    ASSERT_EQ(2, res[0][0].as<int16_t>());
+    ASSERT_EQ(2, res[0][1].as<int32_t>());
+    ASSERT_EQ(2, res[0][2].as<int64_t>());
 }
 
 }  // namespace postgres

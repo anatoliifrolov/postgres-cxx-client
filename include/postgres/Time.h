@@ -10,6 +10,7 @@ public:
     using Clock = std::chrono::system_clock;
     using Point = Clock::time_point;
 
+    explicit Time();
     explicit Time(time_t uni, bool has_zone = false);
     explicit Time(Point pnt, bool has_zone = false);
     explicit Time(std::string const& s);
@@ -30,7 +31,7 @@ public:
 
 private:
     Point pnt_;
-    bool  has_zone_;
+    bool  has_zone_             = false;
 };
 
 }  // namespace postgres

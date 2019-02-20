@@ -1,139 +1,128 @@
 #pragma once
 
 #include <chrono>
-#include <ctime>
+#include <optional>
 #include <string>
 #include <type_traits>
-#include <optional>
 #include <libpq-fe.h>
+#include <postgres/internal/Bytes.h>
 #include <postgres/Error.h>
 #include <postgres/Oid.h>
-#include <postgres/internal/Bytes.h>
-#include <postgres/internal/Classifier.h>
+#include <postgres/Time.h>
 
 namespace postgres {
 
 class Field {
-    friend class Tuple;
-
 public:
-    Field(const Field& other);
-    Field(Field&& other);
-    Field& operator=(const Field& other);
-    Field& operator=(Field&& other);
-    ~Field();
+    Field(Field const& other);
+    Field& operator=(Field const& other);
+    Field(Field&& other) noexcept;
+    Field& operator=(Field&& other) noexcept;
+    ~Field() noexcept;
 
-    bool isNull() const;
-    const char* const name() const;
-
-    template <typename Dst>
-    operator Dst() const {
-        return as<Dst>();
-    }
-
-    template <typename Dst>
-    Dst as() const {
-        Dst tmp{};
+    template <typename T>
+    std::enable_if_t<!std::is_pointer_v<T>, T> as() const {
+        T tmp;
         *this >> tmp;
         return tmp;
     }
 
-    template <typename Dst>
-    void operator>>(std::optional<Dst>& dst) const {
+    template <typename T>
+    void operator>>(T*& out) const {
         if (isNull()) {
+            out = nullptr;
             return;
         }
-        dst = as<Dst>();
+        read(*out);
     }
 
-    template <typename Dst>
-    std::enable_if_t<internal::isPlain<Dst>()> operator>>(Dst& dst) const {
-        auto ptr = &dst;
-        *this >> ptr;
-        _POSTGRES_CXX_ASSERT(ptr,
-                             "Cannot store NULL value of field " << name() << " into reference");
-    }
-
-    template <typename Dst>
-    std::enable_if_t<internal::isPlain<Dst>()> operator>>(Dst*& dst) const {
+    template <typename T>
+    void operator>>(std::optional<T>& out) const {
         if (isNull()) {
-            dst = nullptr;
+            out.reset();
             return;
         }
-        read(*dst);
+        out.emplace();
+        read(out.value());
     }
+
+    template <typename T>
+    void operator>>(T& out) const {
+        _POSTGRES_CXX_ASSERT(!isNull(),
+                             "cannot store NULL value of field '"
+                                 << name()
+                                 << "' into variable of non-optional type");
+        read(out);
+    }
+
+    bool isNull() const;
+    char const* name() const;
+    char const* value() const;
+    Oid type() const;
+    int length() const;
+    int format() const;
 
 private:
-    explicit Field(PGresult& result, const int row_index, const int column_index);
+    friend class Tuple;
 
-    template <typename Dst>
-    std::enable_if_t<std::is_arithmetic<Dst>::value> read(Dst& dst) const {
-        auto constexpr size = static_cast<int>(sizeof(Dst));
-        auto const     len  = PQgetlength(result_, row_index_, column_index_);
-        auto const     type = PQftype(result_, column_index_);
+    explicit Field(PGresult& res, int row_idx, int col_idx);
 
-        _POSTGRES_CXX_ASSERT(isBinary(),
-                             "Cannot store text field "
+    template <typename T>
+    std::enable_if_t<std::is_arithmetic_v<T>> read(T& out) const {
+        auto const is_ok = [this, &out] {
+            switch (type()) {
+                case BOOLOID: {
+                    return readNum<bool>(out);
+                }
+                case INT2OID: {
+                    return readNum<int16_t>(out);
+                }
+                case INT4OID: {
+                    return readNum<int32_t>(out);
+                }
+                case INT8OID: {
+                    return readNum<int64_t>(out);
+                }
+                case FLOAT4OID: {
+                    return readNum<float>(out);
+                }
+                case FLOAT8OID: {
+                    return readNum<double>(out);
+                }
+                default: {
+                    break;
+                }
+            }
+            return false;
+        }();
+        _POSTGRES_CXX_ASSERT(is_ok,
+                             "cannot cast field '"
                                  << name()
-                                 << " into object of arithmetic type");
-        _POSTGRES_CXX_ASSERT(len <= size,
-                             "Cannot store field "
-                                 << name()
-                                 << " which is of size "
-                                 << len
-                                 << " bytes into object of size "
-                                 << size
-                                 << " bytes");
-
-        switch (type) {
-            case BOOLOID:
-            case CHAROID: {
-                dst = *value();
-                break;
-            }
-            case INT2OID: {
-                dst = castBinary<Dst, int16_t>();
-                break;
-            }
-            case INT4OID: {
-                dst = castBinary<Dst, int32_t>();
-                break;
-            }
-            case INT8OID: {
-                dst = castBinary<Dst, int64_t>();
-                break;
-            }
-            case FLOAT4OID: {
-                static_assert(sizeof(float) == 4, "Unexpected float size");
-                dst = castBinary<Dst, float>();
-                break;
-            }
-            case FLOAT8OID: {
-                static_assert(sizeof(double) == 8, "Unexpected double size");
-                dst = castBinary<Dst, double>();
-                break;
-            }
-            default: {
-                _POSTGRES_CXX_FAIL("Column " << name() << " is of unexpected type " << type);
-            }
-        }
-    }
-
-    template <typename Dst, typename Src>
-    Dst castBinary() const {
-        return static_cast<Dst>(internal::orderBytes<Src>(value()));
+                                 << "' of type "
+                                 << type()
+                                 << " to desired arithmetic type");
     };
 
-    void read(bool& dst) const;
-    void read(std::string& dst) const;
-    void read(time_t& dst) const;
-    void read(std::chrono::system_clock::time_point& dst) const;
-    bool isBinary() const;
-    const char* value() const;
+    template <typename In, typename Out>
+    bool readNum(Out& out) const {
+        auto const is_ok = (std::is_integral_v<In> == std::is_integral_v<Out>)
+                           && (std::is_signed_v<In> == std::is_signed_v<Out>)
+                           && (sizeof(In) <= sizeof(Out));
+        if (!is_ok) {
+            return false;
+        }
 
-    PGresult* result_;
-    int row_index_;
-    int column_index_;
+        out = static_cast<Out>(internal::orderBytes<In>(value()));
+        return true;
+    }
+
+    void read(Time::Point& out) const;
+    void read(Time& out) const;
+    void read(std::string& out) const;
+
+    PGresult* res_;
+    int row_idx_;
+    int col_idx_;
 };
 
 }  // namespace postgres
