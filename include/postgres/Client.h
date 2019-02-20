@@ -17,6 +17,7 @@
 namespace postgres {
 
 class Config;
+class Consumer;
 class PreparedCommand;
 class Receiver;
 struct PrepareData;
@@ -81,7 +82,7 @@ public:
     Receiver send(PrepareData const& data);
     Receiver send(Command const& cmd);
     Receiver send(PreparedCommand const& cmd);
-    Receiver sendRaw(std::string_view stmt);
+    Consumer sendRaw(std::string_view stmt);
 
     Receiver iter(Command const& cmd);
     Receiver iter(PreparedCommand const& cmd);

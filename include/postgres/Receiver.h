@@ -1,13 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <libpq-fe.h>
+#include <postgres/Consumer.h>
 
 namespace postgres {
 
+class Client;
 class Result;
 
-class Receiver {
+class Receiver : public Consumer {
     friend class Client;
 
 public:
@@ -19,16 +19,11 @@ public:
 
     Receiver valid();
     Result receive();
-    bool isOk();
-    bool isBusy();
 
 private:
     explicit Receiver(std::shared_ptr<PGconn> handle, int is_ok);
 
-    bool setRowByRow();
-
-    std::shared_ptr<PGconn> handle_;
-    bool                    is_ok_ = false;
+    bool iter();
 };
 
 }  // namespace postgres

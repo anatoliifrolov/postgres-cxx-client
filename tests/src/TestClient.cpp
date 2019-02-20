@@ -99,9 +99,9 @@ TEST(TestClient, ExecAsync) {
 
 TEST(TestClient, ExecRawAsync) {
     Client cl{};
-    ASSERT_TRUE(cl.sendRaw("SELECT 1").receive().isOk());
-    ASSERT_TRUE(cl.sendRaw("SELECT 1; SELECT 2").receive().isOk());
-    ASSERT_FALSE(cl.sendRaw("BAD").receive().isOk());
+    ASSERT_TRUE(cl.sendRaw("SELECT 1").consume().isOk());
+    ASSERT_TRUE(cl.sendRaw("SELECT 1; SELECT 2").consume().isOk());
+    ASSERT_FALSE(cl.sendRaw("BAD").consume().isOk());
 }
 
 TEST(TestClient, PrepareAsync) {

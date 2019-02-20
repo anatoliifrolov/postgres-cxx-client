@@ -1,6 +1,7 @@
 #include <postgres/Client.h>
 
 #include <postgres/Config.h>
+#include <postgres/Consumer.h>
 #include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
@@ -108,19 +109,19 @@ Receiver Client::send(PreparedCommand const& cmd) {
                                         RESULT_FORMAT)};
 }
 
-Receiver Client::sendRaw(std::string_view stmt) {
-    return Receiver{conn_, PQsendQuery(native(), stmt.data())};
+Consumer Client::sendRaw(std::string_view stmt) {
+    return Consumer{conn_, PQsendQuery(native(), stmt.data())};
 }
 
 Receiver Client::iter(Command const& cmd) {
     auto rcvr = send(cmd);
-    rcvr.setRowByRow();
+    rcvr.iter();
     return rcvr;
 }
 
 Receiver Client::iter(PreparedCommand const& cmd) {
     auto rcvr = send(cmd);
-    rcvr.setRowByRow();
+    rcvr.iter();
     return rcvr;
 }
 

@@ -30,5 +30,4 @@ private:
     std::unique_ptr<PGresult, void (*)(PGresult*)> handle_;
 };
 
-
 }  // namespace postgres
