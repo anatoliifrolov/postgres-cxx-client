@@ -76,7 +76,7 @@ public:
     Result exec(PrepareData const& data);
     Result exec(Command const& cmd);
     Result exec(PreparedCommand const& cmd);
-    Result execRaw(std::string_view stmt);
+    Status execRaw(std::string_view stmt);
 
     Receiver send(PrepareData const& data);
     Receiver send(Command const& cmd);

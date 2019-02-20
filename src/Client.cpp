@@ -72,8 +72,8 @@ Result Client::exec(PreparedCommand const& cmd) {
                                  RESULT_FORMAT)};
 }
 
-Result Client::execRaw(std::string_view stmt) {
-    return Result{PQexec(native(), stmt.data())};
+Status Client::execRaw(std::string_view stmt) {
+    return Status{PQexec(native(), stmt.data())};
 }
 
 Receiver Client::send(PrepareData const& data) {

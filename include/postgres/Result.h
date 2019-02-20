@@ -1,13 +1,12 @@
 #pragma once
 
-#include <memory>
-#include <libpq-fe.h>
+#include <postgres/Status.h>
 
 namespace postgres {
 
 class Tuple;
 
-class Result {
+class Result : public Status {
 public:
     class iterator;
 
@@ -20,24 +19,10 @@ public:
 
     Result valid();
     Result const& valid() const;
-    bool isOk() const;
-    bool isDone() const;
-    bool isEmpty() const;
 
     iterator begin() const;
     iterator end() const;
     Tuple operator[](int idx) const;
-
-    int size() const;
-    int effect() const;
-    const char* message() const;
-    const char* describe() const;
-    ExecStatusType type() const;
-
-    PGresult* native() const;
-
-private:
-    std::unique_ptr<PGresult, void (*)(PGresult*)> handle_;
 };
 
 class Result::iterator {

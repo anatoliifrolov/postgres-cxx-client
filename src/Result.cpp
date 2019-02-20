@@ -6,7 +6,7 @@
 namespace postgres {
 
 Result::Result(PGresult* const handle)
-    : handle_{handle, PQclear} {
+    : Status{handle} {
 }
 
 Result::Result(Result&& other) noexcept = default;
@@ -25,64 +25,16 @@ Result const& Result::valid() const {
     return *this;
 }
 
-bool Result::isOk() const {
-    switch (type()) {
-        case PGRES_COMMAND_OK:
-        case PGRES_TUPLES_OK:
-        case PGRES_SINGLE_TUPLE:
-        case PGRES_NONFATAL_ERROR: {
-            return true;
-        }
-        default: {
-            break;
-        }
-    }
-    return false;
-}
-
-bool Result::isDone() const {
-    return native() == nullptr;
-}
-
-bool Result::isEmpty() const {
-    return size() == 0;
-}
-
 Result::iterator Result::begin() const {
-    return iterator{*valid().handle_, 0};
+    return iterator{*valid().native(), 0};
 }
 
 Result::iterator Result::end() const {
-    return iterator{*valid().handle_, size()};
+    return iterator{*valid().native(), size()};
 }
 
 Tuple Result::operator[](int const idx) const {
-    return *iterator{*valid().handle_, idx};
-}
-
-int Result::size() const {
-    return PQntuples(native());
-}
-
-int Result::effect() const {
-    std::string const s = PQcmdTuples(native());
-    return s.empty() ? 0 : std::stoi(s);
-}
-
-const char* Result::message() const {
-    return PQresultErrorMessage(native());
-}
-
-const char* Result::describe() const {
-    return PQresStatus(type());
-}
-
-ExecStatusType Result::type() const {
-    return PQresultStatus(native());
-}
-
-PGresult* Result::native() const {
-    return handle_.get();
+    return *iterator{*valid().native(), idx};
 }
 
 Result::iterator::iterator(PGresult& handle, int const idx)
