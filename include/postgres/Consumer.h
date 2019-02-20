@@ -5,12 +5,9 @@
 
 namespace postgres {
 
-class Client;
 class Status;
 
 class Consumer {
-    friend class Client;
-
 public:
     Consumer(Consumer const& other) = delete;
     Consumer& operator=(Consumer const& other) = delete;
@@ -23,6 +20,8 @@ public:
     bool isBusy();
 
 protected:
+    friend class Client;
+
     explicit Consumer(std::shared_ptr<PGconn> handle, int is_ok);
 
     std::shared_ptr<PGconn> handle_;
