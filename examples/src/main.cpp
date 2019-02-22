@@ -19,6 +19,44 @@ using postgres::Config;
 using postgres::Client;
 using postgres::PreparedCommand;
 using postgres::PreparingStatement;
+using postgres::Time;
+
+// Starting example
+struct MyTable {
+    int                                   id;
+    std::string                           info;
+    std::chrono::system_clock::time_point create_time;
+
+    POSTGRES_CXX_TABLE("my_table", id, info, create_time)
+};
+
+void example() {
+    // Connect to the database.
+    Client db{};
+
+    // Create my_table.
+    db.create<MyTable>().valid();
+
+    auto now = std::chrono::system_clock::now();
+
+    // Populate the table with data.
+    std::vector<MyTable> data{{1, "foo", now},
+                              {2, "bar", now},
+                              {3, "baz", now}};
+    db.insert(data.begin(), data.end()).valid();
+
+    // Retrieve some data from the table.
+    auto query = "SELECT info, create_time FROM my_table WHERE $1 < id";
+
+    for (auto res : db.exec(Command{query, 1}).valid()) {
+        std::cout
+            << res["create_time"].as<Time>().toString()
+            << " "
+            << res["info"].as<std::string>()
+            << std::endl;
+    }
+}
+// Starting example
 
 Config makeConfig() {
     return Config::Builder{}.dbname("PGDATABASE")   // The same as the user by default.
