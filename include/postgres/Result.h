@@ -4,7 +4,7 @@
 
 namespace postgres {
 
-class Tuple;
+class Row;
 
 class Result : public Status {
 public:
@@ -22,7 +22,7 @@ public:
 
     iterator begin() const;
     iterator end() const;
-    Tuple operator[](int idx) const;
+    Row operator[](int idx) const;
 };
 
 class Result::iterator {
@@ -31,9 +31,9 @@ class Result::iterator {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
-    using value_type = Tuple;
-    using pointer = Tuple*;
-    using reference = Tuple&;
+    using value_type = Row;
+    using pointer = Row*;
+    using reference = Row&;
 
     iterator(iterator const& other);
     iterator& operator=(iterator const& other);
@@ -45,8 +45,8 @@ public:
     bool operator!=(iterator const& other) const;
     void operator++();
     iterator const operator++(int);
-    Tuple operator->() const;
-    Tuple operator*() const;
+    Row operator->() const;
+    Row operator*() const;
 
 private:
     explicit iterator(PGresult& handle, int idx);

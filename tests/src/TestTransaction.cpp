@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <postgres/Transaction.h>
 #include <postgres/Command.h>
-#include <postgres/Tuple.h>
+#include <postgres/Row.h>
 #include "Migration.h"
 
 namespace postgres {

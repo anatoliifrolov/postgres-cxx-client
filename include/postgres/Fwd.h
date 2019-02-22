@@ -9,9 +9,9 @@ class Field;
 class PreparedCommand;
 class Receiver;
 class Result;
+class Row;
 class Time;
 class Transaction;
-class Tuple;
 
 struct PreparingStatement;
 

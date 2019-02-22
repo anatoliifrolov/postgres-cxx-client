@@ -63,7 +63,7 @@ public:
     int format() const;
 
 private:
-    friend class Tuple;
+    friend class Row;
 
     explicit Field(PGresult& res, int row_idx, int col_idx);
 

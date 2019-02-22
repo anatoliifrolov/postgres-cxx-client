@@ -1,7 +1,7 @@
 #include <postgres/Result.h>
 
 #include <postgres/Error.h>
-#include <postgres/Tuple.h>
+#include <postgres/Row.h>
 
 namespace postgres {
 
@@ -33,7 +33,7 @@ Result::iterator Result::end() const {
     return iterator{*valid().native(), size()};
 }
 
-Tuple Result::operator[](int const idx) const {
+Row Result::operator[](int const idx) const {
     return *iterator{*valid().native(), idx};
 }
 
@@ -67,14 +67,14 @@ Result::iterator const Result::iterator::operator++(int) {
     return Result::iterator{*handle_, idx_++};
 }
 
-Tuple Result::iterator::operator->() const {
+Row Result::iterator::operator->() const {
     return this->operator*();
 }
 
-Tuple Result::iterator::operator*() const {
+Row Result::iterator::operator*() const {
     auto const n = PQntuples(handle_);
     _POSTGRES_CXX_ASSERT(idx_ < n, "No tuple " << idx_ << " in the result of size " << n);
-    return Tuple{*handle_, idx_};
+    return Row{*handle_, idx_};
 }
 
 }  // namespace postgres

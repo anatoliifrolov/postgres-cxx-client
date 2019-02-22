@@ -9,9 +9,9 @@
 #include <libpq-fe.h>
 #include <postgres/Command.h>
 #include <postgres/Result.h>
+#include <postgres/Row.h>
 #include <postgres/Statement.h>
 #include <postgres/Transaction.h>
-#include <postgres/Tuple.h>
 
 namespace postgres {
 

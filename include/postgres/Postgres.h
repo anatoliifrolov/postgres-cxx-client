@@ -10,8 +10,8 @@
 #include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
+#include <postgres/Row.h>
 #include <postgres/Statement.h>
 #include <postgres/Time.h>
 #include <postgres/Transaction.h>
-#include <postgres/Tuple.h>
 #include <postgres/Visitable.h>
