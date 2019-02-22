@@ -39,23 +39,21 @@ struct Statement {
     }
 
     static std::string const& fields() {
-        static auto const cache = collect<internal::FieldsCollector>();
+        static auto const cache = collect(internal::FieldsCollector{});
         return cache;
     }
 
     static std::string const& typedFields() {
-        static auto const cache = collect<internal::TypedFieldsCollector>();
+        static auto const cache = collect(internal::TypedFieldsCollector{});
         return cache;
     }
 
-    static std::string const& placeholders() {
-        static auto const cache = collect<internal::PlaceholdersCollector>();
-        return cache;
+    static std::string placeholders(int const offset = 0) {
+        return collect(internal::PlaceholdersCollector{offset});
     }
 
-    static std::string const& assignments() {
-        static auto const cache = collect<internal::AssignmentsCollector>();
-        return cache;
+    static std::string assignments(int const offset = 0) {
+        return collect(internal::AssignmentsCollector{offset});
     }
 
     static char const* table() {
@@ -64,8 +62,7 @@ struct Statement {
 
 private:
     template <typename C>
-    static std::string collect() {
-        C coll{};
+    static std::string collect(C coll) {
         T::visitPostgresDefinition(coll);
         return coll.res;
     }
@@ -85,9 +82,9 @@ struct RangeStatement {
     }
 
     template <typename Iter>
-    static std::string placeholders(Iter const beg, Iter const end) {
+    static std::string placeholders(Iter const beg, Iter const end, int const offset = 0) {
         using T = std::remove_pointer_t<typename Iter::value_type>;
-        internal::PlaceholdersCollector coll{};
+        internal::PlaceholdersCollector coll{offset};
         std::string                     res{};
 
         for (auto it = beg; it != end; ++it) {

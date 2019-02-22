@@ -82,8 +82,8 @@ struct PlaceholdersCollector {
         res += std::to_string(++idx);
     }
 
-    std::string res;
     int         idx = 0;
+    std::string res;
 };
 
 struct AssignmentsCollector {
@@ -97,8 +97,8 @@ struct AssignmentsCollector {
         res += std::to_string(++idx);
     }
 
-    std::string res;
     int         idx = 0;
+    std::string res;
 };
 
 }  // namespace internal

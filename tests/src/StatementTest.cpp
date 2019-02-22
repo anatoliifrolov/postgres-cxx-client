@@ -48,12 +48,8 @@ TEST(StatementTest, Create) {
 }
 
 TEST(StatementTest, Insert) {
-    std::string const single = "INSERT INTO test (a,b,c) VALUES ($1,$2,$3)";
-    auto const        multi  = single + ",($4,$5,$6),($7,$8,$9)";
-
-    std::vector<StatementTestTable> const v(3);
-    ASSERT_EQ(single, Statement<StatementTestTable>::insert());
-    ASSERT_EQ(multi, RangeStatement::insert(v.begin(), v.end()));
+    auto const query = "INSERT INTO test (a,b,c) VALUES ($1,$2,$3)";
+    ASSERT_EQ(query, Statement<StatementTestTable>::insert());
 }
 
 TEST(StatementTest, Select) {
@@ -67,7 +63,17 @@ TEST(StatementTest, Update) {
 TEST(StatementTest, Parts) {
     ASSERT_EQ("a,b,c", Statement<StatementTestTable>::fields());
     ASSERT_EQ("$1,$2,$3", Statement<StatementTestTable>::placeholders());
+    ASSERT_EQ("$2,$3,$4", Statement<StatementTestTable>::placeholders(1));
     ASSERT_EQ("a=$1,b=$2,c=$3", Statement<StatementTestTable>::assignments());
+    ASSERT_EQ("a=$2,b=$3,c=$4", Statement<StatementTestTable>::assignments(1));
+}
+
+TEST(StatementTest, Range) {
+    auto const query = "INSERT INTO test (a,b,c) VALUES ($1,$2,$3),($4,$5,$6)";
+
+    std::vector<StatementTestTable> const v(2);
+    ASSERT_EQ(query, RangeStatement::insert(v.begin(), v.end()));
+    ASSERT_EQ("($2,$3,$4),($5,$6,$7)", RangeStatement::placeholders(v.begin(), v.end(), 1));
 }
 
 }  // namespace postgres
