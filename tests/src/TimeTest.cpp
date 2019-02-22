@@ -5,7 +5,7 @@
 
 namespace postgres {
 
-TEST(TestTime, CStyle) {
+TEST(TimeTest, CStyle) {
     auto const t = Time{timeSample()};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
@@ -14,7 +14,7 @@ TEST(TestTime, CStyle) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, Chrono) {
+TEST(TimeTest, Chrono) {
     auto const t = Time{timePointSampleNano()};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
@@ -23,7 +23,7 @@ TEST(TestTime, Chrono) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, Tz) {
+TEST(TimeTest, Tz) {
     auto const t = Time{timePointSampleNano(), true};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
@@ -32,7 +32,7 @@ TEST(TestTime, Tz) {
     ASSERT_TRUE(t.hasZone());
 }
 
-TEST(TestTime, Fmt) {
+TEST(TimeTest, Fmt) {
     auto const t = Time{timeFormatSample()};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
@@ -41,7 +41,7 @@ TEST(TestTime, Fmt) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, NanoFmt) {
+TEST(TimeTest, NanoFmt) {
     auto const t = Time{timeFormatSampleNano()};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
@@ -50,7 +50,7 @@ TEST(TestTime, NanoFmt) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, SpaceDelim) {
+TEST(TimeTest, SpaceDelim) {
     auto const t = Time{"2017-08-25 13:03:35"};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePg(), t.toPostgres());
@@ -59,7 +59,7 @@ TEST(TestTime, SpaceDelim) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, SpaceDelimMicro) {
+TEST(TimeTest, SpaceDelimMicro) {
     auto const t = Time{"2017-08-25 13:03:35.987654"};
     ASSERT_EQ(timeSample(), t.toUnix());
     ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
@@ -68,7 +68,7 @@ TEST(TestTime, SpaceDelimMicro) {
     ASSERT_FALSE(t.hasZone());
 }
 
-TEST(TestTime, BadFmt) {
+TEST(TimeTest, BadFmt) {
     ASSERT_THROW(Time{"BAD TIMESTAMP"}, std::exception);
     ASSERT_THROW(Time{"2017-13-25 13:03:35"}, std::exception);
     ASSERT_THROW(Time{"2017-08-32 13:03:35"}, std::exception);
@@ -77,7 +77,7 @@ TEST(TestTime, BadFmt) {
     ASSERT_THROW(Time{"2017-08-25 13:03:60"}, std::exception);
 }
 
-TEST(TestTime, Past) {
+TEST(TimeTest, Past) {
     static auto const fmt = "1817-08-25T13:03:35";
     auto const        t   = Time{fmt};
     auto constexpr    uni = -4807767385l;

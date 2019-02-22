@@ -7,31 +7,31 @@
 
 namespace postgres {
 
-TEST(TestCommand, Stmt) {
+TEST(CommandTest, Stmt) {
     auto const    stmt = "STMT";
     Command const cmd{stmt};
     ASSERT_EQ(stmt, cmd.statement());
 }
 
-TEST(TestCommand, StmtView) {
+TEST(CommandTest, StmtView) {
     std::string const      stmt = "STMT";
     std::string_view const view = stmt;
     Command const          cmd{view};
     ASSERT_EQ(stmt.data(), cmd.statement());
 }
 
-TEST(TestCommand, StmtRef) {
+TEST(CommandTest, StmtRef) {
     std::string const stmt = "STMT";
     Command const     cmd{stmt};
     ASSERT_EQ(stmt.data(), cmd.statement());
 }
 
-TEST(TestCommand, StmtOwn) {
+TEST(CommandTest, StmtOwn) {
     Command const cmd{std::string{"STMT"}};
     ASSERT_STREQ("STMT", cmd.statement());
 }
 
-TEST(TestCommand, NoArgs) {
+TEST(CommandTest, NoArgs) {
     Command const cmd{"STMT"};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(0, cmd.count());
@@ -41,7 +41,7 @@ TEST(TestCommand, NoArgs) {
     ASSERT_EQ(nullptr, cmd.formats());
 }
 
-TEST(TestCommand, True) {
+TEST(CommandTest, True) {
     Command const cmd{"STMT", true};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -51,7 +51,7 @@ TEST(TestCommand, True) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, False) {
+TEST(CommandTest, False) {
     Command const cmd{"STMT", false};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -61,7 +61,7 @@ TEST(TestCommand, False) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Int2) {
+TEST(CommandTest, Int2) {
     Command const cmd{"STMT", int16_t{3}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -71,7 +71,7 @@ TEST(TestCommand, Int2) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Int4) {
+TEST(CommandTest, Int4) {
     Command const cmd{"STMT", int32_t{3}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -81,7 +81,7 @@ TEST(TestCommand, Int4) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Int8) {
+TEST(CommandTest, Int8) {
     Command const cmd{"STMT", int64_t{3}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -91,7 +91,7 @@ TEST(TestCommand, Int8) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Float4) {
+TEST(CommandTest, Float4) {
     Command const cmd{"STMT", float{3.45}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -101,7 +101,7 @@ TEST(TestCommand, Float4) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Float8) {
+TEST(CommandTest, Float8) {
     Command const cmd{"STMT", double{3.45}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -111,7 +111,7 @@ TEST(TestCommand, Float8) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Ptr) {
+TEST(CommandTest, Ptr) {
     int32_t const val = 3;
     auto const    ptr = &val;
     Command const cmd{"STMT", ptr};
@@ -123,7 +123,7 @@ TEST(TestCommand, Ptr) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, NullPtr) {
+TEST(CommandTest, NullPtr) {
     int* const null_ptr = nullptr;
     Command const cmd{"STMT", null_ptr};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -134,7 +134,7 @@ TEST(TestCommand, NullPtr) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Opt) {
+TEST(CommandTest, Opt) {
     std::optional<int32_t> opt = 3;
     Command const          cmd{"STMT", opt};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -145,7 +145,7 @@ TEST(TestCommand, Opt) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, NullOpt) {
+TEST(CommandTest, NullOpt) {
     std::optional<int32_t> opt{};
     Command const          cmd{"STMT", opt};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -156,7 +156,7 @@ TEST(TestCommand, NullOpt) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, EmptyStr) {
+TEST(CommandTest, EmptyStr) {
     Command const cmd{"STMT", ""};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -166,7 +166,7 @@ TEST(TestCommand, EmptyStr) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, CStr) {
+TEST(CommandTest, CStr) {
     auto const    str = "STR";
     Command const cmd{"STMT", str};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -177,7 +177,7 @@ TEST(TestCommand, CStr) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, StrView) {
+TEST(CommandTest, StrView) {
     std::string const      str  = "STR";
     std::string_view const view = str;
     Command const          cmd{"STMT", view};
@@ -189,7 +189,7 @@ TEST(TestCommand, StrView) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, StrRef) {
+TEST(CommandTest, StrRef) {
     std::string const str = "STR";
     Command const     cmd{"STMT", str};
     ASSERT_STREQ("STMT", cmd.statement());
@@ -200,7 +200,7 @@ TEST(TestCommand, StrRef) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, StrOwn) {
+TEST(CommandTest, StrOwn) {
     Command const cmd{"STMT", std::string{"STR"}};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -210,7 +210,7 @@ TEST(TestCommand, StrOwn) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Oid) {
+TEST(CommandTest, Oid) {
     std::string   str  = "STR";
     auto const    data = str.data();
     Command const cmd{"STMT", bindOid(std::move(str), ANYOID)};
@@ -223,7 +223,7 @@ TEST(TestCommand, Oid) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Time) {
+TEST(CommandTest, Time) {
     Command const cmd{"STMT", timePointSample()};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
@@ -233,7 +233,7 @@ TEST(TestCommand, Time) {
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
-TEST(TestCommand, TimeZone) {
+TEST(CommandTest, TimeZone) {
     Command const cmd{"STMT", Time{timePointSampleNano(), true}};
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{TIMESTAMPTZOID}, cmd.types()[0]);
@@ -242,7 +242,7 @@ TEST(TestCommand, TimeZone) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(TestCommand, Range) {
+TEST(CommandTest, Range) {
     std::vector<int32_t> const arr{1, 2, 3};
 
     Command const cmd{"STMT", std::make_pair(arr.begin(), arr.end())};
@@ -265,7 +265,7 @@ TEST(TestCommand, Range) {
     ASSERT_EQ(1, cmd.formats()[2]);
 }
 
-struct CTable {
+struct CommandTestTable {
     std::string s;
     int32_t     n = 0;
     double      f = 0.0;
@@ -273,8 +273,8 @@ struct CTable {
     POSTGRES_CXX_TABLE("test", s, n, f);
 };
 
-TEST(TestCommand, Visit) {
-    CTable const  tbl{"TEXT", 3, 4.56};
+TEST(CommandTest, Visit) {
+    CommandTestTable const  tbl{"TEXT", 3, 4.56};
     Command const cmd{"STMT", tbl};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(3, cmd.count());
@@ -295,7 +295,7 @@ TEST(TestCommand, Visit) {
     ASSERT_EQ(1, cmd.formats()[2]);
 }
 
-TEST(TestCommand, MultiArgs) {
+TEST(CommandTest, MultiArgs) {
     Command const cmd{"STMT", std::string{"TEXT"}, int32_t{3}, 4.56};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(3, cmd.count());
@@ -316,7 +316,7 @@ TEST(TestCommand, MultiArgs) {
     ASSERT_EQ(1, cmd.formats()[2]);
 }
 
-TEST(TestCommand, Dynamic) {
+TEST(CommandTest, Dynamic) {
     Command    cmd{"STMT"};
     auto const str = "STR";
     cmd << str << std::string{"STR2"};

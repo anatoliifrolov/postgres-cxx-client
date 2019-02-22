@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 
 namespace postgres {
 
-TEST(TestConfig, Values) {
+TEST(ConfigTest, Values) {
     auto const c = Config::Builder{}.application_name("APP")
                                     .client_encoding("ENC")
                                     .connect_timeout(1min)
@@ -117,7 +117,7 @@ TEST(TestConfig, Values) {
     ASSERT_STREQ(v[i], "USER");
 }
 
-TEST(TestConfig, Manual) {
+TEST(ConfigTest, Manual) {
     auto const c = Config::Builder{}.set("application_name", "APP")
                                     .setInterval("connect_timeout", 1min)
                                     .enable("keepalives", true)
@@ -143,7 +143,7 @@ TEST(TestConfig, Manual) {
     ASSERT_STREQ(v[i], "0");
 }
 
-TEST(TestConfig, SslMode) {
+TEST(ConfigTest, SslMode) {
     std::map<SslMode, std::string> const samples{{SslMode::ALLOW,       "allow"},
                                                  {SslMode::DISABLE,     "disable"},
                                                  {SslMode::PREFER,      "prefer"},
@@ -158,7 +158,7 @@ TEST(TestConfig, SslMode) {
     }
 }
 
-TEST(TestConfig, TargetSession) {
+TEST(ConfigTest, TargetSession) {
     std::map<TargetSession, std::string> const samples{{TargetSession::ANY,        "any"},
                                                        {TargetSession::READ_WRITE, "read-write"},
                                                        {TargetSession::DEFAULT,    "any"}};
