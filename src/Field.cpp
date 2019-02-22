@@ -16,13 +16,13 @@ Field& Field::operator=(Field&& other) noexcept = default;
 
 Field::~Field() noexcept = default;
 
-void Field::read(Time::Point& out) const {
-    Time tmp{};
-    read(tmp);
-    out = tmp.point();
+void Field::read(Time& out) const {
+    Time::Point pnt{};
+    read(pnt);
+    out = Time{pnt};
 }
 
-void Field::read(Time& out) const {
+void Field::read(Time::Point& out) const {
     _POSTGRES_CXX_ASSERT(type() == TIMESTAMPOID,
                          "cannot cast field '"
                              << name()
@@ -30,8 +30,8 @@ void Field::read(Time& out) const {
                              << type()
                              << " to timestamp without time zone");
 
-    using ms = std::chrono::microseconds;
-    out = Time{Time::EPOCH + ms{internal::orderBytes<int64_t>(value())}};
+    out = Time::EPOCH;
+    out += std::chrono::microseconds{internal::orderBytes<int64_t>(value())};
 }
 
 void Field::read(std::string& out) const {

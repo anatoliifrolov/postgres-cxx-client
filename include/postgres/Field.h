@@ -72,7 +72,7 @@ private:
         auto const is_ok = [this, &out] {
             switch (type()) {
                 case BOOLOID: {
-                    return readNum<bool>(out);
+                    return readNum<int8_t>(out);
                 }
                 case INT2OID: {
                     return readNum<int16_t>(out);
@@ -105,19 +105,25 @@ private:
 
     template <typename In, typename Out>
     bool readNum(Out& out) const {
-        auto const is_ok = (std::is_integral_v<In> == std::is_integral_v<Out>)
-                           && (std::is_signed_v<In> == std::is_signed_v<Out>)
-                           && (sizeof(In) <= sizeof(Out));
-        if (!is_ok) {
+        if (std::is_integral_v<In> == std::is_floating_point_v<Out>) {
             return false;
         }
 
-        out = static_cast<Out>(internal::orderBytes<In>(value()));
+        if (sizeof(Out) < sizeof(In)) {
+            return false;
+        }
+
+        auto const val = internal::orderBytes<In>(value());
+        if (std::is_unsigned_v<Out> && (val < 0)) {
+            return false;
+        }
+
+        out = static_cast<Out>(val);
         return true;
     }
 
-    void read(Time::Point& out) const;
     void read(Time& out) const;
+    void read(Time::Point& out) const;
     void read(std::string& out) const;
 
     PGresult* res_;

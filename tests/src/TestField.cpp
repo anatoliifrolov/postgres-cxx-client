@@ -49,6 +49,9 @@ TEST(TestField, ArithmNarrow) {
 }
 
 TEST(TestField, ArithmUnsigned) {
+    ASSERT_EQ(1, Client{}.exec("SELECT 1::SMALLINT")[0][0].as<uint16_t>());
+    ASSERT_EQ(2, Client{}.exec("SELECT 2::INT")[0][0].as<uint32_t>());
+    ASSERT_EQ(3, Client{}.exec("SELECT 3::BIGINT")[0][0].as<uint64_t>());
     ASSERT_THROW(Client{}.exec("SELECT -1::SMALLINT")[0][0].as<uint16_t>(), Error);
     ASSERT_THROW(Client{}.exec("SELECT -2::INT")[0][0].as<uint32_t>(), Error);
     ASSERT_THROW(Client{}.exec("SELECT -3::BIGINT")[0][0].as<uint64_t>(), Error);
