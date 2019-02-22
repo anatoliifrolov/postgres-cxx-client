@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 #include <libpq-fe.h>
-#include <postgres/internal/Classifier.h>
 #include <postgres/Command.h>
 #include <postgres/Result.h>
 #include <postgres/Statement.h>
@@ -38,24 +37,28 @@ public:
     ~Client() noexcept;
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result> insert(T const& val) {
+    Result create() {
+        return exec(Statement<T>::create());
+    }
+
+    template <typename T>
+    Result insert(T const& val) {
         return exec(Command{Statement<T>::insert(), val});
     }
 
     template <typename Iter>
-    std::enable_if_t<internal::isVisitable<typename Iter::value_type>(), Result>
-    insert(Iter const it, Iter const end) {
+    Result insert(Iter const it, Iter const end) {
         return exec(Command{RangeStatement::insert(it, end), std::make_pair(it, end)});
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result> update(T const& val) {
+    Result update(T const& val) {
         return exec(Command{Statement<T>::update(), val});
     }
 
     template <typename T>
-    std::enable_if_t<internal::isVisitable<T>(), Result> select(std::vector<T>& out) {
-        auto res = exec(Command{Statement<T>::select()});
+    Result select(std::vector<T>& out) {
+        auto res = exec(Statement<T>::select());
         if (!res.isOk()) {
             return res;
         }

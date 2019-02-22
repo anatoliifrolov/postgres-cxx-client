@@ -1,6 +1,6 @@
 #pragma once
 
-#define _POSTGRES_CXX_ACCEPT_DEF(arg) visitor.accept(#arg);
+#define _POSTGRES_CXX_ACCEPT_DEF(arg) visitor.template accept<decltype(arg)>(#arg);
 #define _POSTGRES_CXX_ACCEPT_FLD(arg) visitor.accept(#arg, arg);
 
 #define _POSTGRES_CXX_VISIT1(accept, arg)      accept(arg)

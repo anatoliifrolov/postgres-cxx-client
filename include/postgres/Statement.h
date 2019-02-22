@@ -8,6 +8,15 @@ namespace postgres {
 
 template <typename T>
 struct Statement {
+    static std::string const& create() {
+        static auto const cache = "CREATE TABLE "
+                                  + std::string{table()}
+                                  + " ("
+                                  + typedFields()
+                                  + ")";
+        return cache;
+    }
+
     static std::string const& insert() {
         static auto const cache = "INSERT INTO "
                                   + std::string{table()}
@@ -31,6 +40,11 @@ struct Statement {
 
     static std::string const& fields() {
         static auto const cache = collect<internal::FieldsCollector>();
+        return cache;
+    }
+
+    static std::string const& typedFields() {
+        static auto const cache = collect<internal::TypedFieldsCollector>();
         return cache;
     }
 
