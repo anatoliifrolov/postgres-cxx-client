@@ -1,38 +1,35 @@
 #include <postgres/internal/Worker.h>
 
 #include <postgres/internal/Channel.h>
-#include <postgres/internal/Context.h>
-#include <postgres/Error.h>
+#include <postgres/Connection.h>
+#include <postgres/Context.h>
 
 namespace postgres {
 namespace internal {
 
-Worker::Worker(Context const& ctx, Channel& ch)
-    : ctx_{&ctx}, ch_{&ch} {
+Worker::Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<Channel> chan)
+    : ctx_{ctx}, chan_{std::move(chan)}, slot_{std::move(ctx)} {
 }
 
-Worker::Worker(Worker&& other) noexcept = default;
-
-Worker& Worker::operator=(Worker&& other) noexcept = default;
-
 Worker::~Worker() noexcept {
-    thread_.join();
+    if (ctx_->shutdownPolicy() != ShutdownPolicy::ABORT) {
+        thread_.join();
+    }
 }
 
 void Worker::run() {
-    conn_ = ctx_->uri.empty() ? Connection{ctx_->cfg} : Connection{ctx_->uri};
-    for (auto const& prep : ctx_->prep) {
-        conn_.exec(prep).check();
-    }
-    _POSTGRES_CXX_ASSERT(conn_.isOk(), conn_.message());
+    auto conn = ctx_->connect();
 
-    thread_ = std::thread([this] {
+    thread_ = std::thread([this, conn = std::move(conn)]() mutable {
         while (true) {
-            auto job = ch_->receive();
-            if (job) {
-                job = ch_->receiveQuery();
+            if (!chan_->fill(slot_)) {
+                slot_.wait();
             }
-            job(conn_);
+            auto job = slot_.take();
+            if (!job) {
+                break;
+            }
+            job(conn);
         }
     });
 }

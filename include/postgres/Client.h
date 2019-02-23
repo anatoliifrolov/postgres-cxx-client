@@ -1,51 +1,39 @@
 #pragma once
 
+#include <functional>
 #include <future>
-#include <postgres/internal/Context.h>
-#include <postgres/Job.h>
+#include <memory>
+
+namespace postgres::internal {
+
+class ConnectionPool;
+
+}  // namespace postgres::internal
 
 namespace postgres {
 
+class Connection;
+class Context;
+class Result;
+class Status;
+
 class Client {
 public:
-    class Builder;
-
+    explicit Client();
+    explicit Client(Context ctx);
     Client(Client const& other) = delete;
     Client& operator=(Client const& other) = delete;
     Client(Client&& other) noexcept;
     Client& operator=(Client&& other) noexcept;
     ~Client() noexcept;
 
-    static Client build();
-
-    std::future<Status> exec(Job job);
-    std::future<Result> exec(QueryJob job);
+    std::future<Status> exec(std::function<Status(Connection&)> job);
+    std::future<Result> query(std::function<Result(Connection&)> job);
 
 private:
-    explicit Client(internal::Context ctx);
+    using Impl = internal::ConnectionPool;
 
-    internal::Context ctx_;
-};
-
-class Client::Builder {
-public:
-    explicit Builder();
-    Builder(Builder const& other) = delete;
-    Builder& operator=(Builder const& other) = delete;
-    Builder(Builder&& other) noexcept;
-    Builder& operator=(Builder&& other) noexcept;
-    ~Builder() noexcept;
-
-    Builder& config(Config cfg);
-    Builder& uri(std::string uri);
-    Builder& prepare(PreparingStatement stmt);
-    Builder& maxPoolSize(int val);
-    Builder& maxQueueSize(int val);
-
-    Client build();
-
-private:
-    internal::Context ctx_;
+    std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace postgres

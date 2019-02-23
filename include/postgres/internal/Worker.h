@@ -1,30 +1,32 @@
 #pragma once
 
 #include <thread>
-#include <postgres/Connection.h>
+#include <postgres/internal/Slot.h>
 
 namespace postgres {
+
+struct Context;
+
 namespace internal {
 
 class Channel;
-struct Context;
 
 class Worker {
 public:
-    explicit Worker(Context const& ctx, Channel& ch);
+    explicit Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<Channel> chan);
     Worker(Worker const& other) = delete;
     Worker& operator=(Worker const& other) = delete;
-    Worker(Worker&& other) noexcept;
-    Worker& operator=(Worker&& other) noexcept;
+    Worker(Worker&& other) noexcept = delete;
+    Worker& operator=(Worker&& other) noexcept = delete;
     ~Worker() noexcept;
 
     void run();
 
 private:
-    Context const* ctx_;
-    Channel* ch_;
-    Connection  conn_;
-    std::thread thread_;
+    std::shared_ptr<Context const> ctx_;
+    std::shared_ptr<Channel>       chan_;
+    Slot                           slot_;
+    std::thread                    thread_;
 };
 
 }  // namespace internal

@@ -1,12 +1,19 @@
 #include <postgres/Client.h>
 
-#include <thread>
 #include <utility>
+#include <postgres/internal/ConnectionPool.h>
+#include <postgres/Context.h>
+#include <postgres/Result.h>
+#include <postgres/Status.h>
 
 namespace postgres {
 
-Client::Client(internal::Context ctx)
-    : ctx_{std::move(ctx)} {
+Client::Client()
+    : Client{Context{}} {
+}
+
+Client::Client(Context ctx)
+    : impl_{std::make_unique<Impl>(std::make_shared<Context>(std::move(ctx)))} {
 }
 
 Client::Client(Client&& other) noexcept = default;
@@ -15,49 +22,12 @@ Client& Client::operator=(Client&& other) noexcept = default;
 
 Client::~Client() noexcept = default;
 
-Client Client::build() {
-    return Builder{}.build();
+std::future<Status> Client::exec(std::function<Status(Connection&)> job) {
+    return impl_->send(std::move(job));
 }
 
-Client::Builder::Builder()
-    : ctx_{Config::build()} {
-    ctx_.max_pool_size = std::thread::hardware_concurrency();
-    ctx_.max_queue_size = 0;
-}
-
-Client::Builder::Builder(Client::Builder&& other) noexcept = default;
-
-Client::Builder& Client::Builder::operator=(Client::Builder&& other) noexcept = default;
-
-Client::Builder::~Builder() noexcept = default;
-
-Client::Builder& Client::Builder::config(Config cfg) {
-    ctx_.cfg = std::move(cfg);
-    return *this;
-}
-
-Client::Builder& Client::Builder::uri(std::string uri) {
-    ctx_.uri = std::move(uri);
-    return *this;
-}
-
-Client::Builder& Client::Builder::prepare(PreparingStatement stmt) {
-    ctx_.prep.push_back(std::move(stmt));
-    return *this;
-}
-
-Client::Builder& Client::Builder::maxPoolSize(int const val) {
-    ctx_.max_pool_size = val;
-    return *this;
-}
-
-Client::Builder& Client::Builder::maxQueueSize(int const val) {
-    ctx_.max_queue_size = val;
-    return *this;
-}
-
-Client Client::Builder::build() {
-    return Client{std::move(ctx_)};
+std::future<Result> Client::query(std::function<Result(Connection&)> job) {
+    return impl_->send(std::move(job));
 }
 
 }  // namespace postgres

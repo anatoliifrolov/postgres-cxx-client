@@ -92,6 +92,7 @@ public:
 
     Transaction begin();
 
+    void check();
     bool reset();
     bool isOk();
     std::string message();

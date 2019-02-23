@@ -129,6 +129,10 @@ Transaction Connection::begin() {
     return Transaction{*this};
 }
 
+void Connection::check() {
+    _POSTGRES_CXX_ASSERT(isOk(), message());
+}
+
 bool Connection::reset() {
     PQreset(native());
     return isOk();
