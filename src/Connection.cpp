@@ -1,4 +1,4 @@
-#include <postgres/Client.h>
+#include <postgres/Connection.h>
 
 #include <postgres/Config.h>
 #include <postgres/Consumer.h>
@@ -14,37 +14,37 @@ enum {
     RESULT_FORMAT = 1,
 };
 
-PGPing Client::ping() {
+PGPing Connection::ping() {
     return ping(Config::build());
 }
 
-PGPing Client::ping(Config const& cfg) {
+PGPing Connection::ping(Config const& cfg) {
     return PQpingParams(cfg.keys(), cfg.values(), EXPAND_DBNAME);
 }
 
-PGPing Client::ping(std::string const& uri) {
+PGPing Connection::ping(std::string const& uri) {
     return PQping(uri.data());
 }
 
-Client::Client()
-    : Client{Config::build()} {
+Connection::Connection()
+    : Connection{Config::build()} {
 }
 
-Client::Client(Config const& cfg)
-    : conn_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
+Connection::Connection(Config const& cfg)
+    : handle_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
 }
 
-Client::Client(std::string const& uri)
-    : conn_{PQconnectdb(uri.data()), PQfinish} {
+Connection::Connection(std::string const& uri)
+    : handle_{PQconnectdb(uri.data()), PQfinish} {
 }
 
-Client::Client(Client&& other) noexcept = default;
+Connection::Connection(Connection&& other) noexcept = default;
 
-Client& Client::operator=(Client&& other) noexcept = default;
+Connection& Connection::operator=(Connection&& other) noexcept = default;
 
-Client::~Client() noexcept = default;
+Connection::~Connection() noexcept = default;
 
-Result Client::exec(PreparingStatement const& stmt) {
+Result Connection::exec(PreparingStatement const& stmt) {
     return Result{PQprepare(native(),
                             stmt.name.data(),
                             stmt.body.data(),
@@ -52,7 +52,7 @@ Result Client::exec(PreparingStatement const& stmt) {
                             stmt.types.data())};
 }
 
-Result Client::exec(Command const& cmd) {
+Result Connection::exec(Command const& cmd) {
     return Result{PQexecParams(native(),
                                cmd.statement(),
                                cmd.count(),
@@ -63,7 +63,7 @@ Result Client::exec(Command const& cmd) {
                                RESULT_FORMAT)};
 }
 
-Result Client::exec(PreparedCommand const& cmd) {
+Result Connection::exec(PreparedCommand const& cmd) {
     return Result{PQexecPrepared(native(),
                                  cmd.statement(),
                                  cmd.count(),
@@ -73,12 +73,12 @@ Result Client::exec(PreparedCommand const& cmd) {
                                  RESULT_FORMAT)};
 }
 
-Status Client::execRaw(std::string_view stmt) {
+Status Connection::execRaw(std::string_view stmt) {
     return Status{PQexec(native(), stmt.data())};
 }
 
-Receiver Client::send(PreparingStatement const& stmt) {
-    return Receiver{conn_,
+Receiver Connection::send(PreparingStatement const& stmt) {
+    return Receiver{handle_,
                     PQsendPrepare(native(),
                                   stmt.name.data(),
                                   stmt.body.data(),
@@ -86,8 +86,8 @@ Receiver Client::send(PreparingStatement const& stmt) {
                                   stmt.types.data())};
 }
 
-Receiver Client::send(Command const& cmd) {
-    return Receiver{conn_,
+Receiver Connection::send(Command const& cmd) {
+    return Receiver{handle_,
                     PQsendQueryParams(native(),
                                       cmd.statement(),
                                       cmd.count(),
@@ -98,8 +98,8 @@ Receiver Client::send(Command const& cmd) {
                                       RESULT_FORMAT)};
 }
 
-Receiver Client::send(PreparedCommand const& cmd) {
-    return Receiver{conn_,
+Receiver Connection::send(PreparedCommand const& cmd) {
+    return Receiver{handle_,
                     PQsendQueryPrepared(native(),
                                         cmd.statement(),
                                         cmd.count(),
@@ -109,56 +109,56 @@ Receiver Client::send(PreparedCommand const& cmd) {
                                         RESULT_FORMAT)};
 }
 
-Consumer Client::sendRaw(std::string_view stmt) {
-    return Consumer{conn_, PQsendQuery(native(), stmt.data())};
+Consumer Connection::sendRaw(std::string_view stmt) {
+    return Consumer{handle_, PQsendQuery(native(), stmt.data())};
 }
 
-Receiver Client::iter(Command const& cmd) {
+Receiver Connection::iter(Command const& cmd) {
     auto rcvr = send(cmd);
     rcvr.iter();
     return rcvr;
 }
 
-Receiver Client::iter(PreparedCommand const& cmd) {
+Receiver Connection::iter(PreparedCommand const& cmd) {
     auto rcvr = send(cmd);
     rcvr.iter();
     return rcvr;
 }
 
-Transaction Client::begin() {
+Transaction Connection::begin() {
     return Transaction{*this};
 }
 
-bool Client::reset() {
+bool Connection::reset() {
     PQreset(native());
     return isOk();
 }
 
-bool Client::isOk() {
+bool Connection::isOk() {
     return PQstatus(native()) == CONNECTION_OK;
 }
 
-std::string Client::message() {
+std::string Connection::message() {
     return PQerrorMessage(native());
 }
 
-std::string Client::esc(std::string const& in) {
+std::string Connection::esc(std::string const& in) {
     return postEsc(PQescapeLiteral(native(), in.data(), in.size()));
 }
 
-std::string Client::escId(std::string const& in) {
+std::string Connection::escId(std::string const& in) {
     return postEsc(PQescapeIdentifier(native(), in.data(), in.size()));
 }
 
-std::string Client::postEsc(char* const escaped) {
+std::string Connection::postEsc(char* const escaped) {
     _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
     std::string res = escaped;
     PQfreemem(escaped);
     return res;
 }
 
-PGconn* Client::native() const {
-    return conn_.get();
+PGconn* Connection::native() const {
+    return handle_.get();
 }
 
 }  // namespace postgres

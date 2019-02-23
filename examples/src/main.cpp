@@ -6,17 +6,15 @@
 #include <thread>
 #include <iostream>
 #include <postgres/Config.h>
-#include <postgres/Client.h>
+#include <postgres/Connection.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PreparingStatement.h>
-#include <postgres/Client.h>
 #include <postgres/Visitable.h>
 
-using postgres::Client;
 using postgres::Command;
 using postgres::Config;
-using postgres::Client;
+using postgres::Connection;
 using postgres::PreparedCommand;
 using postgres::PreparingStatement;
 using postgres::Time;
@@ -32,10 +30,10 @@ struct MyTable {
 
 void example() {
     // Connect to the database.
-    Client db{};
+    Connection conn{};
 
     // Create my_table.
-    db.create<MyTable>().valid();
+    conn.create<MyTable>().valid();
 
     auto now = std::chrono::system_clock::now();
 
@@ -43,16 +41,16 @@ void example() {
     std::vector<MyTable> data{{1, "foo", now},
                               {2, "bar", now},
                               {3, "baz", now}};
-    db.insert(data.begin(), data.end()).valid();
+    conn.insert(data.begin(), data.end()).valid();
 
     // Retrieve some data from the table.
     auto query = "SELECT info, create_time FROM my_table WHERE $1 < id";
 
-    for (auto res : db.exec(Command{query, 1}).valid()) {
+    for (auto row : conn.exec(Command{query, 1}).valid()) {
         std::cout
-            << res["create_time"].as<Time>().toString()
+            << row["create_time"].as<Time>().toString()
             << " "
-            << res["info"].as<std::string>()
+            << row["info"].as<std::string>()
             << std::endl;
     }
 }
@@ -81,11 +79,11 @@ CREATE TABLE example(
     t TIMESTAMP
 ))";
 
-void makeTestTable(Client& conn) {
+void makeTestTable(Connection& conn) {
     conn.exec(DROP_TABLE_SQL) && conn.exec(CREATE_TABLE_SQL);
 }
 
-void basicUsage(Client& conn) {
+void basicUsage(Connection& conn) {
     auto const res = conn.exec("SELECT 1");
 
     // Something went wrong:
@@ -112,7 +110,7 @@ void basicUsage(Client& conn) {
     }
 }
 
-void parametrizedInsert(Client& conn) {
+void parametrizedInsert(Connection& conn) {
     // Recommended way to pass statement parameters is using Command:
     conn.exec(Command{R"(INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5))",
                       1,
@@ -127,7 +125,7 @@ void parametrizedInsert(Client& conn) {
                       std::make_pair(vals.begin(), vals.end())});
 }
 
-void insertTimestamps(Client& conn) {
+void insertTimestamps(Connection& conn) {
     // You can also insert timestamp with time zone specified.
     // Call postgres::Time constructor with second parameter set to true for that.
     // But there would be no way to read it back using this library.
@@ -137,7 +135,7 @@ void insertTimestamps(Client& conn) {
                       postgres::Time{"2017-08-25T13:03:35"}});
 }
 
-void nonCopyingInsert(Client& conn) {
+void nonCopyingInsert(Connection& conn) {
     // By default Command stores string parameters by reference.
     // Make sure that object is staying alive during execution.
     // Pass rvalue reference to force Command to store parameter internally.
@@ -145,14 +143,14 @@ void nonCopyingInsert(Client& conn) {
     conn.exec(Command{"INSERT INTO example(s) VALUES($1)", std::move(s)});
 }
 
-void insertNULLs(Client& conn, const int* const n_ptr) {
+void insertNULLs(Connection& conn, const int* const n_ptr) {
     conn.exec(Command{"INSERT INTO example(n) VALUES($1), ($2)",
                       nullptr,  // Will be inserted as NULL.
                       n_ptr  // Pointed value will be inserted if pointer is valid, or NULL otherwise.
     });
 }
 
-void insertSpecialType(Client& conn) {
+void insertSpecialType(Connection& conn) {
     // Most parameter types are automatically recognized by the library.
     // But you can tell parameter type explicitly if needed:
     conn.exec(Command{"INSERT INTO example(s) VALUES($1)",
@@ -169,7 +167,7 @@ struct Example {
     POSTGRES_CXX_TABLE(Example, n, f, b, s, t)
 };
 
-void insertVisitable(Client& conn) {
+void insertVisitable(Connection& conn) {
     // Visitable fields n and s will be bound to $1 and $2 respectively.
     Example v{};
     v.n = 1;
@@ -180,7 +178,7 @@ void insertVisitable(Client& conn) {
     conn.exec(Command{"INSERT INTO example(n, f, b, s, t) VALUES($1, $2, $3, $4, $5)", v});
 }
 
-void executePrepared(Client& conn) {
+void executePrepared(Connection& conn) {
     // PreparedCommand is exactly the same as plain Command,
     // but accepting prepared statement name instead of statement text.
     if (conn.exec(PreparingStatement{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
@@ -188,7 +186,7 @@ void executePrepared(Client& conn) {
     }
 }
 
-void executeAsync(Client& conn) {
+void executeAsync(Connection& conn) {
     // send() does NOT block contrary to execute().
     conn.send("SELECT 1");
     // But result() DOES block.
@@ -199,7 +197,7 @@ void executeAsync(Client& conn) {
     }
 }
 
-void executeAsyncNonBlocking(Client& conn) {
+void executeAsyncNonBlocking(Connection& conn) {
     conn.send("SELECT 1");
     // Wait until result is ready:
     while (conn.isBusy()) {
@@ -213,7 +211,7 @@ void executeAsyncNonBlocking(Client& conn) {
     }
 }
 
-void executeAsyncRowByRow(Client& conn) {
+void executeAsyncRowByRow(Connection& conn) {
     // Rows of large result set could be obtained one by one as they are ready.
     conn.send("SELECT * FROM example", postgres::AsyncMode::SINGLE_ROW);
     for (auto res = conn.receive(); !res.isDone(); res = conn.receive()) {
@@ -224,7 +222,7 @@ void executeAsyncRowByRow(Client& conn) {
     }
 }
 
-void cancelAsync(Client& conn) {
+void cancelAsync(Connection& conn) {
     conn.send("INSERT INTO example(s) VALUES('CANCELED')");
     // Just tries to cancel, does not guarantee to succeed.
     // Returns whether cancel request has been dispatched.
@@ -233,7 +231,7 @@ void cancelAsync(Client& conn) {
     }
 }
 
-void readResultIntoVariables(Client& conn) {
+void readResultIntoVariables(Connection& conn) {
     int                                   n;
     double                                f;
     bool                                  b;
@@ -313,7 +311,7 @@ void readResultIntoVariables(Client& conn) {
         << std::endl;
 }
 
-void passResultToFunction(Client& conn) {
+void passResultToFunction(Connection& conn) {
     auto const someFunc = [](const int n, const std::string s) {
         std::cout << "n = " << n << ", s = " << s << std::endl;
     };
@@ -323,7 +321,7 @@ void passResultToFunction(Client& conn) {
     someFunc(res[0][0], res[0][1]);
 }
 
-void prepareClient(Client& client) {
+void prepareClient(Connection& client) {
     // Creates schema if not exists and sets it for current connection.
     // true as second argument tells to cache schema name to set it again after reconnect.
 //    client.setSchema("public", true);
@@ -331,7 +329,7 @@ void prepareClient(Client& client) {
 //    client.prepare(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"});
 }
 
-void executeTransaction(Client& client) {
+void executeTransaction(Connection& client) {
     // Passing multiple commands to execute() will force client to
     // wrap them into BEGIN and COMMIT/ROLLBACK if no transaction is in progress already.
     client.transact(PreparedCommand{"insert_s", "PREPARED BY CLIENT"},
@@ -339,7 +337,7 @@ void executeTransaction(Client& client) {
                     "INSERT INTO example(s) VALUES('INSERTED BY CLIENT')");
 }
 
-void executeTransactionBlock(Client& client) try {
+void executeTransactionBlock(Connection& client) try {
     // postgres::Transaction is a small RAII helper class
     // served to rollback transaction in case of exception's been thrown.
     auto transaction = client.begin();
@@ -353,7 +351,7 @@ void executeTransactionBlock(Client& client) try {
     std::cerr << ex.what() << std::endl;
 }
 
-void insertVisitable(Client& client) {
+void insertVisitable(Connection& client) {
     // Insert statement is generated by library for visitable structures.
     client.execute("DELETE FROM example");
     std::vector<Example> data{};
@@ -383,7 +381,7 @@ void insertVisitable(Client& client) {
     client.insert(data.begin() + 1, data.end());
 }
 
-void selectVisitable(Client& client) {
+void selectVisitable(Connection& client) {
     // Table name to select from is taken from Visitable::_POSTGRES_CXX_TABLE_NAME.
     // Select statement is generated by library.
     std::vector<Example> data{};
@@ -393,7 +391,7 @@ void selectVisitable(Client& client) {
 int main() {
     // postgres::Connection is relatively low level.
     // Better use postgres::Client instead.
-    Client conn{};
+    Connection conn{};
 
     makeTestTable(conn);
     basicUsage(conn);
@@ -411,7 +409,7 @@ int main() {
     readResultIntoVariables(conn);
     passResultToFunction(conn);
 
-    Client client{};
+    Connection client{};
     prepareClient(client);
     executeTransaction(client);
     executeTransactionBlock(client);

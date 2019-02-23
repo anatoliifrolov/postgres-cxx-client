@@ -2,12 +2,10 @@
 
 namespace postgres {
 
-class Client;
+class Connection;
 class Result;
 
 class Transaction {
-    friend class Client;
-
 public:
     Transaction(Transaction const& other) = delete;
     Transaction& operator=(Transaction const& other) = delete;
@@ -19,9 +17,11 @@ public:
     Result complete(Result res);
 
 private:
-    explicit Transaction(Client& cl);
+    friend class Connection;
 
-    Client* cl_;
+    explicit Transaction(Connection& conn);
+
+    Connection* conn_;
 };
 
 }  // namespace postgres

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <postgres/Client.h>
 #include <postgres/Command.h>
 #include <postgres/Config.h>
+#include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
@@ -9,9 +9,9 @@
 
 namespace postgres {
 
-TEST(TestReceiver, Exec) {
-    Client cl{Config::build()};
-    auto rcvr = cl.send(Command{"SELECT 1"});
+TEST(ReceiverTest, Exec) {
+    Connection conn{Config::build()};
+    auto rcvr = conn.send(Command{"SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -25,9 +25,9 @@ TEST(TestReceiver, Exec) {
     ASSERT_TRUE(res.isDone());
 }
 
-TEST(TestReceiver, ExecBad) {
-    Client cl{Config::build()};
-    auto rcvr = cl.send(Command{"BAD"});
+TEST(ReceiverTest, ExecBad) {
+    Connection conn{Config::build()};
+    auto rcvr = conn.send(Command{"BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -41,9 +41,9 @@ TEST(TestReceiver, ExecBad) {
     ASSERT_TRUE(res.isDone());
 }
 
-TEST(TestReceiver, Prepare) {
-    Client cl{Config::build()};
-    auto rcvr = cl.send(PreparingStatement{"select1", "SELECT 1"});
+TEST(ReceiverTest, Prepare) {
+    Connection conn{Config::build()};
+    auto rcvr = conn.send(PreparingStatement{"select1", "SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -56,7 +56,7 @@ TEST(TestReceiver, Prepare) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = cl.send(PreparedCommand{"select1"});
+    rcvr = conn.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
@@ -70,9 +70,9 @@ TEST(TestReceiver, Prepare) {
     ASSERT_TRUE(res.isDone());
 }
 
-TEST(TestReceiver, PrepareAsyncBad) {
-    Client cl{Config::build()};
-    auto rcvr = cl.send(PreparingStatement{"select1", "BAD"});
+TEST(ReceiverTest, PrepareAsyncBad) {
+    Connection conn{Config::build()};
+    auto rcvr = conn.send(PreparingStatement{"select1", "BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -85,7 +85,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = cl.send(PreparedCommand{"select1"});
+    rcvr = conn.send(PreparedCommand{"select1"});
     ASSERT_TRUE(rcvr.isOk());
 
     res = rcvr.receive();
@@ -99,7 +99,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
     ASSERT_TRUE(res.isDone());
 }
 
-//TEST_F(TestReceiver, Busy) {
+//TEST_F(ReceiverTest, Busy) {
 //    ASSERT_TRUE(conn_->send(Command{"SELECT 1::INTEGER, 2::INTEGER, 3::INTEGER"}));
 //    while (conn_->isBusy()) {
 //        std::this_thread::sleep_for(std::chrono::milliseconds{1});
@@ -111,7 +111,7 @@ TEST(TestReceiver, PrepareAsyncBad) {
 //    ASSERT_TRUE(conn_->receive().isDone());
 //}
 //
-//TEST_F(TestReceiver, RowByRow) {
+//TEST_F(ReceiverTest, RowByRow) {
 //    ASSERT_TRUE(conn_->exec(Command{"INSERT INTO test(int4) VALUES(1), (2), (3)"}));
 //    ASSERT_TRUE(conn_->send(Command{"SELECT int4 FROM test"}, AsyncMode::SINGLE_ROW));
 //    std::set<int> data{};

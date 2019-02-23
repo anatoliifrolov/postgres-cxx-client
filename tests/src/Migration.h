@@ -3,7 +3,7 @@
 #include <string>
 #include <chrono>
 #include <postgres/Config.h>
-#include <postgres/Client.h>
+#include <postgres/Connection.h>
 #include <postgres/Visitable.h>
 
 namespace postgres {
@@ -24,8 +24,8 @@ struct Table {
 struct Migration {
     Migration();
 
-    Client client_;
-    Client* conn_;
+    Connection client_;
+    Connection* conn_;
 
 private:
     void migrate();

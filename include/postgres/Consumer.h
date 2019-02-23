@@ -20,7 +20,7 @@ public:
     bool isBusy();
 
 protected:
-    friend class Client;
+    friend class Connection;
 
     explicit Consumer(std::shared_ptr<PGconn> handle, int is_ok);
 

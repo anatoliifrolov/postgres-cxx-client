@@ -21,7 +21,7 @@ public:
     iterator end();
 
 private:
-    friend class Client;
+    friend class Connection;
 
     explicit Receiver(std::shared_ptr<PGconn> handle, int is_ok);
 

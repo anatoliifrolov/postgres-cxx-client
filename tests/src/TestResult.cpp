@@ -51,7 +51,7 @@ TEST_F(TestResult, Empty) {
 TEST_F(TestResult, Survival) {
     auto const res = conn_->exec(Command{"SELECT 123::INTEGER"});
     {
-        conn_->~Client();
+        conn_->~Connection();
     }
     ASSERT_TRUE(res.isOk());
     ASSERT_EQ(1, res.size());

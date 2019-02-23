@@ -21,20 +21,20 @@ class PreparedCommand;
 class Receiver;
 struct PreparingStatement;
 
-class Client {
+class Connection {
 public:
     static PGPing ping();
     static PGPing ping(Config const& cfg);
     static PGPing ping(std::string const& uri);
 
-    explicit Client();
-    explicit Client(Config const& cfg);
-    explicit Client(std::string const& uri);
-    Client(Client const& other) = delete;
-    Client& operator=(Client const& other) = delete;
-    Client(Client&& other) noexcept;
-    Client& operator=(Client&& other) noexcept;
-    ~Client() noexcept;
+    explicit Connection();
+    explicit Connection(Config const& cfg);
+    explicit Connection(std::string const& uri);
+    Connection(Connection const& other) = delete;
+    Connection& operator=(Connection const& other) = delete;
+    Connection(Connection&& other) noexcept;
+    Connection& operator=(Connection&& other) noexcept;
+    ~Connection() noexcept;
 
     template <typename T>
     Result create() {
@@ -113,7 +113,7 @@ private:
 
     std::string postEsc(char* escaped);
 
-    std::shared_ptr<PGconn> conn_;
+    std::shared_ptr<PGconn> handle_;
 };
 
 }  // namespace postgres
