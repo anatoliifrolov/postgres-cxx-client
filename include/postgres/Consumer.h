@@ -16,7 +16,8 @@ public:
     ~Consumer() noexcept;
 
     Status consume();
-    bool isOk();
+    void check() const;
+    bool isOk() const;
     bool isBusy();
 
 protected:

@@ -14,6 +14,7 @@ public:
     Status& operator=(Status&& other) noexcept;
     ~Status() noexcept;
 
+    void check() const;
     bool isOk() const;
     bool isDone() const;
     bool isEmpty() const;

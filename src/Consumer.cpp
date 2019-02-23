@@ -1,4 +1,6 @@
 #include <postgres/Consumer.h>
+
+#include <postgres/Error.h>
 #include <postgres/Status.h>
 
 namespace postgres {
@@ -20,7 +22,11 @@ Status Consumer::consume() {
     return Status{PQgetResult(handle_.get())};
 }
 
-bool Consumer::isOk() {
+void Consumer::check() const {
+    _POSTGRES_CXX_ASSERT(isOk(), PQerrorMessage(handle_.get()));
+}
+
+bool Consumer::isOk() const {
     return is_ok_;
 }
 

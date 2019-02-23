@@ -1,5 +1,4 @@
 #include <postgres/Receiver.h>
-#include <postgres/Error.h>
 
 namespace postgres {
 
@@ -13,8 +12,8 @@ Receiver& Receiver::operator=(Receiver&& other) noexcept = default;
 
 Receiver::~Receiver() noexcept = default;
 
-Receiver Receiver::valid() {
-    _POSTGRES_CXX_ASSERT(isOk(), PQerrorMessage(handle_.get()));
+Receiver Receiver::valid()&& {
+    check();
     return std::move(*this);
 }
 

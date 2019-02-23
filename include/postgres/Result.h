@@ -17,17 +17,13 @@ public:
     Result& operator=(Result&& other) noexcept;
     ~Result() noexcept;
 
-    Result valid();
-    Result const& valid() const;
-
+    Result valid()&&;
     iterator begin() const;
     iterator end() const;
     Row operator[](int idx) const;
 };
 
 class Result::iterator {
-    friend class Result;
-
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -49,6 +45,8 @@ public:
     Row operator*() const;
 
 private:
+    friend class Result;
+
     explicit iterator(PGresult& handle, int idx);
 
     PGresult* handle_ = nullptr;

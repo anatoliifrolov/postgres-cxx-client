@@ -15,26 +15,24 @@ Result& Result::operator=(Result&& other) noexcept = default;
 
 Result::~Result() noexcept = default;
 
-Result Result::valid() {
-    _POSTGRES_CXX_ASSERT(isOk(), message());
+Result Result::valid()&& {
+    check();
     return std::move(*this);
 }
 
-Result const& Result::valid() const {
-    _POSTGRES_CXX_ASSERT(isOk(), message());
-    return *this;
-}
-
 Result::iterator Result::begin() const {
-    return iterator{*valid().native(), 0};
+    check();
+    return iterator{*native(), 0};
 }
 
 Result::iterator Result::end() const {
-    return iterator{*valid().native(), size()};
+    check();
+    return iterator{*native(), size()};
 }
 
 Row Result::operator[](int const idx) const {
-    return *iterator{*valid().native(), idx};
+    check();
+    return *iterator{*native(), idx};
 }
 
 Result::iterator::iterator(PGresult& handle, int const idx)

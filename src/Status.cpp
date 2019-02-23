@@ -1,4 +1,5 @@
 #include <postgres/Status.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 
@@ -11,6 +12,10 @@ Status::Status(Status&& other) noexcept = default;
 Status& Status::operator=(Status&& other) noexcept = default;
 
 Status::~Status() noexcept = default;
+
+void Status::check() const {
+    _POSTGRES_CXX_ASSERT(isOk(), message());
+}
 
 bool Status::isOk() const {
     switch (type()) {

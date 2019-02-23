@@ -37,22 +37,22 @@ public:
     ~Connection() noexcept;
 
     template <typename T>
-    Result create() {
+    Status create() {
         return exec(Statement<T>::create());
     }
 
     template <typename T>
-    Result insert(T const& val) {
+    Status insert(T const& val) {
         return exec(Command{Statement<T>::insert(), val});
     }
 
     template <typename Iter>
-    Result insert(Iter const it, Iter const end) {
+    Status insert(Iter const it, Iter const end) {
         return exec(Command{RangeStatement::insert(it, end), std::make_pair(it, end)});
     }
 
     template <typename T>
-    Result update(T const& val) {
+    Status update(T const& val) {
         return exec(Command{Statement<T>::update(), val});
     }
 

@@ -33,7 +33,7 @@ void example() {
     Connection conn{};
 
     // Create my_table.
-    conn.create<MyTable>().valid();
+    conn.create<MyTable>().check();
 
     auto now = std::chrono::system_clock::now();
 
@@ -41,7 +41,7 @@ void example() {
     std::vector<MyTable> data{{1, "foo", now},
                               {2, "bar", now},
                               {3, "baz", now}};
-    conn.insert(data.begin(), data.end()).valid();
+    conn.insert(data.begin(), data.end()).check();
 
     // Retrieve some data from the table.
     auto query = "SELECT info, create_time FROM my_table WHERE $1 < id";
