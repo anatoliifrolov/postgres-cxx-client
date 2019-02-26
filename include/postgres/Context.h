@@ -19,7 +19,6 @@ enum class ShutdownPolicy {
 class Context {
 public:
     class Builder;
-    using Duration = std::chrono::high_resolution_clock::duration;
 
     explicit Context();
     Context(Context const& other) = delete;
@@ -29,19 +28,19 @@ public:
     ~Context() noexcept;
 
     Connection connect() const;
-    Duration idleTimeout() const;
-    size_t maxPoolSize() const;
-    size_t maxQueueSize() const;
+    std::chrono::seconds idleTimeout() const;
+    int maxPoolSize() const;
+    int maxQueueSize() const;
     ShutdownPolicy shutdownPolicy() const;
 
 private:
     Config                          cfg_;
     std::string                     uri_;
     std::vector<PreparingStatement> prep_statements_;
-    Duration                        idle_timeout_;
-    size_t                          max_pool_size_;
-    size_t                          max_queue_size_;
-    ShutdownPolicy                  shutd_pol_;
+    std::chrono::seconds            idle_timeout_;
+    int                             max_pool_size_;
+    int                             max_queue_size_;
+    ShutdownPolicy                  shut_policy_;
 };
 
 class Context::Builder {
@@ -56,9 +55,9 @@ public:
     Builder& config(Config cfg);
     Builder& uri(std::string uri);
     Builder& prepare(PreparingStatement stmt);
-    Builder& idleTimeout(Context::Duration dur);
-    Builder& maxPoolSize(size_t size);
-    Builder& maxQueueSize(size_t size);
+    Builder& idleTimeout(std::chrono::seconds dur);
+    Builder& maxPoolSize(int size);
+    Builder& maxQueueSize(int size);
     Builder& shutdownPolicy(ShutdownPolicy pol);
 
     Context build();

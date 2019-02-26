@@ -1,25 +1,21 @@
 #include <postgres/internal/ConnectionPool.h>
-
 #include <postgres/internal/Worker.h>
-#include <postgres/Error.h>
 
 namespace postgres::internal {
 
 ConnectionPool::ConnectionPool(std::shared_ptr<Context const> ctx)
     : ctx_{ctx}, chan_{std::make_shared<Channel>(ctx)} {
-    workers_.reserve(ctx->maxPoolSize());
 }
 
 ConnectionPool::~ConnectionPool() noexcept {
-    shutdown_.store(true);
     switch (ctx_->shutdownPolicy()) {
         case ShutdownPolicy::DROP: {
             chan_->drop();
             [[fallthrough]];
         }
         case ShutdownPolicy::GRACEFUL: {
-            for (auto i = 0u; i < workers_.size(); i++) {
-                chan_->send(nullptr, 0);
+            for (auto n = chan_.use_count() - 1; 0 < n; --n) {
+                chan_->quit();
             }
             break;
         }
@@ -29,18 +25,19 @@ ConnectionPool::~ConnectionPool() noexcept {
     }
 }
 
-void ConnectionPool::checkShutdown() {
-    _POSTGRES_CXX_ASSERT(!shutdown_, "client is shutting down");
-}
-
-void ConnectionPool::checkWorkers() {
-    if (workers_.size() == ctx_->maxPoolSize()) {
+void ConnectionPool::checkWorkers(Worker* const worker) {
+    if (worker != nullptr) {
+        worker->run();
         return;
     }
 
-    auto worker = std::make_unique<internal::Worker>(ctx_, chan_);
-    worker->run();
-    workers_.push_back(std::move(worker));
+    if (static_cast<int>(workers_.size()) == ctx_->maxPoolSize()) {
+        return;
+    }
+
+    auto new_worker = std::make_unique<internal::Worker>(ctx_, chan_);
+    new_worker->run();
+    workers_.push_back(std::move(new_worker));
 }
 
 }  // namespace postgres::internal

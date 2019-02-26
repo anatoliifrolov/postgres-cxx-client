@@ -1,15 +1,19 @@
 #pragma once
 
+#include <memory>
 #include <mutex>
 #include <vector>
 #include <postgres/internal/Job.h>
-#include <postgres/internal/Slot.h>
 
 namespace postgres {
 
 class Context;
 
-namespace internal {
+}  // namespace postgres
+
+namespace postgres::internal {
+
+class Worker;
 
 class Channel {
 public:
@@ -20,16 +24,18 @@ public:
     Channel& operator=(Channel&& other) noexcept = delete;
     ~Channel() noexcept;
 
-    bool send(Job job, size_t lim);
-    bool fill(Slot& slot);
+    void quit();
+    bool send(Job job, int lim, Worker*& worker);
+    void receive(Slot& slot);
+    void recycle(Worker& worker);
     void drop();
 
 private:
     std::shared_ptr<Context const> ctx_;
     internal::Queue                queue_;
     std::vector<Slot*>             slots_;
+    std::vector<Worker*>           workers_;
     std::mutex                     mtx_;
 };
 
-}  // namespace internal
-}  // namespace postgres
+}  // namespace postgres::internal

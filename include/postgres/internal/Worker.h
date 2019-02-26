@@ -1,13 +1,16 @@
 #pragma once
 
+#include <memory>
 #include <thread>
-#include <postgres/internal/Slot.h>
+#include <postgres/internal/Job.h>
 
 namespace postgres {
 
-struct Context;
+class Context;
 
-namespace internal {
+}  // namespace postgres
+
+namespace postgres::internal {
 
 class Channel;
 
@@ -29,5 +32,4 @@ private:
     std::thread                    thread_;
 };
 
-}  // namespace internal
-}  // namespace postgres
+}  // namespace postgres::internal

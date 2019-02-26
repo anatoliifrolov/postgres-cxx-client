@@ -1,6 +1,5 @@
 #pragma once
 
-#include <atomic>
 #include <functional>
 #include <future>
 #include <memory>
@@ -30,30 +29,26 @@ public:
 
     template <typename T>
     std::future<T> send(std::function<T(Connection&)> job) {
-        checkShutdown();
-
         // todo: cannot compile with just packaged_task or unique_ptr :(
         auto task = std::make_shared<std::packaged_task<T(Connection&)>>(std::move(job));
         auto fut  = task->get_future();
-
+        Worker* worker = nullptr;
         if (chan_->send([task = std::move(task)](Connection& conn) mutable {
             (*task)(conn);
-        }, ctx_->maxQueueSize())) {
+        }, ctx_->maxQueueSize(), worker)) {
             return fut;
         }
 
-        checkWorkers();
+        checkWorkers(worker);
         return fut;
     }
 
 private:
-    void checkShutdown();
-    void checkWorkers();
+    void checkWorkers(Worker* worker);
 
     std::shared_ptr<Context const>       ctx_;
     std::shared_ptr<Channel>             chan_;
     std::vector<std::unique_ptr<Worker>> workers_;
-    std::atomic_bool                     shutdown_;
 };
 
 }  // namespace postgres::internal
