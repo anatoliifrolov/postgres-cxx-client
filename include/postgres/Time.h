@@ -18,7 +18,7 @@ public:
     Time& operator=(Time const& other) noexcept;
     Time(Time&& other) noexcept;
     Time& operator=(Time&& other) noexcept;
-    ~Time();
+    ~Time() noexcept;
 
     time_t toUnix() const;
     time_t toPostgres() const;

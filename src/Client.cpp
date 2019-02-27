@@ -1,7 +1,7 @@
 #include <postgres/Client.h>
 
 #include <utility>
-#include <postgres/internal/ConnectionPool.h>
+#include <postgres/internal/Dispatcher.h>
 #include <postgres/Context.h>
 #include <postgres/Result.h>
 #include <postgres/Status.h>

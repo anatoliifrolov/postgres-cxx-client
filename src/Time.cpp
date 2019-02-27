@@ -89,7 +89,7 @@ Time::Time(Time&& other) noexcept = default;
 
 Time& Time::operator=(Time&& other) noexcept = default;
 
-Time::~Time() = default;
+Time::~Time() noexcept = default;
 
 time_t Time::toUnix() const {
     return Clock::to_time_t(pnt_);

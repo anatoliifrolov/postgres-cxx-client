@@ -16,7 +16,7 @@ public:
     PreparedCommand& operator=(PreparedCommand const& other) = delete;
     PreparedCommand(PreparedCommand&& other) noexcept;
     PreparedCommand& operator=(PreparedCommand&& other) noexcept;
-    ~PreparedCommand();
+    ~PreparedCommand() noexcept;
 };
 
 }  // namespace postgres

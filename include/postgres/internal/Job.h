@@ -3,7 +3,6 @@
 #include <condition_variable>
 #include <functional>
 #include <mutex>
-#include <queue>
 
 namespace postgres {
 
@@ -14,11 +13,10 @@ class Connection;
 namespace postgres::internal {
 
 using Job = std::function<void(Connection&)>;
-using Queue = std::queue<Job>;
 
 struct Slot {
     Job                     job;
-    std::condition_variable has_job;
+    std::condition_variable signal;
     std::mutex              mtx;
 };
 

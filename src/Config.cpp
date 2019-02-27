@@ -8,7 +8,7 @@ Config::Config(Config&& other) noexcept = default;
 
 Config& Config::operator=(Config&& other) noexcept = default;
 
-Config::~Config() = default;
+Config::~Config() noexcept = default;
 
 Config Config::build() {
     return Builder{}.build();
@@ -28,7 +28,7 @@ Config::Builder::Builder(Builder&& other) noexcept = default;
 
 Config::Builder& Config::Builder::operator=(Builder&& other) noexcept = default;
 
-Config::Builder::~Builder() = default;
+Config::Builder::~Builder() noexcept = default;
 
 Config::Builder& Config::Builder::application_name(std::string const& val) {
     return set("application_name", val);

@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <mutex>
+#include <queue>
+#include <tuple>
 #include <vector>
 #include <postgres/internal/Job.h>
 
@@ -24,17 +26,19 @@ public:
     Channel& operator=(Channel&& other) noexcept = delete;
     ~Channel() noexcept;
 
-    void quit();
-    bool send(Job job, int lim, Worker*& worker);
+    void quit(int count);
+    std::tuple<bool, Worker*> send(Job job);
     void receive(Slot& slot);
     void recycle(Worker& worker);
     void drop();
 
 private:
+    std::tuple<bool, Worker*> send(Job job, int lim);
+
     std::shared_ptr<Context const> ctx_;
-    internal::Queue                queue_;
+    std::queue<Job>                queue_;
     std::vector<Slot*>             slots_;
-    std::vector<Worker*>           workers_;
+    std::vector<Worker*>           recreation_;
     std::mutex                     mtx_;
 };
 

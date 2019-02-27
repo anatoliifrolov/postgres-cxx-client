@@ -31,7 +31,7 @@ public:
     Config& operator=(Config const& other) = delete;
     Config(Config&& other) noexcept;
     Config& operator=(Config&& other) noexcept;
-    ~Config();
+    ~Config() noexcept;
 
     static Config build();
 
@@ -56,7 +56,7 @@ public:
     Builder& operator=(Builder const& other) = delete;
     Builder(Builder&& other) noexcept;
     Builder& operator=(Builder&& other) noexcept;
-    ~Builder();
+    ~Builder() noexcept;
 
     Builder& application_name(std::string const& val);
     Builder& client_encoding(std::string const& val);

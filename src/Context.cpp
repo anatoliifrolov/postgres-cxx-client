@@ -2,14 +2,15 @@
 
 #include <thread>
 #include <postgres/Connection.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 
 Context::Context()
     : cfg_{Config::build()},
-      max_pool_size_{static_cast<int>(std::thread::hardware_concurrency())},
-      max_queue_size_{0},
-      shut_policy_{ShutdownPolicy::GRACEFUL} {
+      max_concur_{static_cast<int>(std::thread::hardware_concurrency())},
+      max_queue_{0},
+      shut_pol_{ShutdownPolicy::GRACEFUL} {
 }
 
 Context::Context(Context&& other) noexcept = default;
@@ -21,26 +22,26 @@ Context::~Context() noexcept = default;
 Connection Context::connect() const {
     auto conn = uri_.empty() ? Connection{cfg_} : Connection{uri_};
     conn.check();
-    for (auto const& stmt : prep_statements_) {
-        conn.exec(stmt).check();
+    for (auto const& prep : preparings_) {
+        conn.exec(prep).check();
     }
     return conn;
 }
 
 std::chrono::seconds Context::idleTimeout() const {
-    return idle_timeout_;
+    return max_idle_;
 }
 
-int Context::maxPoolSize() const {
-    return max_pool_size_;
+int Context::maxConcurrency() const {
+    return max_concur_;
 }
 
 int Context::maxQueueSize() const {
-    return max_queue_size_;
+    return max_queue_;
 }
 
 ShutdownPolicy Context::shutdownPolicy() const {
-    return shut_policy_;
+    return shut_pol_;
 }
 
 Context::Builder::Builder() = default;
@@ -61,33 +62,35 @@ Context::Builder& Context::Builder::uri(std::string uri) {
     return *this;
 }
 
-Context::Builder& Context::Builder::prepare(PreparingStatement stmt) {
-    ctx_.prep_statements_.push_back(std::move(stmt));
+Context::Builder& Context::Builder::prepare(PreparingStatement prep) {
+    ctx_.preparings_.push_back(std::move(prep));
     return *this;
 }
 
-Context::Builder& Context::Builder::idleTimeout(std::chrono::seconds const dur) {
-    ctx_.idle_timeout_ = dur;
+Context::Builder& Context::Builder::idleTimeout(std::chrono::seconds const val) {
+    ctx_.max_idle_ = val;
     return *this;
 }
 
-Context::Builder& Context::Builder::maxPoolSize(int const size) {
-    ctx_.max_pool_size_ = size;
+Context::Builder& Context::Builder::maxConcurrency(int const val) {
+    _POSTGRES_CXX_ASSERT(1 <= val, "bad maxConcurrency() argument: " << val);
+    ctx_.max_concur_ = val;
     return *this;
 }
 
-Context::Builder& Context::Builder::maxQueueSize(int const size) {
-    ctx_.max_queue_size_ = size;
+Context::Builder& Context::Builder::maxQueueSize(int const val) {
+    _POSTGRES_CXX_ASSERT(0 <= val, "bad maxQueueSize() argument: " << val);
+    ctx_.max_queue_ = val;
+    return *this;
+}
+
+Context::Builder& Context::Builder::shutdownPolicy(ShutdownPolicy const val) {
+    ctx_.shut_pol_ = val;
     return *this;
 }
 
 Context Context::Builder::build() {
     return Context{std::move(ctx_)};
-}
-
-Context::Builder& Context::Builder::shutdownPolicy(ShutdownPolicy const pol) {
-    ctx_.shut_policy_ = pol;
-    return *this;
 }
 
 }  // namespace postgres

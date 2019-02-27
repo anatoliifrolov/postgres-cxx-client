@@ -37,7 +37,11 @@ void Worker::run() {
             if (!slot_.job) {
                 break;
             }
+
             slot_.job(conn);
+            if (!conn.isOk() && !conn.reset()) {
+                break;
+            }
         }
         chan_->recycle(*this);
     });

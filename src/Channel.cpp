@@ -13,12 +13,17 @@ Channel::Channel(std::shared_ptr<Context const> ctx)
 
 Channel::~Channel() noexcept = default;
 
-void Channel::quit() {
-    Worker* worker = nullptr;
-    send(nullptr, 0, worker);
+void Channel::quit(int count) {
+    while (0 < count--) {
+        send(nullptr, 0);
+    }
 }
 
-bool Channel::send(Job job, int const lim, Worker*& worker) {
+std::tuple<bool, Worker*> Channel::send(Job job) {
+    return send(std::move(job), ctx_->maxQueueSize());
+}
+
+std::tuple<bool, Worker*> Channel::send(Job job, int const lim) {
     std::unique_lock c_guard{mtx_};
     if (!slots_.empty()) {
         auto const slot = slots_.back();
@@ -27,49 +32,54 @@ bool Channel::send(Job job, int const lim, Worker*& worker) {
 
         std::lock_guard s_guard{slot->mtx};
         slot->job.swap(job);
-        slot->has_job.notify_one();
-        return true;
+        slot->signal.notify_one();
+        return {true, nullptr};
     }
 
     if (0 < lim) {
         _POSTGRES_CXX_ASSERT((static_cast<int>(queue_.size()) < lim),
-                             "connection pool queue overflows");
+                             "client queue overflows with requests");
     }
 
     queue_.push(std::move(job));
-    if (workers_.empty()) {
-        return false;
+    if (recreation_.empty()) {
+        return {false, nullptr};
     }
 
-    worker = workers_.back();
-    workers_.pop_back();
-    return false;
+    auto const worker = recreation_.back();
+    recreation_.pop_back();
+    return {false, worker};
 }
 
 void Channel::receive(Slot& slot) {
     std::unique_lock c_guard{mtx_};
     if (!queue_.empty()) {
-        slot.job.swap(queue_.back());
+        queue_.front().swap(slot.job);
         queue_.pop();
         return;
     }
 
+    // Sort slots to provide deterministic order of execution.
+    // That is needed to stop idle workers after timeout.
     slots_.push_back(&slot);
     std::sort(slots_.begin(), slots_.end());
+
+    // Prevent filling slot until waiting.
     std::unique_lock s_guard{slot.mtx};
     c_guard.unlock();
 
-    if (0 < ctx_->idleTimeout().count()) {
-        slot.has_job.wait_for(s_guard, ctx_->idleTimeout());
+    auto const timeout = ctx_->idleTimeout();
+    if (0 < timeout.count()) {
+        slot.signal.wait_for(s_guard, timeout);
         return;
     }
 
-    slot.has_job.wait(s_guard);
+    slot.signal.wait(s_guard);
 }
 
 void Channel::recycle(Worker& worker) {
     std::lock_guard guard{mtx_};
-    workers_.push_back(&worker);
+    recreation_.push_back(&worker);
 }
 
 void Channel::drop() {

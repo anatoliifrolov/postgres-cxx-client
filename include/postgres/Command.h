@@ -30,7 +30,7 @@ public:
     Command& operator=(Command const& other) = delete;
     Command(Command&& other) noexcept;
     Command& operator=(Command&& other) noexcept;
-    ~Command();
+    ~Command() noexcept;
 
     // Dynamic arguments addition.
     template <typename T>

@@ -29,18 +29,18 @@ public:
 
     Connection connect() const;
     std::chrono::seconds idleTimeout() const;
-    int maxPoolSize() const;
+    int maxConcurrency() const;
     int maxQueueSize() const;
     ShutdownPolicy shutdownPolicy() const;
 
 private:
     Config                          cfg_;
     std::string                     uri_;
-    std::vector<PreparingStatement> prep_statements_;
-    std::chrono::seconds            idle_timeout_;
-    int                             max_pool_size_;
-    int                             max_queue_size_;
-    ShutdownPolicy                  shut_policy_;
+    std::vector<PreparingStatement> preparings_;
+    std::chrono::seconds            max_idle_;
+    int                             max_concur_;
+    int                             max_queue_;
+    ShutdownPolicy                  shut_pol_;
 };
 
 class Context::Builder {
@@ -54,11 +54,11 @@ public:
 
     Builder& config(Config cfg);
     Builder& uri(std::string uri);
-    Builder& prepare(PreparingStatement stmt);
-    Builder& idleTimeout(std::chrono::seconds dur);
-    Builder& maxPoolSize(int size);
-    Builder& maxQueueSize(int size);
-    Builder& shutdownPolicy(ShutdownPolicy pol);
+    Builder& prepare(PreparingStatement prep);
+    Builder& idleTimeout(std::chrono::seconds val);
+    Builder& maxConcurrency(int val);
+    Builder& maxQueueSize(int val);
+    Builder& shutdownPolicy(ShutdownPolicy val);
 
     Context build();
 

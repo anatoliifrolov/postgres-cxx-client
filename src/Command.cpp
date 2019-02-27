@@ -7,7 +7,7 @@ Command::Command(Command&& other) noexcept = default;
 
 Command& Command::operator=(Command&& other) noexcept = default;
 
-Command::~Command() = default;
+Command::~Command() noexcept = default;
 
 char const* Command::statement() const {
     return stmt_;

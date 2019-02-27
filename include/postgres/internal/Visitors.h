@@ -4,8 +4,7 @@
 #include <string>
 #include <type_traits>
 
-namespace postgres {
-namespace internal {
+namespace postgres::internal {
 
 struct FieldsCollector {
     template <typename T>
@@ -101,5 +100,4 @@ struct AssignmentsCollector {
     std::string res;
 };
 
-}  // namespace internal
-}  // namespace postgres
+}  // namespace postgres::internal

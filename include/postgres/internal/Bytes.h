@@ -2,8 +2,7 @@
 
 #include <utility>
 
-namespace postgres {
-namespace internal {
+namespace postgres::internal {
 
 template <typename T>
 T orderBytes(T val) {
@@ -31,5 +30,4 @@ T orderBytes(const char* const buf) {
     return orderBytes(*(reinterpret_cast<const T*>(buf)));
 }
 
-}  // namespace internal
-}  // namespace postgres
+}  // namespace postgres::internal

@@ -1,7 +1,6 @@
 #pragma once
 
-namespace postgres {
-namespace internal {
+namespace postgres::internal {
 
 template <int N>
 struct Tag {
@@ -36,5 +35,4 @@ constexpr bool isVisitable() {
     return isTagged<T, VisitableTag>();
 }
 
-}  // namespace internal
-}  // namespace postgres
+}  // namespace postgres::internal

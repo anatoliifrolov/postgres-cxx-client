@@ -3,8 +3,8 @@
 #include <string>
 #include <type_traits>
 #include <libpq-fe.h>
-#include <postgres/Field.h>
 #include <postgres/internal/Classifier.h>
+#include <postgres/Field.h>
 
 namespace postgres {
 

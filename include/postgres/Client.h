@@ -6,7 +6,7 @@
 
 namespace postgres::internal {
 
-class ConnectionPool;
+class Dispatcher;
 
 }  // namespace postgres::internal
 
@@ -31,7 +31,7 @@ public:
     std::future<Result> query(std::function<Result(Connection&)> job);
 
 private:
-    using Impl = internal::ConnectionPool;
+    using Impl = internal::Dispatcher;
 
     std::unique_ptr<Impl> impl_;
 };

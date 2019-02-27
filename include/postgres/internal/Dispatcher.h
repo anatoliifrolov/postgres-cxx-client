@@ -6,11 +6,11 @@
 #include <utility>
 #include <vector>
 #include <postgres/internal/Channel.h>
-#include <postgres/Context.h>
 
 namespace postgres {
 
 class Connection;
+class Context;
 
 }  // namespace postgres
 
@@ -18,33 +18,32 @@ namespace postgres::internal {
 
 class Worker;
 
-class ConnectionPool {
+class Dispatcher {
 public:
-    explicit ConnectionPool(std::shared_ptr<Context const> ctx);
-    ConnectionPool(ConnectionPool const& other) = delete;
-    ConnectionPool& operator=(ConnectionPool const& other) = delete;
-    ConnectionPool(ConnectionPool&& other) noexcept = delete;
-    ConnectionPool& operator=(ConnectionPool&& other) noexcept = delete;
-    ~ConnectionPool() noexcept;
+    explicit Dispatcher(std::shared_ptr<Context const> ctx);
+    Dispatcher(Dispatcher const& other) = delete;
+    Dispatcher& operator=(Dispatcher const& other) = delete;
+    Dispatcher(Dispatcher&& other) noexcept = delete;
+    Dispatcher& operator=(Dispatcher&& other) noexcept = delete;
+    ~Dispatcher() noexcept;
 
     template <typename T>
     std::future<T> send(std::function<T(Connection&)> job) {
         // todo: cannot compile with just packaged_task or unique_ptr :(
         auto task = std::make_shared<std::packaged_task<T(Connection&)>>(std::move(job));
         auto fut  = task->get_future();
-        Worker* worker = nullptr;
-        if (chan_->send([task = std::move(task)](Connection& conn) mutable {
+        auto const[is_sent, worker] = chan_->send([task = std::move(task)](Connection& conn) mutable {
             (*task)(conn);
-        }, ctx_->maxQueueSize(), worker)) {
-            return fut;
+        });
+        if (!is_sent) {
+            scale(worker);
         }
-
-        checkWorkers(worker);
         return fut;
     }
 
 private:
-    void checkWorkers(Worker* worker);
+    void scale(Worker* recycled);
+    int size() const;
 
     std::shared_ptr<Context const>       ctx_;
     std::shared_ptr<Channel>             chan_;
