@@ -6,11 +6,9 @@
 #include <postgres/PreparingStatement.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
+#include "Connect.h"
 
 namespace postgres {
-
-static constexpr auto CONNECT_STR = "user=cxx_client password=cxx_client dbname=cxx_client";
-static constexpr auto CONNECT_URI = "postgresql://cxx_client:cxx_client@/cxx_client";
 
 TEST(ConnectionTest, Ping) {
     ASSERT_EQ(PQPING_OK, Connection::ping());
