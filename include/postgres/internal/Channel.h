@@ -3,9 +3,8 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <tuple>
 #include <vector>
-#include <postgres/internal/Job.h>
+#include <postgres/internal/IChannel.h>
 
 namespace postgres {
 
@@ -15,22 +14,20 @@ class Context;
 
 namespace postgres::internal {
 
-class Worker;
-
-class Channel {
+class Channel : public IChannel {
 public:
     explicit Channel(std::shared_ptr<Context const> ctx);
     Channel(Channel const& other) = delete;
     Channel& operator=(Channel const& other) = delete;
     Channel(Channel&& other) noexcept = delete;
     Channel& operator=(Channel&& other) noexcept = delete;
-    ~Channel() noexcept;
+    ~Channel() noexcept override;
 
-    void quit(int count);
-    std::tuple<bool, Worker*> send(Job job);
-    void receive(Slot& slot);
-    void recycle(Worker& worker);
-    void drop();
+    void quit(int count) override;
+    std::tuple<bool, Worker*> send(Job job) override;
+    void receive(Slot& slot) override;
+    void recycle(Worker& worker) override;
+    void drop() override;
 
 private:
     std::tuple<bool, Worker*> send(Job job, int lim);

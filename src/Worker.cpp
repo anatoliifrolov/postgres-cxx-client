@@ -1,13 +1,13 @@
 #include <postgres/internal/Worker.h>
 
 #include <utility>
-#include <postgres/internal/Channel.h>
+#include <postgres/internal/IChannel.h>
 #include <postgres/Connection.h>
 #include <postgres/Context.h>
 
 namespace postgres::internal {
 
-Worker::Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<Channel> chan)
+Worker::Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<IChannel> chan)
     : ctx_{std::move(ctx)}, chan_{std::move(chan)} {
 }
 

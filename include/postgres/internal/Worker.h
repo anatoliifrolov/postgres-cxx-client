@@ -12,11 +12,11 @@ class Context;
 
 namespace postgres::internal {
 
-class Channel;
+class IChannel;
 
 class Worker {
 public:
-    explicit Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<Channel> chan);
+    explicit Worker(std::shared_ptr<Context const> ctx, std::shared_ptr<IChannel> chan);
     Worker(Worker const& other) = delete;
     Worker& operator=(Worker const& other) = delete;
     Worker(Worker&& other) noexcept = delete;
@@ -27,7 +27,7 @@ public:
 
 private:
     std::shared_ptr<Context const> ctx_;
-    std::shared_ptr<Channel>       chan_;
+    std::shared_ptr<IChannel>      chan_;
     Slot                           slot_;
     std::thread                    thread_;
 };
