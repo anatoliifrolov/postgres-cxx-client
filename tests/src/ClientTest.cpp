@@ -24,42 +24,4 @@ TEST(ClientTest, Exec) {
     }).get(), Error);
 }
 
-TEST(ClientTest, Reuse) {
-    Client cl{};
-
-    auto const job = [](Connection& conn) {
-        std::stringstream strm{};
-        strm << std::this_thread::get_id();
-        return conn.exec(Command{"SELECT $1", strm.str()});
-    };
-
-    auto const id1 = cl.query(job).get()[0][0].as<std::string>();
-    auto const id2 = cl.query(job).get()[0][0].as<std::string>();
-    ASSERT_FALSE(id1.empty());
-    ASSERT_EQ(id1, id2);
-}
-
-TEST(ClientTest, Scale) {
-    auto                    count = 0;
-    std::mutex              mtx{};
-    std::condition_variable signal{};
-
-    auto const job = [&](Connection&) {
-        std::unique_lock guard{mtx};
-        ++count;
-        signal.notify_all();
-        signal.wait(guard, [&count] {
-            return count == 2;
-        });
-        return Status{nullptr};
-    };
-
-    Client cl{};
-    auto   st1     = cl.exec(job);
-    auto   st2     = cl.exec(job);
-    st1.wait();
-    st2.wait();
-    ASSERT_EQ(2, count);
-}
-
 }  // namespace postgres

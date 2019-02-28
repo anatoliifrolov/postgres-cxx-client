@@ -20,7 +20,8 @@ class Worker;
 
 class Dispatcher {
 public:
-    explicit Dispatcher(std::shared_ptr<Context const> ctx);
+    explicit Dispatcher();
+    explicit Dispatcher(Context ctx);
     Dispatcher(Dispatcher const& other) = delete;
     Dispatcher& operator=(Dispatcher const& other) = delete;
     Dispatcher(Dispatcher&& other) noexcept = delete;
@@ -41,9 +42,10 @@ public:
         return fut;
     }
 
+    int size() const;
+
 private:
     void scale(Worker* recycled);
-    int size() const;
 
     std::shared_ptr<Context const>       ctx_;
     std::shared_ptr<Channel>             chan_;

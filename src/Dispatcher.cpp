@@ -5,8 +5,12 @@
 
 namespace postgres::internal {
 
-Dispatcher::Dispatcher(std::shared_ptr<Context const> ctx)
-    : ctx_{ctx}, chan_{std::make_shared<Channel>(ctx)} {
+Dispatcher::Dispatcher()
+    : Dispatcher{Context{}} {
+}
+
+Dispatcher::Dispatcher(Context ctx)
+    : ctx_{std::make_shared<Context>(std::move(ctx))}, chan_{std::make_shared<Channel>(ctx_)} {
 }
 
 Dispatcher::~Dispatcher() noexcept {
@@ -40,7 +44,7 @@ void Dispatcher::scale(Worker* const recycled) {
     workers_.push_back(std::move(worker));
 }
 
-inline int Dispatcher::size() const {
+int Dispatcher::size() const {
     return static_cast<int>(workers_.size());
 }
 

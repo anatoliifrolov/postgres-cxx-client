@@ -13,7 +13,7 @@ Client::Client()
 }
 
 Client::Client(Context ctx)
-    : impl_{std::make_unique<Impl>(std::make_shared<Context>(std::move(ctx)))} {
+    : impl_{std::make_unique<Impl>(std::move(ctx))} {
 }
 
 Client::Client(Client&& other) noexcept = default;
