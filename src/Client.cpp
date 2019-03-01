@@ -1,6 +1,7 @@
 #include <postgres/Client.h>
 
 #include <utility>
+#include <postgres/internal/Channel.h>
 #include <postgres/internal/Dispatcher.h>
 #include <postgres/Context.h>
 #include <postgres/Result.h>
@@ -12,8 +13,10 @@ Client::Client()
     : Client{Context{}} {
 }
 
-Client::Client(Context ctx)
-    : impl_{std::make_unique<Impl>(std::move(ctx))} {
+Client::Client(Context ctx) {
+    auto pctx = std::make_shared<Context>(std::move(ctx));
+    auto chan = std::make_shared<internal::Channel>(pctx);
+    impl_ = std::make_unique<Impl>(std::move(pctx), std::move(chan));
 }
 
 Client::Client(Client&& other) noexcept = default;

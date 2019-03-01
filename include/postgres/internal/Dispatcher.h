@@ -5,7 +5,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include <postgres/internal/Channel.h>
+#include <postgres/internal/IChannel.h>
 
 namespace postgres {
 
@@ -20,8 +20,7 @@ class Worker;
 
 class Dispatcher {
 public:
-    explicit Dispatcher();
-    explicit Dispatcher(Context ctx);
+    explicit Dispatcher(std::shared_ptr<Context const> ctx, std::shared_ptr<IChannel> chan);
     Dispatcher(Dispatcher const& other) = delete;
     Dispatcher& operator=(Dispatcher const& other) = delete;
     Dispatcher(Dispatcher&& other) noexcept = delete;
@@ -42,13 +41,12 @@ public:
         return fut;
     }
 
-    int size() const;
-
 private:
     void scale(Worker* recycled);
+    int size() const;
 
     std::shared_ptr<Context const>       ctx_;
-    std::shared_ptr<Channel>             chan_;
+    std::shared_ptr<IChannel>            chan_;
     std::vector<std::unique_ptr<Worker>> workers_;
 };
 
