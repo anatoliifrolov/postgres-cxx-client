@@ -7,4 +7,5 @@ target_link_libraries(
         postgres-cxx-client
         pq
         gtest_main
+        gmock_main
 )
