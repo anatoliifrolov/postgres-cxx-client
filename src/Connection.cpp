@@ -4,7 +4,7 @@
 #include <postgres/Consumer.h>
 #include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 
 namespace postgres {
@@ -44,12 +44,12 @@ Connection& Connection::operator=(Connection&& other) noexcept = default;
 
 Connection::~Connection() noexcept = default;
 
-Result Connection::exec(PreparingStatement const& stmt) {
+Result Connection::exec(PrepareData const& prep) {
     return Result{PQprepare(native(),
-                            stmt.name.data(),
-                            stmt.body.data(),
-                            static_cast<int>(stmt.types.size()),
-                            stmt.types.data())};
+                            prep.name.data(),
+                            prep.statement.data(),
+                            static_cast<int>(prep.types.size()),
+                            prep.types.data())};
 }
 
 Result Connection::exec(Command const& cmd) {
@@ -77,13 +77,13 @@ Status Connection::execRaw(std::string_view stmt) {
     return Status{PQexec(native(), stmt.data())};
 }
 
-Receiver Connection::send(PreparingStatement const& stmt) {
+Receiver Connection::send(PrepareData const& prep) {
     return Receiver{handle_,
                     PQsendPrepare(native(),
-                                  stmt.name.data(),
-                                  stmt.body.data(),
-                                  static_cast<int>(stmt.types.size()),
-                                  stmt.types.data())};
+                                  prep.name.data(),
+                                  prep.statement.data(),
+                                  static_cast<int>(prep.types.size()),
+                                  prep.types.data())};
 }
 
 Receiver Connection::send(Command const& cmd) {

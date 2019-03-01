@@ -3,7 +3,7 @@
 #include <postgres/Context.h>
 #include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include "Connect.h"
 
 using namespace std::chrono_literals;
@@ -44,18 +44,18 @@ TEST(ContextTest, Connect) {
 }
 
 TEST(ContextTest, Prepare) {
-    ASSERT_TRUE(Context::Builder{}.prepare(PreparingStatement{"select1", "SELECT 1"})
+    ASSERT_TRUE(Context::Builder{}.prepare(PrepareData{"select1", "SELECT 1"})
                                   .build()
                                   .connect()
                                   .exec(PreparedCommand{"select1"})
                                   .isOk());
-    ASSERT_THROW(Context::Builder{}.prepare(PreparingStatement{"bad", "BAD"}).build().connect(),
+    ASSERT_THROW(Context::Builder{}.prepare(PrepareData{"bad", "BAD"}).build().connect(),
                  Error);
 }
 
 TEST(ContextTest, PrepareMulti) {
-    auto conn = Context::Builder{}.prepare(PreparingStatement{"select1", "SELECT 1"})
-                                  .prepare(PreparingStatement{"select2", "SELECT 2"})
+    auto conn = Context::Builder{}.prepare(PrepareData{"select1", "SELECT 1"})
+                                  .prepare(PrepareData{"select2", "SELECT 2"})
                                   .build()
                                   .connect();
     ASSERT_TRUE(conn.exec(PreparedCommand{"select1"}).isOk());

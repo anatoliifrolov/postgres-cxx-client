@@ -19,7 +19,7 @@ class Config;
 class Consumer;
 class PreparedCommand;
 class Receiver;
-struct PreparingStatement;
+struct PrepareData;
 
 class Connection {
 public:
@@ -77,12 +77,12 @@ public:
         return tx.complete(exec(std::forward<Ts>(args)...));
     }
 
-    Result exec(PreparingStatement const& stmt);
+    Result exec(PrepareData const& prep);
     Result exec(Command const& cmd);
     Result exec(PreparedCommand const& cmd);
     Status execRaw(std::string_view stmt);
 
-    Receiver send(PreparingStatement const& stmt);
+    Receiver send(PrepareData const& prep);
     Receiver send(Command const& cmd);
     Receiver send(PreparedCommand const& cmd);
     Consumer sendRaw(std::string_view stmt);

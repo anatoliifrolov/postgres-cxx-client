@@ -63,7 +63,7 @@ Context::Builder& Context::Builder::uri(std::string uri) {
     return *this;
 }
 
-Context::Builder& Context::Builder::prepare(PreparingStatement prep) {
+Context::Builder& Context::Builder::prepare(PrepareData prep) {
     ctx_.preparings_.push_back(std::move(prep));
     return *this;
 }

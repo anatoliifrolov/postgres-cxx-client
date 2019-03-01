@@ -3,7 +3,7 @@
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 
@@ -43,7 +43,7 @@ TEST(ReceiverTest, ExecBad) {
 
 TEST(ReceiverTest, Prepare) {
     Connection conn{Config::build()};
-    auto rcvr = conn.send(PreparingStatement{"select1", "SELECT 1"});
+    auto rcvr = conn.send(PrepareData{"select1", "SELECT 1"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();
@@ -72,7 +72,7 @@ TEST(ReceiverTest, Prepare) {
 
 TEST(ReceiverTest, PrepareAsyncBad) {
     Connection conn{Config::build()};
-    auto rcvr = conn.send(PreparingStatement{"select1", "BAD"});
+    auto rcvr = conn.send(PrepareData{"select1", "BAD"});
     ASSERT_TRUE(rcvr.isOk());
 
     auto res = rcvr.receive();

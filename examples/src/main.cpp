@@ -9,14 +9,14 @@
 #include <postgres/Connection.h>
 #include <postgres/Command.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include <postgres/Visitable.h>
 
 using postgres::Command;
 using postgres::Config;
 using postgres::Connection;
 using postgres::PreparedCommand;
-using postgres::PreparingStatement;
+using postgres::PrepareData;
 using postgres::Time;
 
 // Starting example
@@ -181,7 +181,7 @@ void insertVisitable(Connection& conn) {
 void executePrepared(Connection& conn) {
     // PreparedCommand is exactly the same as plain Command,
     // but accepting prepared statement name instead of statement text.
-    if (conn.exec(PreparingStatement{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
+    if (conn.exec(PrepareData{"insert_s", "INSERT INTO example(s) VALUES($1)"})) {
         conn.exec(PreparedCommand{"insert_s", "PREPARED"});
     }
 }

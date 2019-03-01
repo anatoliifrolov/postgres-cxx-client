@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <postgres/Config.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 
 namespace postgres {
 
@@ -34,13 +34,13 @@ public:
     ShutdownPolicy shutdownPolicy() const;
 
 private:
-    Config                          cfg_;
-    std::string                     uri_;
-    std::vector<PreparingStatement> preparings_;
-    std::chrono::seconds            max_idle_;
-    int                             max_concur_;
-    int                             max_queue_;
-    ShutdownPolicy                  shut_pol_;
+    Config                   cfg_;
+    std::string              uri_;
+    std::vector<PrepareData> preparings_;
+    std::chrono::seconds     max_idle_;
+    int                      max_concur_;
+    int                      max_queue_;
+    ShutdownPolicy           shut_pol_;
 };
 
 class Context::Builder {
@@ -54,7 +54,7 @@ public:
 
     Builder& config(Config cfg);
     Builder& uri(std::string uri);
-    Builder& prepare(PreparingStatement prep);
+    Builder& prepare(PrepareData prep);
     Builder& idleTimeout(std::chrono::seconds val);
     Builder& maxConcurrency(int val);
     Builder& maxQueueSize(int val);

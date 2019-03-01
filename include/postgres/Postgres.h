@@ -10,7 +10,7 @@
 #include <postgres/Field.h>
 #include <postgres/Oid.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 #include <postgres/Row.h>

@@ -3,7 +3,7 @@
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
-#include <postgres/PreparingStatement.h>
+#include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
 #include "Connect.h"
@@ -82,9 +82,9 @@ TEST(ConnectionTest, ExecRaw) {
 
 TEST(ConnectionTest, Prepare) {
     Connection conn{};
-    ASSERT_TRUE(conn.exec(PreparingStatement{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(conn.exec(PreparedCommand{"select1"}).isOk());
-    ASSERT_FALSE(conn.exec(PreparingStatement{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
     ASSERT_FALSE(conn.exec(PreparedCommand{"bad"}).isOk());
 }
 
@@ -104,9 +104,9 @@ TEST(ConnectionTest, ExecRawAsync) {
 
 TEST(ConnectionTest, PrepareAsync) {
     Connection conn{};
-    ASSERT_TRUE(conn.send(PreparingStatement{"select1", "SELECT 1"}).receive().isOk());
+    ASSERT_TRUE(conn.send(PrepareData{"select1", "SELECT 1"}).receive().isOk());
     ASSERT_TRUE(conn.send(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.send(PreparingStatement{"bad", "BAD"}).receive().isOk());
+    ASSERT_FALSE(conn.send(PrepareData{"bad", "BAD"}).receive().isOk());
     ASSERT_FALSE(conn.send(PreparedCommand{"bad"}).receive().isOk());
 }
 
@@ -119,9 +119,9 @@ TEST(ConnectionTest, RowByRow) {
 
 TEST(ConnectionTest, PrepareRowByRow) {
     Connection conn{};
-    ASSERT_TRUE(conn.exec(PreparingStatement{"select1", "SELECT 1"}).isOk());
+    ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(conn.iter(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.exec(PreparingStatement{"bad", "BAD"}).isOk());
+    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
     ASSERT_FALSE(conn.iter(PreparedCommand{"bad"}).receive().isOk());
 }
 
