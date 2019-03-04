@@ -29,20 +29,15 @@ public:
 
     template <typename T>
     std::future<T> send(std::function<T(Connection&)> job) {
-        // todo: cannot compile with just packaged_task or unique_ptr :(
         auto task = std::make_shared<std::packaged_task<T(Connection&)>>(std::move(job));
-        auto fut  = task->get_future();
-        auto const[is_sent, worker] = chan_->send([task = std::move(task)](Connection& conn) mutable {
+        scale(chan_->send([task](Connection& conn) {
             (*task)(conn);
-        });
-        if (!is_sent) {
-            scale(worker);
-        }
-        return fut;
+        }));
+        return task->get_future();
     }
 
 private:
-    void scale(Worker* recycled);
+    void scale(std::tuple<bool, Worker*> params);
     int size() const;
 
     std::shared_ptr<Context const>       ctx_;

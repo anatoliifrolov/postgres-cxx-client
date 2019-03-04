@@ -25,7 +25,12 @@ Dispatcher::~Dispatcher() noexcept {
     }
 }
 
-void Dispatcher::scale(Worker* const recycled) {
+void Dispatcher::scale(std::tuple<bool, Worker*> const params) {
+    auto const[is_sent, recycled] = params;
+    if (is_sent) {
+        return;
+    }
+
     if (recycled != nullptr) {
         recycled->run();
         return;
