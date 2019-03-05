@@ -39,7 +39,7 @@ void Worker::run() {
             }
 
             slot_.job(conn);
-            if (!conn.isOk() && !conn.reset()) {
+            if (!conn.isOk()) {
                 break;
             }
         }
