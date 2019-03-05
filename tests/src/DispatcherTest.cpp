@@ -13,10 +13,6 @@ namespace postgres::internal {
 static void noop(Connection&) {
 }
 
-static std::shared_ptr<Context> share(Context ctx) {
-    return std::make_shared<Context>(std::move(ctx));
-}
-
 TEST(DispatcherTest, Reuse) {
     ChannelFake chan{};
     auto const  mock = std::make_shared<ChannelMock>();
@@ -25,7 +21,7 @@ TEST(DispatcherTest, Reuse) {
     EXPECT_CALL(*mock, receive(_)).Times(3).WillRepeatedly(Invoke(chan.receiver()));
     EXPECT_CALL(*mock, quit(1)).WillOnce(Invoke(chan.terminator()));
     EXPECT_CALL(*mock, recycle(_)).WillOnce(Invoke(chan.recycler()));
-    Dispatcher disp{share(Context::Builder{}.maxConcurrency(2).build()), mock};
+    Dispatcher disp{Context::Builder{}.maxConcurrency(2).share(), mock};
     disp.send<void>(noop).wait();
     disp.send<void>(noop).wait();
 }
@@ -38,9 +34,9 @@ TEST(DispatcherTest, Drop) {
     EXPECT_CALL(*mock, drop()).Times(1);
     EXPECT_CALL(*mock, quit(1)).WillOnce(Invoke(chan.terminator()));
     EXPECT_CALL(*mock, recycle(_)).WillOnce(Invoke(chan.recycler()));
-    Dispatcher disp{share(Context::Builder{}.maxConcurrency(2)
-                                            .shutdownPolicy(ShutdownPolicy::DROP)
-                                            .build()), mock};
+    Dispatcher disp{Context::Builder{}.maxConcurrency(2)
+                                      .shutdownPolicy(ShutdownPolicy::DROP)
+                                      .share(), mock};
     disp.send<void>(noop);
 }
 
@@ -51,7 +47,7 @@ TEST(DispatcherTest, Recycle) {
     EXPECT_CALL(*mock, receive(_)).Times(4).WillRepeatedly(Invoke(chan.receiver()));
     EXPECT_CALL(*mock, quit(1)).WillOnce(Invoke(chan.terminator()));
     EXPECT_CALL(*mock, recycle(_)).Times(2).WillRepeatedly(Invoke(chan.recycler()));
-    Dispatcher disp{share(Context::Builder{}.maxConcurrency(2).build()), mock};
+    Dispatcher disp{Context::Builder{}.maxConcurrency(2).share(), mock};
     disp.send<void>(noop).wait();
     chan.recycle();
     disp.send<void>(noop).wait();
@@ -64,7 +60,7 @@ TEST(DispatcherTest, Scale) {
     EXPECT_CALL(*mock, receive(_)).Times(5).WillRepeatedly(Invoke(chan.receiver()));
     EXPECT_CALL(*mock, quit(2)).WillOnce(Invoke(chan.terminator()));
     EXPECT_CALL(*mock, recycle(_)).Times(2).WillRepeatedly(Invoke(chan.recycler()));
-    Dispatcher disp{share(Context::Builder{}.maxConcurrency(2).build()), mock};
+    Dispatcher disp{Context::Builder{}.maxConcurrency(2).share(), mock};
     disp.send<void>(noop);
     disp.send<void>(noop);
     disp.send<void>(noop).wait();

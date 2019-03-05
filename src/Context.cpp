@@ -29,7 +29,7 @@ Connection Context::connect() const {
     return conn;
 }
 
-std::chrono::seconds Context::idleTimeout() const {
+Context::Duration Context::idleTimeout() const {
     return max_idle_;
 }
 
@@ -68,7 +68,7 @@ Context::Builder& Context::Builder::prepare(PrepareData prep) {
     return *this;
 }
 
-Context::Builder& Context::Builder::idleTimeout(std::chrono::seconds const val) {
+Context::Builder& Context::Builder::idleTimeout(Context::Duration const val) {
     _POSTGRES_CXX_ASSERT(0 <= val.count(), "bad idle timeout: " << val.count() << " sec");
     ctx_.max_idle_ = val;
     return *this;
@@ -92,7 +92,11 @@ Context::Builder& Context::Builder::shutdownPolicy(ShutdownPolicy const val) {
 }
 
 Context Context::Builder::build() {
-    return Context{std::move(ctx_)};
+    return std::move(ctx_);
+}
+
+std::shared_ptr<Context> Context::Builder::share() {
+    return std::make_shared<Context>(build());
 }
 
 }  // namespace postgres

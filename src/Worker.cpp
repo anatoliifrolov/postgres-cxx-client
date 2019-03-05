@@ -34,11 +34,12 @@ void Worker::run() {
     thread_ = std::thread([this, conn = ctx_->connect()]() mutable {
         while (true) {
             chan_->receive(slot_);
-            if (!slot_.job) {
+            auto const job = std::move(slot_.job);
+            if (!job) {
                 break;
             }
 
-            slot_.job(conn);
+            job(conn);
             if (!conn.isOk()) {
                 break;
             }

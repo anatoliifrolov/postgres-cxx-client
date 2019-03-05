@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 #include <postgres/Config.h>
@@ -19,6 +20,7 @@ enum class ShutdownPolicy {
 class Context {
 public:
     class Builder;
+    using Duration = std::chrono::high_resolution_clock::duration;
 
     explicit Context();
     Context(Context const& other) = delete;
@@ -28,7 +30,7 @@ public:
     ~Context() noexcept;
 
     Connection connect() const;
-    std::chrono::seconds idleTimeout() const;
+    Duration idleTimeout() const;
     int maxConcurrency() const;
     int maxQueueSize() const;
     ShutdownPolicy shutdownPolicy() const;
@@ -37,7 +39,7 @@ private:
     Config                   cfg_;
     std::string              uri_;
     std::vector<PrepareData> preparings_;
-    std::chrono::seconds     max_idle_;
+    Duration                 max_idle_;
     int                      max_concur_;
     int                      max_queue_;
     ShutdownPolicy           shut_pol_;
@@ -55,12 +57,13 @@ public:
     Builder& config(Config cfg);
     Builder& uri(std::string uri);
     Builder& prepare(PrepareData prep);
-    Builder& idleTimeout(std::chrono::seconds val);
+    Builder& idleTimeout(Context::Duration val);
     Builder& maxConcurrency(int val);
     Builder& maxQueueSize(int val);
     Builder& shutdownPolicy(ShutdownPolicy val);
 
     Context build();
+    std::shared_ptr<Context> share();
 
 private:
     Context ctx_;

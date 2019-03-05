@@ -1,6 +1,5 @@
 #include <postgres/internal/Channel.h>
 
-#include <algorithm>
 #include <utility>
 #include <postgres/Context.h>
 #include <postgres/Error.h>
@@ -26,8 +25,9 @@ std::tuple<bool, Worker*> Channel::send(Job job) {
 std::tuple<bool, Worker*> Channel::send(Job job, int const lim) {
     std::unique_lock c_guard{mtx_};
     if (!slots_.empty()) {
-        auto const slot = slots_.back();
-        slots_.pop_back();
+        auto const it   = slots_.begin();
+        auto const slot = *it;
+        slots_.erase(it);
         c_guard.unlock();
 
         std::lock_guard s_guard{slot->mtx};
@@ -59,21 +59,29 @@ void Channel::receive(Slot& slot) {
         return;
     }
 
-    // Sort slots to provide deterministic order of execution.
-    // That is needed to stop idle workers after timeout.
-    slots_.push_back(&slot);
-    std::sort(slots_.begin(), slots_.end());
-
-    // Prevent filling slot until waiting.
+    // Keep slots sorted to detect idle workers.
+    slots_.insert(&slot);
+    // Prevent filling the slot until waiting.
     std::unique_lock s_guard{slot.mtx};
     c_guard.unlock();
 
     auto const timeout = ctx_->idleTimeout();
-    if (0 < timeout.count()) {
-        slot.signal.wait_for(s_guard, timeout);
+    if (timeout.count() == 0) {
+        slot.signal.wait(s_guard);
         return;
     }
 
+    if (slot.signal.wait_for(s_guard, timeout) == std::cv_status::no_timeout) {
+        return;
+    }
+
+    // Check if other thread is going to fill the slot.
+    c_guard.lock();
+    if (0 < slots_.erase(&slot)) {
+        return;
+    }
+
+    c_guard.unlock();
     slot.signal.wait(s_guard);
 }
 
