@@ -35,7 +35,11 @@ void Field::read(Time::Point& out) const {
 }
 
 void Field::read(std::string& out) const {
-    out.assign(value(), static_cast<size_t>(length()));
+    out = std::string{value(), static_cast<size_t>(length())};
+}
+
+void Field::read(std::string_view& out) const {
+    out = std::string_view{value(), static_cast<size_t>(length())};
 }
 
 bool Field::isNull() const {

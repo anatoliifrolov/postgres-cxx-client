@@ -68,7 +68,13 @@ TEST(FieldTest, ArithmUnsupport) {
 }
 
 TEST(FieldTest, Str) {
-    ASSERT_EQ("foo", Connection{}.exec("SELECT 'foo'")[0][0].as<std::string>());
+    auto const res = Connection{}.exec("SELECT 'foo'");
+    ASSERT_EQ("foo", res[0][0].as<std::string>());
+}
+
+TEST(FieldTest, StrView) {
+    auto const res = Connection{}.exec("SELECT 'foo'");
+    ASSERT_EQ("foo", res[0][0].as<std::string_view>());
 }
 
 TEST(FieldTest, Time) {
@@ -79,7 +85,8 @@ TEST(FieldTest, Time) {
 }
 
 TEST(FieldTest, TimeBad) {
-    ASSERT_THROW(Connection{}.exec("SELECT '2017-08-25 13:03:35'")[0][0].as<Time>().toUnix(), Error);
+    ASSERT_THROW(Connection{}.exec("SELECT '2017-08-25 13:03:35'")[0][0].as<Time>().toUnix(),
+                 Error);
 }
 
 TEST(FieldTest, Assign) {

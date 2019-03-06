@@ -3,6 +3,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <libpq-fe.h>
 #include <postgres/internal/Bytes.h>
@@ -125,6 +126,7 @@ private:
     void read(Time& out) const;
     void read(Time::Point& out) const;
     void read(std::string& out) const;
+    void read(std::string_view& out) const;
 
     PGresult* res_;
     int row_idx_;
