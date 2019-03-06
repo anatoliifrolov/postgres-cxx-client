@@ -17,8 +17,14 @@ public:
     ~Row() noexcept;
 
     template <typename T>
-    Row& operator>>(T& val) {
-        read(val);
+    std::enable_if_t<internal::isVisitable<T>(), Row&> operator>>(T& val) {
+        val.visitPostgresFields(*this);
+        return *this;
+    };
+
+    template <typename T>
+    std::enable_if_t<!internal::isVisitable<T>(), Row&> operator>>(T& val) {
+        (*this)[col_idx_++] >> val;
         return *this;
     }
 
@@ -30,25 +36,13 @@ public:
     Field operator[](std::string const& col_name) const;
     Field operator[](char const* col_name) const;
     Field operator[](int col_idx) const;
+
     int size() const;
 
 private:
     friend class Result;
 
     explicit Row(PGresult& res, int row_idx);
-
-    template <typename T>
-    std::enable_if_t<internal::isVisitable<T>()> read(T& val) {
-        val.visitPostgresFields(*this);
-    };
-
-    template <typename T>
-    std::enable_if_t<!internal::isVisitable<T>()> read(T& val) {
-        validate(col_idx_);
-        (*this)[col_idx_++] >> val;
-    }
-
-    void validate(int col_idx) const;
 
     PGresult* res_;
     int row_idx_;

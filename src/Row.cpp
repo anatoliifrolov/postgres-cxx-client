@@ -17,10 +17,6 @@ Row& Row::operator=(Row&& other) noexcept = default;
 
 Row::~Row() noexcept = default;
 
-int Row::size() const {
-    return PQnfields(res_);
-}
-
 Field Row::operator[](std::string const& col_name) const {
     return (*this)[col_name.c_str()];
 }
@@ -32,13 +28,13 @@ Field Row::operator[](char const* const col_name) const {
 }
 
 Field Row::operator[](int const col_idx) const {
-    validate(col_idx);
+    _POSTGRES_CXX_ASSERT(0 <= col_idx && col_idx < size(),
+                         "column index " << col_idx << " in out of range");
     return Field{*res_, row_idx_, col_idx};
 }
 
-void Row::validate(int const col_idx) const {
-    _POSTGRES_CXX_ASSERT(0 <= col_idx && col_idx < size(),
-                         "column index " << col_idx << " in out of range");
+int Row::size() const {
+    return PQnfields(res_);
 }
 
 }  // namespace postgres
