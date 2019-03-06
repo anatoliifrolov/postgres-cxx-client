@@ -70,8 +70,7 @@ Row Result::iterator::operator->() const {
 }
 
 Row Result::iterator::operator*() const {
-    auto const n = PQntuples(handle_);
-    _POSTGRES_CXX_ASSERT(idx_ < n, "No tuple " << idx_ << " in the result of size " << n);
+    _POSTGRES_CXX_ASSERT(idx_ < PQntuples(handle_), "row index " << idx_ << " is out of range");
     return Row{*handle_, idx_};
 }
 

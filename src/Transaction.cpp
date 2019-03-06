@@ -30,7 +30,7 @@ Transaction::~Transaction() noexcept {
 }
 
 void Transaction::commit() {
-    _POSTGRES_CXX_ASSERT(conn_, "Transaction expired");
+    _POSTGRES_CXX_ASSERT(conn_, "transaction is already completed");
     conn_->exec("COMMIT");
     conn_ = nullptr;
 }

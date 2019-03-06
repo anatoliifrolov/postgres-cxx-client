@@ -69,7 +69,7 @@ Context::Builder& Context::Builder::prepare(PrepareData prep) {
 }
 
 Context::Builder& Context::Builder::idleTimeout(Context::Duration const val) {
-    _POSTGRES_CXX_ASSERT(0 <= val.count(), "bad idle timeout: " << val.count() << " sec");
+    _POSTGRES_CXX_ASSERT(0 <= val.count(), "bad idle timeout: " << val.count());
     ctx_.max_idle_ = val;
     return *this;
 }

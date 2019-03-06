@@ -14,7 +14,7 @@ struct Error : std::runtime_error {
 #define _POSTGRES_CXX_FAIL(msg) \
     { \
         std::stringstream stream{}; \
-        stream << msg; \
+        stream << "postgres client error: " << msg; \
         throw postgres::Error{stream.str()}; \
     }
 
