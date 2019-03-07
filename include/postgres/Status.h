@@ -7,7 +7,6 @@ namespace postgres {
 
 class Status {
 public:
-    explicit Status(PGresult* handle);
     Status(Status const& other) = delete;
     Status& operator=(Status const& other) = delete;
     Status(Status&& other) noexcept;
@@ -26,6 +25,12 @@ public:
     ExecStatusType type() const;
 
     PGresult* native() const;
+
+protected:
+    friend class Connection;
+    friend class Consumer;
+
+    explicit Status(PGresult* handle);
 
 private:
     std::unique_ptr<PGresult, void (*)(PGresult*)> handle_;

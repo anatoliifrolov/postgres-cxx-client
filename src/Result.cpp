@@ -71,7 +71,7 @@ Row Result::iterator::operator->() const {
 
 Row Result::iterator::operator*() const {
     _POSTGRES_CXX_ASSERT(LogicError,
-                         idx_ < PQntuples(handle_),
+                         (0 <= idx_) && (idx_ < PQntuples(handle_)),
                          "row index " << idx_ << " is out of range");
     return Row{*handle_, idx_};
 }

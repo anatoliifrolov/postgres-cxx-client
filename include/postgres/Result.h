@@ -10,7 +10,6 @@ class Result : public Status {
 public:
     class iterator;
 
-    explicit Result(PGresult* handle);
     Result(Result const& other) = delete;
     Result& operator=(Result const& other) = delete;
     Result(Result&& other) noexcept;
@@ -21,6 +20,12 @@ public:
     iterator begin() const;
     iterator end() const;
     Row operator[](int idx) const;
+
+private:
+    friend class Connection;
+    friend class Receiver;
+
+    explicit Result(PGresult* handle);
 };
 
 class Result::iterator {
