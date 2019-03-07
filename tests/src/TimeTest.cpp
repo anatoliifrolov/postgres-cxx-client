@@ -2,69 +2,69 @@
 #include <gtest/gtest.h>
 #include <postgres/Error.h>
 #include <postgres/Time.h>
-#include "Timestamps.h"
+#include "Samples.h"
 
 namespace postgres {
 
 TEST(TimeTest, CStyle) {
-    auto const t = Time{timeSample()};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePg(), t.toPostgres());
-    ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.toString());
+    auto const t = Time{TIME_SAMPLE};
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, Chrono) {
-    auto const t = Time{timePointSampleNano()};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
-    ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNano(), t.toString());
+    auto const t = Time{TIME_POINT_SAMPLE_NANO};
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE_NANO, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, Tz) {
-    auto const t = Time{timePointSampleNano(), true};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
-    ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNanoTz(), t.toString());
+    auto const t = Time{TIME_POINT_SAMPLE_NANO, true};
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE_NANO_TZ, t.toString());
     ASSERT_TRUE(t.hasZone());
 }
 
 TEST(TimeTest, Fmt) {
-    auto const t = Time{timeFormatSample()};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePg(), t.toPostgres());
-    ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.toString());
+    auto const t = Time{TIME_STR_SAMPLE};
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, NanoFmt) {
-    auto const t = Time{timeFormatSampleNano()};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
-    ASSERT_EQ(timePointSampleNano(), t.point());
-    ASSERT_EQ(timeFormatSampleNano(), t.toString());
+    auto const t = Time{TIME_STR_SAMPLE_NANO};
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE_NANO, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, SpaceDelim) {
     auto const t = Time{"2017-08-25 13:03:35"};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePg(), t.toPostgres());
-    ASSERT_EQ(timePointSample(), t.point());
-    ASSERT_EQ(timeFormatSample(), t.toString());
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE, t.point());
+    ASSERT_EQ(TIME_STR_SAMPLE, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, SpaceDelimMicro) {
     auto const t = Time{"2017-08-25 13:03:35.987654"};
-    ASSERT_EQ(timeSample(), t.toUnix());
-    ASSERT_EQ(timeSamplePgMicro(), t.toPostgres());
-    ASSERT_EQ(timePointSampleMicro(), t.point());
+    ASSERT_EQ(TIME_SAMPLE, t.toUnix());
+    ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
+    ASSERT_EQ(TIME_POINT_SAMPLE_MICRO, t.point());
     ASSERT_EQ("2017-08-25T13:03:35.987654000", t.toString());
     ASSERT_FALSE(t.hasZone());
 }

@@ -4,7 +4,7 @@
 #include <postgres/Error.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
-#include "Connect.h"
+#include "Samples.h"
 
 using namespace std::chrono_literals;
 

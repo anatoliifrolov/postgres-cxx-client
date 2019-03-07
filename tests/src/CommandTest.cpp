@@ -3,7 +3,7 @@
 #include <postgres/internal/Bytes.h>
 #include <postgres/Command.h>
 #include <postgres/Visitable.h>
-#include "Timestamps.h"
+#include "Samples.h"
 
 namespace postgres {
 
@@ -224,21 +224,21 @@ TEST(CommandTest, Oid) {
 }
 
 TEST(CommandTest, Time) {
-    Command const cmd{"STMT", timePointSample()};
+    Command const cmd{"STMT", TIME_POINT_SAMPLE};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{TIMESTAMPOID}, cmd.types()[0]);
-    ASSERT_EQ(timeSamplePg(), internal::orderBytes<time_t>(cmd.values()[0]));
+    ASSERT_EQ(TIME_SAMPLE_PG, internal::orderBytes<time_t>(cmd.values()[0]));
     ASSERT_EQ(static_cast<int>(sizeof(time_t)), cmd.lengths()[0]);
     ASSERT_EQ(1, cmd.formats()[0]);
 }
 
 TEST(CommandTest, TimeZone) {
-    Command const cmd{"STMT", Time{timePointSampleNano(), true}};
+    Command const cmd{"STMT", Time{TIME_POINT_SAMPLE_NANO, true}};
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{TIMESTAMPTZOID}, cmd.types()[0]);
-    ASSERT_EQ(timeFormatSampleNanoTz(), cmd.values()[0]);
-    ASSERT_EQ(static_cast<int>(timeFormatSampleNanoTz().size() + 1), cmd.lengths()[0]);
+    ASSERT_EQ(TIME_STR_SAMPLE_NANO_TZ, cmd.values()[0]);
+    ASSERT_EQ(static_cast<int>(TIME_STR_SAMPLE_NANO_TZ.size() + 1), cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 

@@ -4,7 +4,7 @@
 #include <postgres/Command.h>
 #include <postgres/Row.h>
 #include "Migration.h"
-#include "Timestamps.h"
+#include "Samples.h"
 
 namespace postgres {
 
@@ -20,7 +20,7 @@ TEST_F(TestVisitor, Manual) {
     pinged.float8 = 8.88;
     pinged.flag   = true;
     pinged.info   = "INFO";
-    pinged.time   = timePointSample();
+    pinged.time   = TIME_POINT_SAMPLE;
 
     Table ponged{};
 
@@ -36,7 +36,7 @@ TEST_F(TestVisitor, Manual) {
     ASSERT_NEAR(8.88, ponged.float8, 0.001);
     ASSERT_TRUE(ponged.flag);
     ASSERT_EQ("INFO", ponged.info);
-    ASSERT_EQ(timePointSample(), ponged.time);
+    ASSERT_EQ(TIME_POINT_SAMPLE, ponged.time);
 }
 
 static std::vector<Table> makeDataToInsert() {
@@ -50,7 +50,7 @@ static std::vector<Table> makeDataToInsert() {
     data.back().float8 = 8.88;
     data.back().flag   = true;
     data.back().info   = "INFO";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
 
     data.emplace_back();
     data.back().int2   = 22;
@@ -60,7 +60,7 @@ static std::vector<Table> makeDataToInsert() {
     data.back().float8 = 28.88;
     data.back().flag   = true;
     data.back().info   = "INFO2";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
 
     data.emplace_back();
     data.back().int2   = 32;
@@ -70,7 +70,7 @@ static std::vector<Table> makeDataToInsert() {
     data.back().float8 = 38.88;
     data.back().flag   = true;
     data.back().info   = "INFO3";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
 
     data.emplace_back();
     data.back().int2   = 42;
@@ -80,7 +80,7 @@ static std::vector<Table> makeDataToInsert() {
     data.back().float8 = 48.88;
     data.back().flag   = true;
     data.back().info   = "INFO4";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
 
     return data;
 }
@@ -115,7 +115,7 @@ TEST_F(TestVisitor, AutoUpdate) {
     data.back().float8 = 8.88;
     data.back().flag   = true;
     data.back().info   = "INFO";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
     conn_->insert(data.back());
 
     data.back().int2   = 22;
@@ -125,7 +125,7 @@ TEST_F(TestVisitor, AutoUpdate) {
     data.back().float8 = 28.88;
     data.back().flag   = false;
     data.back().info   = "INFO2";
-    data.back().time   = timePointSample();
+    data.back().time   = TIME_POINT_SAMPLE;
     conn_->update(data.back());
 
     data.clear();
@@ -139,7 +139,7 @@ TEST_F(TestVisitor, AutoUpdate) {
     ASSERT_NEAR(28.88, data.back().float8, 0.001);
     ASSERT_FALSE(data.back().flag);
     ASSERT_EQ("INFO2", data.back().info);
-    ASSERT_EQ(timePointSample(), data.back().time);
+    ASSERT_EQ(TIME_POINT_SAMPLE, data.back().time);
 }
 
 }  // namespace postgres

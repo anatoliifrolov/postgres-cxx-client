@@ -2,7 +2,7 @@
 #include <postgres/Command.h>
 #include <postgres/Row.h>
 #include "Migration.h"
-#include "Timestamps.h"
+#include "Samples.h"
 
 namespace postgres {
 
@@ -103,11 +103,11 @@ TEST_F(TestData, Timestamp) {
     std::chrono::system_clock::time_point time_point{};
 
     auto const res = client_.transact(Command{"INSERT INTO test(time) VALUES($1)",
-                                              timeFormatSampleNano()}, "SELECT time FROM test");
+                                              TIME_STR_SAMPLE_NANO}, "SELECT time FROM test");
 
     ASSERT_THROW(res[0][0] >> time, LogicError);
     res[0][0] >> time_point;
-    ASSERT_EQ(timePointSampleMicro(), time_point);
+    ASSERT_EQ(TIME_POINT_SAMPLE_MICRO, time_point);
 }
 
 TEST_F(TestData, Esc) {

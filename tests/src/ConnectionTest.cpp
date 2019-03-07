@@ -6,7 +6,7 @@
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
-#include "Connect.h"
+#include "Samples.h"
 
 namespace postgres {
 

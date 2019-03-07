@@ -4,7 +4,7 @@
 #include <postgres/Connection.h>
 #include <postgres/Error.h>
 #include <postgres/Field.h>
-#include "Timestamps.h"
+#include "Samples.h"
 
 namespace postgres {
 
@@ -80,8 +80,8 @@ TEST(FieldTest, StrView) {
 TEST(FieldTest, Time) {
     auto const res = Connection{}.exec("SELECT '2017-08-25 13:03:35'::TIMESTAMP");
     auto const fld = res[0][0];
-    ASSERT_EQ(timeSample(), fld.as<Time>().toUnix());
-    ASSERT_EQ(timePointSample(), fld.as<Time::Point>());
+    ASSERT_EQ(TIME_SAMPLE, fld.as<Time>().toUnix());
+    ASSERT_EQ(TIME_POINT_SAMPLE, fld.as<Time::Point>());
 }
 
 TEST(FieldTest, TimeBad) {
