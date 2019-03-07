@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
+#include <postgres/Error.h>
 #include <postgres/Time.h>
 #include "Timestamps.h"
 
@@ -69,12 +70,12 @@ TEST(TimeTest, SpaceDelimMicro) {
 }
 
 TEST(TimeTest, BadFmt) {
-    ASSERT_THROW(Time{"BAD TIMESTAMP"}, std::exception);
-    ASSERT_THROW(Time{"2017-13-25 13:03:35"}, std::exception);
-    ASSERT_THROW(Time{"2017-08-32 13:03:35"}, std::exception);
-    ASSERT_THROW(Time{"2017-08-25 25:03:35"}, std::exception);
-    ASSERT_THROW(Time{"2017-08-25 13:60:35"}, std::exception);
-    ASSERT_THROW(Time{"2017-08-25 13:03:60"}, std::exception);
+    ASSERT_THROW(Time{"BAD TIMESTAMP"}, LogicError);
+    ASSERT_THROW(Time{"2017-13-25 13:03:35"}, LogicError);
+    ASSERT_THROW(Time{"2017-08-32 13:03:35"}, LogicError);
+    ASSERT_THROW(Time{"2017-08-25 25:03:35"}, LogicError);
+    ASSERT_THROW(Time{"2017-08-25 13:60:35"}, LogicError);
+    ASSERT_THROW(Time{"2017-08-25 13:03:60"}, LogicError);
 }
 
 TEST(TimeTest, Past) {

@@ -19,9 +19,9 @@ TEST_F(TestResult, NullPtr) {
     ASSERT_EQ(0, res.size());
     ASSERT_EQ(0, res.effect());
     ASSERT_TRUE(res.isEmpty());
-    ASSERT_THROW(res.begin(), std::exception);
-    ASSERT_THROW(res.end(), std::exception);
-    ASSERT_THROW(res[0], std::exception);
+    ASSERT_THROW(res.begin(), RuntimeError);
+    ASSERT_THROW(res.end(), RuntimeError);
+    ASSERT_THROW(res[0], RuntimeError);
 }
 
 TEST_F(TestResult, Invalid) {
@@ -30,9 +30,9 @@ TEST_F(TestResult, Invalid) {
     ASSERT_EQ(0, res.size());
     ASSERT_EQ(0, res.effect());
     ASSERT_TRUE(res.isEmpty());
-    ASSERT_THROW(res.begin(), std::exception);
-    ASSERT_THROW(res.end(), std::exception);
-    ASSERT_THROW(res[0], std::exception);
+    ASSERT_THROW(res.begin(), RuntimeError);
+    ASSERT_THROW(res.end(), RuntimeError);
+    ASSERT_THROW(res[0], RuntimeError);
 }
 
 TEST_F(TestResult, Empty) {

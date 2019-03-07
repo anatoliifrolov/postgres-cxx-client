@@ -14,7 +14,7 @@ Status& Status::operator=(Status&& other) noexcept = default;
 Status::~Status() noexcept = default;
 
 void Status::check() const {
-    _POSTGRES_CXX_ASSERT(isOk(), message());
+    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), message());
 }
 
 bool Status::isOk() const {

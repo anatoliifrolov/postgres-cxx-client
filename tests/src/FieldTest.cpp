@@ -42,29 +42,29 @@ TEST(FieldTest, ArithmLarge) {
 }
 
 TEST(FieldTest, ArithmNarrow) {
-    ASSERT_THROW(Connection{}.exec("SELECT 1::SMALLINT")[0][0].as<int8_t>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT 2::INT")[0][0].as<int16_t>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT 3::BIGINT")[0][0].as<int32_t>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT 4.56::DOUBLE PRECISION")[0][0].as<float>(), Error);
+    ASSERT_THROW(Connection{}.exec("SELECT 1::SMALLINT")[0][0].as<int8_t>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT 2::INT")[0][0].as<int16_t>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT 3::BIGINT")[0][0].as<int32_t>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT 4.56::DOUBLE PRECISION")[0][0].as<float>(), LogicError);
 }
 
 TEST(FieldTest, ArithmUnsigned) {
     ASSERT_EQ(1, Connection{}.exec("SELECT 1::SMALLINT")[0][0].as<uint16_t>());
     ASSERT_EQ(2, Connection{}.exec("SELECT 2::INT")[0][0].as<uint32_t>());
     ASSERT_EQ(3, Connection{}.exec("SELECT 3::BIGINT")[0][0].as<uint64_t>());
-    ASSERT_THROW(Connection{}.exec("SELECT -1::SMALLINT")[0][0].as<uint16_t>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT -2::INT")[0][0].as<uint32_t>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT -3::BIGINT")[0][0].as<uint64_t>(), Error);
+    ASSERT_THROW(Connection{}.exec("SELECT -1::SMALLINT")[0][0].as<uint16_t>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT -2::INT")[0][0].as<uint32_t>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT -3::BIGINT")[0][0].as<uint64_t>(), LogicError);
 }
 
 TEST(FieldTest, ArithmRound) {
-    ASSERT_THROW(Connection{}.exec("SELECT 3::BIGINT")[0][0].as<double>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT 4.56::DOUBLE PRECISION")[0][0].as<int64_t>(), Error);
+    ASSERT_THROW(Connection{}.exec("SELECT 3::BIGINT")[0][0].as<double>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT 4.56::DOUBLE PRECISION")[0][0].as<int64_t>(), LogicError);
 }
 
 TEST(FieldTest, ArithmUnsupport) {
-    ASSERT_THROW(Connection{}.exec("SELECT 3::DECIMAL")[0][0].as<long double>(), Error);
-    ASSERT_THROW(Connection{}.exec("SELECT 4::NUMERIC")[0][0].as<long double>(), Error);
+    ASSERT_THROW(Connection{}.exec("SELECT 3::DECIMAL")[0][0].as<long double>(), LogicError);
+    ASSERT_THROW(Connection{}.exec("SELECT 4::NUMERIC")[0][0].as<long double>(), LogicError);
 }
 
 TEST(FieldTest, Str) {
@@ -86,7 +86,7 @@ TEST(FieldTest, Time) {
 
 TEST(FieldTest, TimeBad) {
     ASSERT_THROW(Connection{}.exec("SELECT '2017-08-25 13:03:35'")[0][0].as<Time>().toUnix(),
-                 Error);
+                 LogicError);
 }
 
 TEST(FieldTest, Assign) {
@@ -97,7 +97,7 @@ TEST(FieldTest, Assign) {
 
 TEST(FieldTest, AssignNull) {
     int32_t val = 0;
-    ASSERT_THROW(Connection{}.exec("SELECT NULL")[0][0] >> val, Error);
+    ASSERT_THROW(Connection{}.exec("SELECT NULL")[0][0] >> val, LogicError);
 }
 
 TEST(FieldTest, Ptr) {

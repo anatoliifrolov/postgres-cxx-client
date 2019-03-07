@@ -69,19 +69,19 @@ Context::Builder& Context::Builder::prepare(PrepareData prep) {
 }
 
 Context::Builder& Context::Builder::idleTimeout(Context::Duration const val) {
-    _POSTGRES_CXX_ASSERT(0 <= val.count(), "bad idle timeout: " << val.count());
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= val.count(), "bad idle timeout: " << val.count());
     ctx_.max_idle_ = val;
     return *this;
 }
 
 Context::Builder& Context::Builder::maxConcurrency(int const val) {
-    _POSTGRES_CXX_ASSERT(1 <= val, "bad concurrency: " << val);
+    _POSTGRES_CXX_ASSERT(LogicError, 1 <= val, "bad concurrency: " << val);
     ctx_.max_concur_ = val;
     return *this;
 }
 
 Context::Builder& Context::Builder::maxQueueSize(int const val) {
-    _POSTGRES_CXX_ASSERT(0 <= val, "bad queue size: " << val);
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= val, "bad queue size: " << val);
     ctx_.max_queue_ = val;
     return *this;
 }

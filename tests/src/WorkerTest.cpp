@@ -18,7 +18,7 @@ TEST(WorkerTest, NoRun) {
 TEST(WorkerTest, BadRun) {
     Worker w{std::make_shared<Context>(Context::Builder{}.uri("BAD").build()),
              std::make_shared<ChannelMock>()};
-    ASSERT_THROW(w.run(), Error);
+    ASSERT_THROW(w.run(), RuntimeError);
 }
 
 TEST(WorkerTest, Rerun) {

@@ -37,7 +37,9 @@ std::tuple<bool, Worker*> Channel::send(Job job, int const lim) {
     }
 
     if (0 < lim) {
-        _POSTGRES_CXX_ASSERT((static_cast<int>(queue_.size()) < lim), "queue overflow");
+        _POSTGRES_CXX_ASSERT(RuntimeError,
+                             (static_cast<int>(queue_.size()) < lim),
+                             "queue overflow");
     }
 
     queue_.push(std::move(job));

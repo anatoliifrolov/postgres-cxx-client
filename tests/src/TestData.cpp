@@ -17,9 +17,9 @@ TEST_F(TestData, Null) {
 
     // Reading NULLs into pointers allowed only.
     auto val = true;
-    ASSERT_THROW(res[0] >> val, std::exception);
-    ASSERT_THROW(res[1] >> val, std::exception);
-    ASSERT_THROW(res[2] >> val, std::exception);
+    ASSERT_THROW(res[0] >> val, LogicError);
+    ASSERT_THROW(res[1] >> val, LogicError);
+    ASSERT_THROW(res[2] >> val, LogicError);
 
     for (auto const i : {0, 1, 2}) {
         auto ptr = &val;
@@ -81,7 +81,7 @@ TEST_F(TestData, Types) {
     ASSERT_EQ(true, row.flag);
     res[0]["info"] >> row.info;
     ASSERT_EQ("INFO", row.info);
-    ASSERT_THROW(res[0]["time"] >> row.time, std::exception);
+    ASSERT_THROW(res[0]["time"] >> row.time, LogicError);
 
     // Smaller type into larger.
     res[0]["int2"] >> row.int4;
@@ -92,10 +92,10 @@ TEST_F(TestData, Types) {
     ASSERT_NEAR(4.44, row.float8, 0.001);
 
     // Narrowing.
-    ASSERT_THROW(res[0]["int2"] >> row.flag, std::exception);
-    ASSERT_THROW(res[0]["int4"] >> row.int2, std::exception);
-    ASSERT_THROW(res[0]["int8"] >> row.int4, std::exception);
-    ASSERT_THROW(res[0]["float8"] >> row.float4, std::exception);
+    ASSERT_THROW(res[0]["int2"] >> row.flag, LogicError);
+    ASSERT_THROW(res[0]["int4"] >> row.int2, LogicError);
+    ASSERT_THROW(res[0]["int8"] >> row.int4, LogicError);
+    ASSERT_THROW(res[0]["float8"] >> row.float4, LogicError);
 }
 
 TEST_F(TestData, Timestamp) {
@@ -105,7 +105,7 @@ TEST_F(TestData, Timestamp) {
     auto const res = client_.transact(Command{"INSERT INTO test(time) VALUES($1)",
                                               timeFormatSampleNano()}, "SELECT time FROM test");
 
-    ASSERT_THROW(res[0][0] >> time, Error);
+    ASSERT_THROW(res[0][0] >> time, LogicError);
     res[0][0] >> time_point;
     ASSERT_EQ(timePointSampleMicro(), time_point);
 }

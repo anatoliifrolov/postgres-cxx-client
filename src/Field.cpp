@@ -23,7 +23,8 @@ void Field::read(Time& out) const {
 }
 
 void Field::read(Time::Point& out) const {
-    _POSTGRES_CXX_ASSERT(type() == TIMESTAMPOID,
+    _POSTGRES_CXX_ASSERT(LogicError,
+                         type() == TIMESTAMPOID,
                          "cannot cast field '"
                              << name()
                              << "' of type "

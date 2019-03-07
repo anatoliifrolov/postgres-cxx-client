@@ -23,12 +23,13 @@ Field Row::operator[](std::string const& col_name) const {
 
 Field Row::operator[](char const* const col_name) const {
     auto const col_idx = PQfnumber(res_, col_name);
-    _POSTGRES_CXX_ASSERT(0 <= col_idx, "no column '" << col_name << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= col_idx, "no column '" << col_name << "'");
     return Field{*res_, row_idx_, col_idx};
 }
 
 Field Row::operator[](int const col_idx) const {
-    _POSTGRES_CXX_ASSERT(0 <= col_idx && col_idx < size(),
+    _POSTGRES_CXX_ASSERT(LogicError,
+                         0 <= col_idx && col_idx < size(),
                          "column index " << col_idx << " in out of range");
     return Field{*res_, row_idx_, col_idx};
 }

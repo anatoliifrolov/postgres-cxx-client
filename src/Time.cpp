@@ -42,7 +42,9 @@ Time::Time(std::string const& s) {
     };
 
     std::smatch match{};
-    _POSTGRES_CXX_ASSERT(std::regex_match(s, match, expr), "bad time format: '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError,
+                         std::regex_match(s, match, expr),
+                         "bad time format: '" << s << "'");
 
     auto const years    = std::stol(match[1].str());
     auto const months   = std::stol(match[2].str());
@@ -52,11 +54,11 @@ Time::Time(std::string const& s) {
     auto       seconds  = std::stol(match[6].str());
     auto       fraction = match[7].str();
 
-    _POSTGRES_CXX_ASSERT(1 <= months && months <= 12, "bad month in '" << s << "'");
-    _POSTGRES_CXX_ASSERT(1 <= days && days <= 31, "bad month day in '" << s << "'");
-    _POSTGRES_CXX_ASSERT(0 <= hours && hours <= 23, "bad hours in '" << s << "'");
-    _POSTGRES_CXX_ASSERT(0 <= minutes && minutes <= 59, "bad minutes in '" << s << "'");
-    _POSTGRES_CXX_ASSERT(0 <= seconds && seconds <= 59, "bad seconds in '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 1 <= months && months <= 12, "bad month in '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 1 <= days && days <= 31, "bad month day in '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= hours && hours <= 23, "bad hours in '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= minutes && minutes <= 59, "bad minutes in '" << s << "'");
+    _POSTGRES_CXX_ASSERT(LogicError, 0 <= seconds && seconds <= 59, "bad seconds in '" << s << "'");
 
     for (auto y = years; y < 1970; ++y) {
         days -= isLeap(y) ? 366 : 365;

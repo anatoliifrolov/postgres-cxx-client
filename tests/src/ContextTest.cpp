@@ -31,16 +31,16 @@ TEST(ContextTest, Values) {
 }
 
 TEST(ContextTest, Bad) {
-    ASSERT_THROW(Context::Builder{}.idleTimeout(-1s).build(), Error);
-    ASSERT_THROW(Context::Builder{}.maxConcurrency(-1).build(), Error);
-    ASSERT_THROW(Context::Builder{}.maxConcurrency(0).build(), Error);
-    ASSERT_THROW(Context::Builder{}.maxQueueSize(-1).build(), Error);
+    ASSERT_THROW(Context::Builder{}.idleTimeout(-1s).build(), LogicError);
+    ASSERT_THROW(Context::Builder{}.maxConcurrency(-1).build(), LogicError);
+    ASSERT_THROW(Context::Builder{}.maxConcurrency(0).build(), LogicError);
+    ASSERT_THROW(Context::Builder{}.maxQueueSize(-1).build(), LogicError);
 }
 
 TEST(ContextTest, Connect) {
     ASSERT_TRUE(Context{}.connect().isOk());
     ASSERT_TRUE(Context::Builder{}.uri(CONNECT_URI).build().connect().isOk());
-    ASSERT_THROW(Context::Builder{}.uri("BAD").build().connect(), Error);
+    ASSERT_THROW(Context::Builder{}.uri("BAD").build().connect(), RuntimeError);
 }
 
 TEST(ContextTest, Prepare) {
@@ -50,7 +50,7 @@ TEST(ContextTest, Prepare) {
                                   .exec(PreparedCommand{"select1"})
                                   .isOk());
     ASSERT_THROW(Context::Builder{}.prepare(PrepareData{"bad", "BAD"}).build().connect(),
-                 Error);
+                 RuntimeError);
 }
 
 TEST(ContextTest, PrepareMulti) {

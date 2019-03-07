@@ -23,7 +23,7 @@ Status Consumer::consume() {
 }
 
 void Consumer::check() const {
-    _POSTGRES_CXX_ASSERT(isOk(), PQerrorMessage(handle_.get()));
+    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), PQerrorMessage(handle_.get()));
 }
 
 bool Consumer::isOk() const {

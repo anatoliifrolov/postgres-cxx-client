@@ -49,7 +49,8 @@ public:
 
     template <typename T>
     void operator>>(T& out) const {
-        _POSTGRES_CXX_ASSERT(!isNull(),
+        _POSTGRES_CXX_ASSERT(LogicError,
+                             !isNull(),
                              "cannot store NULL value of field '"
                                  << name()
                                  << "' into variable of non-optional type");
@@ -96,7 +97,8 @@ private:
             }
             return false;
         }();
-        _POSTGRES_CXX_ASSERT(is_ok,
+        _POSTGRES_CXX_ASSERT(LogicError,
+                             is_ok,
                              "cannot cast field '"
                                  << name()
                                  << "' of type "

@@ -30,7 +30,7 @@ Transaction::~Transaction() noexcept {
 }
 
 void Transaction::commit() {
-    _POSTGRES_CXX_ASSERT(conn_, "transaction is already completed");
+    _POSTGRES_CXX_ASSERT(LogicError, conn_, "transaction is already completed");
     conn_->exec("COMMIT");
     conn_ = nullptr;
 }

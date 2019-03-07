@@ -14,9 +14,9 @@ struct TestTransaction : Migration, testing::Test {
 TEST_F(TestTransaction, InvalidUse) {
     auto transaction  = conn_->begin();
     auto transaction2 = std::move(transaction);
-    ASSERT_THROW(transaction.commit(), std::exception);
+    ASSERT_THROW(transaction.commit(), LogicError);
     transaction2.commit();
-    ASSERT_THROW(transaction2.commit(), std::exception);
+    ASSERT_THROW(transaction2.commit(), LogicError);
 }
 
 TEST_F(TestTransaction, Commit) {
@@ -49,7 +49,7 @@ TEST_F(TestTransaction, AutoCommit) {
 
 TEST_F(TestTransaction, AutoRollback) {
     ASSERT_THROW(client_.transact("INSERT INTO test(int4) VALUES(1)", "BAD STATEMENT").valid(),
-                 std::exception);
+                 RuntimeError);
     auto res = client_.transact("INSERT INTO test(int4) VALUES(1)",
                                 "BAD STATEMENT",
                                 "INSERT INTO test(int4) VALUES(2), (3)");

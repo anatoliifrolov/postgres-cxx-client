@@ -130,7 +130,7 @@ Transaction Connection::begin() {
 }
 
 void Connection::check() {
-    _POSTGRES_CXX_ASSERT(isOk(), message());
+    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), message());
 }
 
 bool Connection::reset() {
@@ -155,7 +155,7 @@ std::string Connection::escId(std::string const& in) {
 }
 
 std::string Connection::postEsc(char* const escaped) {
-    _POSTGRES_CXX_ASSERT(escaped != nullptr, message());
+    _POSTGRES_CXX_ASSERT(RuntimeError, escaped != nullptr, message());
     std::string res = escaped;
     PQfreemem(escaped);
     return res;

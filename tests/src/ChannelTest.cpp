@@ -96,7 +96,7 @@ TEST(ChannelTest, Overflow) {
     auto const ctx  = Context::Builder{}.maxQueueSize(1).share();
     auto const chan = std::make_shared<Channel>(ctx);
     chan->send(nullptr);
-    ASSERT_THROW(chan->send(nullptr), Error);
+    ASSERT_THROW(chan->send(nullptr), RuntimeError);
 }
 
 }  // namespace postgres::internal
