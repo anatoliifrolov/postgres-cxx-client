@@ -1,9 +1,10 @@
 #pragma once
 
+#include <postgres/Result.h>
+
 namespace postgres {
 
 class Connection;
-class Result;
 
 class Transaction {
 public:
@@ -13,15 +14,17 @@ public:
     Transaction& operator=(Transaction&& other) noexcept;
     ~Transaction() noexcept;
 
-    void commit();
-    Result complete(Result res);
+    Result commit();
+    Transaction valid()&&;
+    Status const& status() const;
 
 private:
     friend class Connection;
 
-    explicit Transaction(Connection& conn);
+    explicit Transaction(Connection& conn, Result status);
 
     Connection* conn_;
+    Result status_;
 };
 
 }  // namespace postgres

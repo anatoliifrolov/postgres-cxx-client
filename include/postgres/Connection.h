@@ -73,8 +73,24 @@ public:
 
     template <typename... Ts>
     std::enable_if_t<(1 < sizeof... (Ts)), Result> transact(Ts&& ... args) {
-        auto tx = begin();
-        return tx.complete(exec(std::forward<Ts>(args)...));
+        auto state = exec("BEGIN");
+        if (!state.isOk()) {
+            return state;
+        }
+
+        Transaction tx{*this, std::move(state)};
+
+        auto res = exec(std::forward<Ts>(args)...);
+        if (!res.isOk()) {
+            return res;
+        }
+
+        state = tx.commit();
+        if (!state.isOk()) {
+            return state;
+        }
+
+        return res;
     }
 
     Result exec(PrepareData const& prep);
@@ -109,6 +125,7 @@ private:
         if (!res.isOk()) {
             return res;
         }
+
         return exec(std::forward<Ts>(args)...);
     };
 

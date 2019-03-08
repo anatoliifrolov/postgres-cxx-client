@@ -126,7 +126,7 @@ Receiver Connection::iter(PreparedCommand const& cmd) {
 }
 
 Transaction Connection::begin() {
-    return Transaction{*this};
+    return Transaction{*this, exec("BEGIN")};
 }
 
 void Connection::check() {
