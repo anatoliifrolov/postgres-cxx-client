@@ -26,10 +26,12 @@ void Receiver::iter() {
 }
 
 Receiver::iterator Receiver::begin() {
+    check();
     return iterator{*this, receive()};
 }
 
 Receiver::iterator Receiver::end() {
+    check();
     return iterator{*this, Result{nullptr}};
 }
 

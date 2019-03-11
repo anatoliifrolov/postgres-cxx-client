@@ -1,128 +1,180 @@
+#include <vector>
 #include <gtest/gtest.h>
-#include <postgres/Command.h>
-#include <postgres/Config.h>
 #include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
+#include "Samples.h"
 
 namespace postgres {
 
-TEST(ReceiverTest, Exec) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(Command{"SELECT 1"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    auto res = rcvr.receive();
+TEST(ReceiverTest, Ok) {
+    auto rec = Connection{}.send("SELECT 1");
+    auto res = rec.receive();
     ASSERT_TRUE(res.isOk());
     ASSERT_FALSE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 }
 
-TEST(ReceiverTest, ExecBad) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(Command{"BAD"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    auto res = rcvr.receive();
+TEST(ReceiverTest, Bad) {
+    auto rec = Connection{}.send("BAD");
+    auto res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
+}
+
+TEST(ReceiverTest, Raw) {
+    auto cons = Connection{}.sendRaw("SELECT 1");
+    auto stat = cons.consume();
+    ASSERT_TRUE(stat.isOk());
+    ASSERT_FALSE(stat.isEmpty());
+    ASSERT_FALSE(stat.isDone());
+
+    stat = cons.consume();
+    ASSERT_FALSE(stat.isOk());
+    ASSERT_TRUE(stat.isEmpty());
+    ASSERT_TRUE(stat.isDone());
+}
+
+TEST(ReceiverTest, RawBad) {
+    auto cons = Connection{}.sendRaw("BAD");
+    auto stat = cons.consume();
+    ASSERT_FALSE(stat.isOk());
+    ASSERT_TRUE(stat.isEmpty());
+    ASSERT_FALSE(stat.isDone());
+
+    stat = cons.consume();
+    ASSERT_FALSE(stat.isOk());
+    ASSERT_TRUE(stat.isEmpty());
+    ASSERT_TRUE(stat.isDone());
 }
 
 TEST(ReceiverTest, Prepare) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(PrepareData{"select1", "SELECT 1"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    auto res = rcvr.receive();
+    Connection conn{};
+    auto       rec = conn.send(PrepareData{"select1", "SELECT 1"});
+    auto       res = rec.receive();
     ASSERT_TRUE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.send(PreparedCommand{"select1"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    res = rcvr.receive();
+    rec = conn.send(PreparedCommand{"select1"});
+    res = rec.receive();
     ASSERT_TRUE(res.isOk());
     ASSERT_FALSE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 }
 
-TEST(ReceiverTest, PrepareAsyncBad) {
-    Connection conn{Config::build()};
-    auto rcvr = conn.send(PrepareData{"select1", "BAD"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    auto res = rcvr.receive();
+TEST(ReceiverTest, PrepareBad) {
+    Connection conn{};
+    auto       rec = conn.send(PrepareData{"select1", "BAD"});
+    auto       res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 
-    rcvr = conn.send(PreparedCommand{"select1"});
-    ASSERT_TRUE(rcvr.isOk());
-
-    res = rcvr.receive();
+    rec = conn.send(PreparedCommand{"select1"});
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_FALSE(res.isDone());
 
-    res = rcvr.receive();
+    res = rec.receive();
     ASSERT_FALSE(res.isOk());
     ASSERT_TRUE(res.isEmpty());
     ASSERT_TRUE(res.isDone());
 }
 
-//TEST_F(ReceiverTest, Busy) {
-//    ASSERT_TRUE(conn_->send(Command{"SELECT 1::INTEGER, 2::INTEGER, 3::INTEGER"}));
-//    while (conn_->isBusy()) {
-//        std::this_thread::sleep_for(std::chrono::milliseconds{1});
-//    }
-//    auto res = conn_->receive();
-//    ASSERT_EQ(1, (int) res[0][0]);
-//    ASSERT_EQ(2, (int) res[0][1]);
-//    ASSERT_EQ(3, (int) res[0][2]);
-//    ASSERT_TRUE(conn_->receive().isDone());
-//}
-//
-//TEST_F(ReceiverTest, RowByRow) {
-//    ASSERT_TRUE(conn_->exec(Command{"INSERT INTO test(int4) VALUES(1), (2), (3)"}));
-//    ASSERT_TRUE(conn_->send(Command{"SELECT int4 FROM test"}, AsyncMode::SINGLE_ROW));
-//    std::set<int> data{};
-//
-//    for (auto res = conn_->receive(); !res.isDone(); res = conn_->receive()) {
-//        if (!res.empty()) {
-//            ASSERT_EQ(1, res.size());
-//            data.insert((int) res[0][0]);
-//        }
-//    }
-//    ASSERT_EQ((std::set<int>{1, 2, 3}), data);
-//}
+TEST(ReceiverTest, Iter) {
+    std::vector<int32_t> vals{};
+    for (auto const& res : Connection{}.iter(SELECT_MULTI_ROW)) {
+        if (res.isEmpty()) {
+            continue;
+        }
+
+        vals.emplace_back();
+        res[0][0] >> vals.back();
+    }
+    ASSERT_EQ(3u, vals.size());
+    ASSERT_EQ(1, vals[0]);
+    ASSERT_EQ(2, vals[1]);
+    ASSERT_EQ(3, vals[2]);
+}
+
+TEST(ReceiverTest, IterEmpty) {
+    auto n = 0;
+    for (auto const& res : Connection{}.iter("SELECT 1 WHERE FALSE")) {
+        if (res.isEmpty()) {
+            continue;
+        }
+
+        ++n;
+    }
+    ASSERT_EQ(0, n);
+}
+
+TEST(ReceiverTest, IterBad) {
+    auto rec = Connection{"BAD"}.iter("SELECT 1");
+    ASSERT_THROW(rec.begin(), RuntimeError);
+    ASSERT_THROW(rec.end(), RuntimeError);
+}
+
+TEST(ReceiverTest, Busy) {
+    auto n = 0;
+    auto rec = Connection{}.send("SELECT 1");
+    while (rec.isBusy()) {
+        ++n;
+    }
+    ASSERT_LT(0, n);
+}
+
+TEST(ReceiverTest, Cleanup) {
+    Connection conn{};
+    conn.send("SELECT 1::INT");
+    auto rec = conn.send("SELECT 2::INT");
+    ASSERT_EQ(2, rec.receive()[0][0].as<int32_t>());
+    ASSERT_TRUE(rec.receive().isDone());
+}
+
+TEST(ReceiverTest, Mix) {
+    Connection conn{};
+    auto       rec1 = conn.send("SELECT 1::INT");
+    auto       rec2 = conn.send("SELECT 2::INT");
+    ASSERT_EQ(1, rec1.receive()[0][0].as<int32_t>());
+    ASSERT_TRUE(rec1.receive().isDone());
+    ASSERT_TRUE(rec2.receive().isDone());
+}
+
+TEST(ReceiverTest, Check) {
+    Connection conn{"BAD"};
+    ASSERT_THROW(conn.send("SELECT 1").check(), RuntimeError);
+    ASSERT_THROW(conn.send("SELECT 1").valid(), RuntimeError);
+}
 
 }  // namespace postgres

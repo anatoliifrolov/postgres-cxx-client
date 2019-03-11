@@ -2,12 +2,9 @@
 #include <gtest/gtest.h>
 #include <postgres/Connection.h>
 #include <postgres/Result.h>
+#include "Samples.h"
 
 namespace postgres {
-
-inline constexpr auto MULTI_ROW_QUERY = "SELECT 1::INT"
-                                        " UNION ALL SELECT 2::INT"
-                                        " UNION ALL SELECT 3::INT";
 
 TEST(ResultTest, Ok) {
     auto const res = Connection{}.exec("SELECT 1");
@@ -60,7 +57,7 @@ TEST(ResultTest, Valid) {
 TEST(ResultTest, Range) {
     std::vector<int32_t> vals{};
 
-    for (auto const row : Connection{}.exec(MULTI_ROW_QUERY).valid()) {
+    for (auto const row : Connection{}.exec(SELECT_MULTI_ROW).valid()) {
         vals.push_back(row[0].as<int32_t>());
     }
     ASSERT_EQ(1, vals[0]);
@@ -75,7 +72,7 @@ TEST(ResultTest, RangeEmpty) {
 }
 
 TEST(ResultTest, Iter) {
-    auto const           res = Connection{}.exec(MULTI_ROW_QUERY).valid();
+    auto const           res = Connection{}.exec(SELECT_MULTI_ROW).valid();
     std::vector<int32_t> vals{};
 
     for (auto it = res.begin(); it != res.end(); it++) {
@@ -87,7 +84,7 @@ TEST(ResultTest, Iter) {
 }
 
 TEST(ResultTest, Index) {
-    auto const res = Connection{}.exec(MULTI_ROW_QUERY).valid();
+    auto const res = Connection{}.exec(SELECT_MULTI_ROW).valid();
     ASSERT_EQ(1, res[0][0].as<int32_t>());
     ASSERT_EQ(2, res[1][0].as<int32_t>());
     ASSERT_EQ(3, res[2][0].as<int32_t>());

@@ -8,6 +8,10 @@ namespace postgres {
 inline constexpr auto CONNECT_STR = "user=cxx_client password=cxx_client dbname=cxx_client";
 inline constexpr auto CONNECT_URI = "postgresql://cxx_client:cxx_client@/cxx_client";
 
+inline constexpr auto SELECT_MULTI_ROW = "SELECT 1::INT"
+                                         " UNION ALL SELECT 2::INT"
+                                         " UNION ALL SELECT 3::INT";
+
 inline constexpr time_t TIME_SAMPLE          = 1503666215;
 inline constexpr time_t TIME_SAMPLE_PG       = (TIME_SAMPLE - 946684800) * 1000000;
 inline constexpr time_t TIME_SAMPLE_PG_MICRO = TIME_SAMPLE_PG + 987654;
