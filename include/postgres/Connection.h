@@ -42,6 +42,11 @@ public:
     }
 
     template <typename T>
+    Status drop() {
+        return exec(Statement<T>::drop());
+    }
+
+    template <typename T>
     Status insert(T const& val) {
         return exec(Command{Statement<T>::insert(), val});
     }

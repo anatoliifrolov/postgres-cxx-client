@@ -9,17 +9,18 @@ namespace postgres {
 template <typename T>
 struct Statement {
     static std::string const& create() {
-        static auto const cache = "CREATE TABLE "
-                                  + std::string{table()}
-                                  + " ("
-                                  + typedFields()
-                                  + ")";
+        static auto const cache = "CREATE TABLE " + table() + " (" + typedFields() + ")";
+        return cache;
+    }
+
+    static std::string const& drop() {
+        static auto const cache = "DROP TABLE " + table();
         return cache;
     }
 
     static std::string const& insert() {
         static auto const cache = "INSERT INTO "
-                                  + std::string{table()}
+                                  + table()
                                   + " ("
                                   + fields()
                                   + ") VALUES ("
@@ -29,7 +30,7 @@ struct Statement {
     }
 
     static std::string const& update() {
-        static auto const cache = "UPDATE " + std::string{table()} + " SET " + assignments();
+        static auto const cache = "UPDATE " + table() + " SET " + assignments();
         return cache;
     }
 
@@ -56,7 +57,7 @@ struct Statement {
         return collect(internal::AssignmentsCollector{offset});
     }
 
-    static char const* table() {
+    static std::string table() {
         return T::_POSTGRES_CXX_TABLE_NAME;
     }
 

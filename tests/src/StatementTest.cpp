@@ -47,6 +47,10 @@ TEST(StatementTest, Create) {
     ASSERT_EQ(query, Statement<StatementTestTable2>::create());
 }
 
+TEST(StatementTest, Drop) {
+    ASSERT_EQ("DROP TABLE stmt_test", Statement<StatementTestTable>::drop());
+}
+
 TEST(StatementTest, Insert) {
     auto const query = "INSERT INTO stmt_test (a,b,c) VALUES ($1,$2,$3)";
     ASSERT_EQ(query, Statement<StatementTestTable>::insert());

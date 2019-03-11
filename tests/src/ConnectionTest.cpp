@@ -1,3 +1,4 @@
+#include <vector>
 #include <gtest/gtest.h>
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
@@ -5,9 +6,28 @@
 #include <postgres/PrepareData.h>
 #include <postgres/Receiver.h>
 #include <postgres/Result.h>
+#include <postgres/Visitable.h>
 #include "Samples.h"
 
 namespace postgres {
+
+struct ConnectionTestTable {
+    int32_t n = 0;
+
+    POSTGRES_CXX_TABLE("conn_test", n);
+};
+
+struct ConnectionTestF : testing::Test {
+    ConnectionTestF() {
+        conn_.create<ConnectionTestTable>();
+    }
+
+    ~ConnectionTestF() noexcept override {
+        conn_.drop<ConnectionTestTable>();
+    }
+
+    Connection conn_;
+};
 
 TEST(ConnectionTest, Ping) {
     ASSERT_EQ(PQPING_OK, Connection::ping());
@@ -128,6 +148,58 @@ TEST(ConnectionTest, PrepareRowByRow) {
     ASSERT_TRUE(conn.iter(PreparedCommand{"select1"}).receive().isOk());
     ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
     ASSERT_FALSE(conn.iter(PreparedCommand{"bad"}).receive().isOk());
+}
+
+TEST_F(ConnectionTestF, Insert) {
+    ConnectionTestTable in{};
+    in.n = 1;
+    ASSERT_TRUE(conn_.insert(in).isOk());
+
+    std::vector<ConnectionTestTable> out{};
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_EQ(1u, out.size());
+    ASSERT_EQ(1, out[0].n);
+}
+
+TEST_F(ConnectionTestF, Update) {
+    ConnectionTestTable in{};
+    in.n = 1;
+    ASSERT_TRUE(conn_.insert(in).isOk());
+
+    in.n = 2;
+    ASSERT_TRUE(conn_.update(in).isOk());
+
+    std::vector<ConnectionTestTable> out{};
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_EQ(1u, out.size());
+    ASSERT_EQ(2, out[0].n);
+}
+
+TEST_F(ConnectionTestF, MultiInsert) {
+    std::vector<ConnectionTestTable> in(3);
+    in[0].n = 1;
+    in[1].n = 2;
+    in[2].n = 3;
+    ASSERT_TRUE(conn_.insert(in.begin(), in.end()).isOk());
+
+    std::vector<ConnectionTestTable> out{};
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_EQ(3u, out.size());
+    ASSERT_EQ(6, out[0].n + out[1].n + out[2].n);
+}
+
+TEST_F(ConnectionTestF, Select) {
+    std::vector<ConnectionTestTable> out{};
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_TRUE(out.empty());
+
+    ConnectionTestTable in{};
+    ASSERT_TRUE(conn_.insert(in).isOk());
+
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_EQ(1u, out.size());
+    ASSERT_TRUE(conn_.select(out).isOk());
+    ASSERT_EQ(2u, out.size());
 }
 
 TEST(ConnectionTest, Esc) {
