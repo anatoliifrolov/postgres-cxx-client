@@ -12,7 +12,7 @@ struct StatementTestTable {
     int b = 0;
     int c = 0;
 
-    POSTGRES_CXX_TABLE("test", a, b, c)
+    POSTGRES_CXX_TABLE("stmt_test", a, b, c)
 };
 
 struct StatementTestTable2 {
@@ -28,11 +28,11 @@ struct StatementTestTable2 {
     std::string                           s;
     std::chrono::system_clock::time_point t;
 
-    POSTGRES_CXX_TABLE("test", b, i2, i4, i8, u2, u4, u8, f4, f8, s, t)
+    POSTGRES_CXX_TABLE("stmt_test", b, i2, i4, i8, u2, u4, u8, f4, f8, s, t)
 };
 
 TEST(StatementTest, Create) {
-    auto const query = "CREATE TABLE test ("
+    auto const query = "CREATE TABLE stmt_test ("
                        "b BOOL,"
                        "i2 SMALLINT,"
                        "i4 INT,"
@@ -48,16 +48,16 @@ TEST(StatementTest, Create) {
 }
 
 TEST(StatementTest, Insert) {
-    auto const query = "INSERT INTO test (a,b,c) VALUES ($1,$2,$3)";
+    auto const query = "INSERT INTO stmt_test (a,b,c) VALUES ($1,$2,$3)";
     ASSERT_EQ(query, Statement<StatementTestTable>::insert());
 }
 
 TEST(StatementTest, Select) {
-    ASSERT_EQ("SELECT a,b,c FROM test", Statement<StatementTestTable>::select());
+    ASSERT_EQ("SELECT a,b,c FROM stmt_test", Statement<StatementTestTable>::select());
 }
 
 TEST(StatementTest, Update) {
-    ASSERT_EQ("UPDATE test SET a=$1,b=$2,c=$3", Statement<StatementTestTable>::update());
+    ASSERT_EQ("UPDATE stmt_test SET a=$1,b=$2,c=$3", Statement<StatementTestTable>::update());
 }
 
 TEST(StatementTest, Parts) {
@@ -69,7 +69,7 @@ TEST(StatementTest, Parts) {
 }
 
 TEST(StatementTest, Range) {
-    auto const query = "INSERT INTO test (a,b,c) VALUES ($1,$2,$3),($4,$5,$6)";
+    auto const query = "INSERT INTO stmt_test (a,b,c) VALUES ($1,$2,$3),($4,$5,$6)";
 
     std::vector<StatementTestTable> const v(2);
     ASSERT_EQ(query, RangeStatement::insert(v.begin(), v.end()));

@@ -7,6 +7,14 @@
 
 namespace postgres {
 
+struct CommandTestTable {
+    std::string s;
+    int32_t     n = 0;
+    double      f = 0.0;
+
+    POSTGRES_CXX_TABLE("cmd_test", s, n, f);
+};
+
 TEST(CommandTest, Stmt) {
     auto const    stmt = "STMT";
     Command const cmd{stmt};
@@ -265,17 +273,9 @@ TEST(CommandTest, Range) {
     ASSERT_EQ(1, cmd.formats()[2]);
 }
 
-struct CommandTestTable {
-    std::string s;
-    int32_t     n = 0;
-    double      f = 0.0;
-
-    POSTGRES_CXX_TABLE("test", s, n, f);
-};
-
 TEST(CommandTest, Visit) {
-    CommandTestTable const  tbl{"TEXT", 3, 4.56};
-    Command const cmd{"STMT", tbl};
+    CommandTestTable const tbl{"TEXT", 3, 4.56};
+    Command const          cmd{"STMT", tbl};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(3, cmd.count());
 

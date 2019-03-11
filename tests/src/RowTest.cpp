@@ -10,7 +10,7 @@ struct RowTestTable {
     int32_t x = 0;
     int32_t y = 0;
 
-    POSTGRES_CXX_TABLE("test", x, y);
+    POSTGRES_CXX_TABLE("row_test", x, y);
 };
 
 TEST(RowTest, Read) {
