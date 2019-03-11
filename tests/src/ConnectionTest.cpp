@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <postgres/Command.h>
 #include <postgres/Config.h>
 #include <postgres/Connection.h>
 #include <postgres/PreparedCommand.h>
@@ -29,6 +28,7 @@ TEST(ConnectionTest, Connect) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
+    ASSERT_NO_THROW(conn.check());
 }
 
 TEST(ConnectionTest, ConnectBad) {
@@ -36,6 +36,7 @@ TEST(ConnectionTest, ConnectBad) {
     ASSERT_FALSE(conn.isOk());
     ASSERT_FALSE(conn.message().empty());
     ASSERT_FALSE(conn.reset());
+    ASSERT_THROW(conn.check(), RuntimeError);
 }
 
 TEST(ConnectionTest, ConnectStr) {
@@ -43,6 +44,7 @@ TEST(ConnectionTest, ConnectStr) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
+    ASSERT_NO_THROW(conn.check());
 }
 
 TEST(ConnectionTest, ConnectStrBad) {
@@ -50,6 +52,7 @@ TEST(ConnectionTest, ConnectStrBad) {
     ASSERT_FALSE(conn.isOk());
     ASSERT_FALSE(conn.message().empty());
     ASSERT_FALSE(conn.reset());
+    ASSERT_THROW(conn.check(), RuntimeError);
 }
 
 TEST(ConnectionTest, ConnectUri) {
@@ -57,6 +60,7 @@ TEST(ConnectionTest, ConnectUri) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
+    ASSERT_NO_THROW(conn.check());
 }
 
 TEST(ConnectionTest, ConnectUriBad) {
@@ -64,6 +68,7 @@ TEST(ConnectionTest, ConnectUriBad) {
     ASSERT_FALSE(conn.isOk());
     ASSERT_FALSE(conn.message().empty());
     ASSERT_FALSE(conn.reset());
+    ASSERT_THROW(conn.check(), RuntimeError);
 }
 
 TEST(ConnectionTest, Exec) {
