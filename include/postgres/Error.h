@@ -46,7 +46,7 @@ public:
 #define _POSTGRES_CXX_FAIL(T, msg) \
     { \
         std::stringstream stream{}; \
-        stream << "postgres client error: " << msg; \
+        stream << "PostgreSQL client error: " << msg; \
         throw postgres::T{stream.str()}; \
     }
 

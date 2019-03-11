@@ -5,7 +5,7 @@
 
 namespace postgres {
 
-Consumer::Consumer(std::shared_ptr<PGconn> handle, int is_ok)
+Consumer::Consumer(std::shared_ptr<PGconn> handle, int const is_ok)
     : handle_{std::move(handle)}, is_ok_{is_ok == 1} {
 }
 
@@ -23,7 +23,9 @@ Status Consumer::consume() {
 }
 
 void Consumer::check() const {
-    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), PQerrorMessage(handle_.get()));
+    _POSTGRES_CXX_ASSERT(RuntimeError,
+                         isOk(),
+                         "fail to send statement: " << PQerrorMessage(handle_.get()));
 }
 
 bool Consumer::isOk() const {
