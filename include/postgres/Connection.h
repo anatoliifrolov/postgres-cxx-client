@@ -73,21 +73,15 @@ public:
 
     template <typename... Ts>
     std::enable_if_t<(1 < sizeof... (Ts)), Result> transact(Ts&& ... args) {
-        auto state = exec("BEGIN");
-        if (!state.isOk()) {
-            return state;
-        }
-
-        Transaction tx{*this, std::move(state)};
-
-        auto res = exec(std::forward<Ts>(args)...);
+        auto res = exec("BEGIN", std::forward<Ts>(args)...);
         if (!res.isOk()) {
+            exec("ROLLBACK");
             return res;
         }
 
-        state = tx.commit();
-        if (!state.isOk()) {
-            return state;
+        auto status = exec("COMMIT");
+        if (!status.isOk()) {
+            return status;
         }
 
         return res;
@@ -129,7 +123,8 @@ private:
         return exec(std::forward<Ts>(args)...);
     };
 
-    std::string postEsc(char* escaped);
+    template <typename F>
+    std::string doEsc(std::string const& in, F f);
 
     std::shared_ptr<PGconn> handle_;
 };

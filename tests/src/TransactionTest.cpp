@@ -46,6 +46,7 @@ TEST(TransactionTest, Rollback) {
 
 TEST(TransactionTest, Check) {
     Connection conn{"BAD"};
+    ASSERT_THROW(conn.begin().valid(), Error);
     ASSERT_THROW(conn.begin().status().check(), Error);
 }
 

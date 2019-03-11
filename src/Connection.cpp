@@ -147,15 +147,17 @@ std::string Connection::message() {
 }
 
 std::string Connection::esc(std::string const& in) {
-    return postEsc(PQescapeLiteral(native(), in.data(), in.size()));
+    return doEsc(in, PQescapeLiteral);
 }
 
 std::string Connection::escId(std::string const& in) {
-    return postEsc(PQescapeIdentifier(native(), in.data(), in.size()));
+    return doEsc(in, PQescapeIdentifier);
 }
 
-std::string Connection::postEsc(char* const escaped) {
-    _POSTGRES_CXX_ASSERT(RuntimeError, escaped != nullptr, "fail to escape: " << message());
+template <typename F>
+std::string Connection::doEsc(std::string const& in, F const f) {
+    auto const escaped = f(native(), in.data(), in.size());
+    _POSTGRES_CXX_ASSERT(RuntimeError, (escaped != nullptr), "fail to escape: " << message());
     std::string res = escaped;
     PQfreemem(escaped);
     return res;
