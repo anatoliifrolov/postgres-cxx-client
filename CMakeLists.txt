@@ -12,7 +12,6 @@ if (POSTGRES_CXX_BUILD_TESTS)
     # todo: find some better way
     add_subdirectory(tests)
     add_subdirectory(deps/googletest)
-    target_include_directories(postgres-cxx-client-test PRIVATE include/private)
     target_include_directories(postgres-cxx-client-test PRIVATE deps/googletest/googletest/include)
     target_include_directories(postgres-cxx-client-test PRIVATE deps/googletest/googlemock/include)
 endif ()
@@ -20,9 +19,7 @@ endif ()
 # todo: get rid of GLOB_RECURSE?
 file(GLOB_RECURSE SRC src/*)
 add_library(postgres-cxx-client ${SRC})
-
-target_include_directories(postgres-cxx-client PUBLIC include/public)
-target_include_directories(postgres-cxx-client PRIVATE include/private)
+target_include_directories(postgres-cxx-client PUBLIC include)
 
 # Resolve libpq dependency.
 find_package(PostgreSQL REQUIRED)
