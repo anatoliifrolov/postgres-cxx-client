@@ -20,13 +20,18 @@ add_executable(${PROJECT_NAME}
         src/TableTest.cpp
         src/TimeTest.cpp
         src/TransactionTest.cpp
-        src/WorkerTest.cpp)
+        src/WorkerTest.cpp
+        )
 
 target_include_directories(${PROJECT_NAME}
-        PRIVATE ../deps/googletest/googletest/include
-        PRIVATE ../deps/googletest/googlemock/include)
+        PRIVATE
+        ../deps/googletest/googletest/include
+        ../deps/googletest/googlemock/include
+        )
 
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE postgres-cxx-client
-        PRIVATE gtest_main
-        PRIVATE gmock_main)
+        PRIVATE
+        postgres-cxx-client
+        gtest_main
+        gmock_main
+        )

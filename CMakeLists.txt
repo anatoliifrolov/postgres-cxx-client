@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.8)
 project(postgres-cxx-client VERSION 0.1.0)
-
-find_package(PostgreSQL REQUIRED)
 
 add_library(${PROJECT_NAME}
         src/Channel.cpp
@@ -27,14 +25,26 @@ add_library(${PROJECT_NAME}
         src/Transaction.cpp
         src/Visitable.cpp
         src/Visitors.cpp
-        src/Worker.cpp)
+        src/Worker.cpp
+        )
+
+target_compile_features(${PROJECT_NAME}
+        PUBLIC
+        cxx_std_17
+        )
+
+find_package(PostgreSQL REQUIRED)
 
 target_include_directories(${PROJECT_NAME}
-        PUBLIC include
-        PUBLIC ${PostgreSQL_INCLUDE_DIRS})
+        PUBLIC
+        include
+        ${PostgreSQL_INCLUDE_DIRS}
+        )
 
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC ${PostgreSQL_LIBRARIES})
+        PUBLIC
+        ${PostgreSQL_LIBRARIES}
+        )
 
 option(POSTGRES_CXX_BUILD_EXAMPLES "Build examples" OFF)
 option(POSTGRES_CXX_BUILD_TESTS "Build tests" OFF)
