@@ -166,9 +166,9 @@ TEST(ReceiverTest, Mix) {
     Connection conn{};
     auto       rec1 = conn.send("SELECT 1::INT");
     auto       rec2 = conn.send("SELECT 2::INT");
+    ASSERT_FALSE(rec2.isOk());
     ASSERT_EQ(1, rec1.receive()[0][0].as<int32_t>());
     ASSERT_TRUE(rec1.receive().isDone());
-    ASSERT_TRUE(rec2.receive().isDone());
 }
 
 TEST(ReceiverTest, Check) {

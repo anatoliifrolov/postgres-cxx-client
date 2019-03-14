@@ -29,15 +29,10 @@ add_library(${PROJECT_NAME}
         src/Worker.cpp
         )
 
-add_library(${PROJECT_NAME}::${PROJECT_NAME}
-        ALIAS ${PROJECT_NAME}
-        )
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 # Requirements.
-target_compile_features(${PROJECT_NAME}
-        PUBLIC
-        cxx_std_17
-        )
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 # Dependencies.
 find_package(PostgreSQL REQUIRED)
@@ -78,7 +73,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        "${CMAKE_CURRENT_SOURCE_DIR}/.cmake/${PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake"
         DESTINATION lib/cmake/${PROJECT_NAME}
         )
 
