@@ -8,13 +8,14 @@ compiler:
 
 #services:
 #  - docker
+#  - postgresql
 
 install:
   - sudo apt update
   - sudo apt install libpq-dev postgresql-server-dev-all
 
 script:
-  ->
+  - >
     cmake
     -DCMAKE_BUILD_TYPE=Release
     -DPOSTGRES_CXX_BUILD_TESTS=ON
