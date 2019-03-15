@@ -1,24 +1,10 @@
-dist: xenial
-language: cpp
 sudo: required
 
-compiler:
-  - clang
-#  - gcc
-
-#services:
-#  - docker
-#  - postgresql
+services:
+  - docker
 
 install:
-  - sudo apt update
-  - sudo apt install libpq-dev postgresql-server-dev-all
+  - ./docker/copycontext.sh
 
 script:
-  - >
-    cmake
-    -DCMAKE_BUILD_TYPE=Release
-    -DPOSTGRES_CXX_BUILD_TESTS=ON
-    -B./build/${CXX}/release/
-    -H.
-  - cmake --build ./build/${CXX}/release/ -- -j8
+  - echo hey!
