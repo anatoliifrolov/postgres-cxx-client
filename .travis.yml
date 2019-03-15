@@ -10,7 +10,8 @@ compiler:
 #  - docker
 
 install:
-  - apt install libpq-dev postgresql-server-dev-all
+  - sudo apt update
+  - sudo apt install libpq-dev postgresql-server-dev-all
 
 script:
   ->
