@@ -1,0 +1,22 @@
+dist: xenial
+language: cpp
+sudo: required
+
+compiler:
+  - clang
+#  - gcc
+
+#services:
+#  - docker
+
+install:
+  - apt install libpq-dev postgresql-server-dev-all
+
+script:
+  ->
+    cmake
+    -DCMAKE_BUILD_TYPE=Release
+    -DPOSTGRES_CXX_BUILD_TESTS=ON
+    -B./build/${CXX}/release
+    -H.
+  - cmake --build build/ -- -j8
