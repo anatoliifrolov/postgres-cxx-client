@@ -3,8 +3,8 @@ language: minimal
 sudo: required
 
 env:
-  - COMPILER=c++
-  - COMPILER=clang++
+  - CC=cc    CXX=c++
+  - CC=clang CXX=clang++
 
 services:
   - docker
@@ -15,4 +15,4 @@ install:
   - docker-compose up -d postgres
 
 script:
-  - docker-compose run -e CXX=${COMPILER} test --run
+  - docker-compose run -e CC=${CC} -e CXX=${CXX} test --run
