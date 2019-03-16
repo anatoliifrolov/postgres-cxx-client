@@ -8,10 +8,9 @@ services:
       POSTGRES_DB: cxx_client
     image: postgres
   test:
-    build: .
-    command: ["--run"]
     environment:
       PGHOST: postgres
       PGUSER: cxx_client
       PGPASSWORD: cxx_client
       PGDATABASE: cxx_client
+    image: anatoliifrolov/pgcxxtest

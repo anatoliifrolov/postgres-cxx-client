@@ -2,17 +2,14 @@
 
 set -e
 
-for COMPILER in clang++ c++
-do
-    BUILDDIR=./build/${COMPILER}/
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_COMPILER=${COMPILER} \
-        -DPOSTGRES_CXX_BUILD_TESTS=ON \
-        -B${BUILDDIR} \
-        -H.
-    cmake --build ${BUILDDIR} -- -j8
-done
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DPOSTGRES_CXX_BUILD_TESTS=ON \
+    -B./build/ \
+    -H.
+
+cmake --build ./build/ -- -j2
 
 if [[ $1 = "--run" ]]
 then
