@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: cxx_client
+      POSTGRES_PASSWORD: cxx_client
+      POSTGRES_DB: cxx_client
+    image: postgres
+  test:
+    build: .
+    command: ["--run"]
+    environment:
+      PGHOST: postgres
+      PGUSER: cxx_client
+      PGPASSWORD: cxx_client
+      PGDATABASE: cxx_client

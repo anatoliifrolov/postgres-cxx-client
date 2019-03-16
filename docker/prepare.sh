@@ -3,9 +3,9 @@
 cp -r \
     cmake \
     deps \
+    docker/entrypoint.sh \
     include \
     src \
     tests \
     CMakeLists.txt \
-    docker/entrypoint.sh \
     docker/files

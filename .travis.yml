@@ -4,7 +4,9 @@ services:
   - docker
 
 install:
-  - ./docker/copycontext.sh
+  - ./docker/prepare.sh
+  - docker-compose up -d postgres
 
 script:
-  - echo hey!
+  - docker-compose up --build test
+  - docker-compose down
