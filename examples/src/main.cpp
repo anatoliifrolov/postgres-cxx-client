@@ -19,43 +19,7 @@ using postgres::PreparedCommand;
 using postgres::PrepareData;
 using postgres::Time;
 
-// Starting example
-struct MyTable {
-    int                                   id;
-    std::string                           info;
-    std::chrono::system_clock::time_point create_time;
-
-    POSTGRES_CXX_TABLE("my_table", id, info, create_time)
-};
-
-void example() {
-    // Connect to the database.
-    Connection conn{};
-
-    // Create my_table.
-    conn.create<MyTable>().check();
-
-    auto now = std::chrono::system_clock::now();
-
-    // Populate the table with data.
-    std::vector<MyTable> data{{1, "foo", now},
-                              {2, "bar", now},
-                              {3, "baz", now}};
-    conn.insert(data.begin(), data.end()).check();
-
-    // Retrieve some data from the table.
-    auto query = "SELECT info, create_time FROM my_table WHERE $1 < id";
-
-    for (auto row : conn.exec(Command{query, 1}).valid()) {
-        std::cout
-            << row["create_time"].as<Time>().toString()
-            << " "
-            << row["info"].as<std::string>()
-            << std::endl;
-    }
-}
-// Starting example
-
+/*
 Config makeConfig() {
     return Config::Builder{}.dbname("PGDATABASE")   // The same as the user by default.
                             .user("PGUSER")   // The same as user running app by default.
@@ -387,35 +351,12 @@ void selectVisitable(Connection& client) {
     std::vector<Example> data{};
     client.select(data);
 }
+*/
+
+void getStarted();
 
 int main() {
-    // postgres::Connection is relatively low level.
-    // Better use postgres::Client instead.
     Connection conn{};
-
-    makeTestTable(conn);
-    basicUsage(conn);
-    parametrizedInsert(conn);
-    insertTimestamps(conn);
-    nonCopyingInsert(conn);
-    insertNULLs(conn, nullptr);
-    insertSpecialType(conn);
-    insertVisitable(conn);
-    executePrepared(conn);
-    executeAsync(conn);
-    executeAsyncNonBlocking(conn);
-    executeAsyncRowByRow(conn);
-    cancelAsync(conn);
-    readResultIntoVariables(conn);
-    passResultToFunction(conn);
-
-    Connection client{};
-    prepareClient(client);
-    executeTransaction(client);
-    executeTransactionBlock(client);
-    insertVisitable(client);
-    selectVisitable(client);
-
-    std::cout << "Passed!" << std::endl;
-    return 0;
+    conn.exec("DROP TABLE IF EXISTS my_table").check();
+    getStarted();
 }

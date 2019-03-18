@@ -1,9 +1,13 @@
-project(postgres-cxx-client-example)
+add_executable(${PROJECT_NAME}Example
+        src/001_GetStarted.cpp
+        src/main.cpp
+        )
 
-file(GLOB_RECURSE SRC src/*)
-add_executable(postgres-cxx-client-example ${SRC})
-target_link_libraries(
-        postgres-cxx-client-example
-        postgres-cxx-client
-        pq
-)
+target_link_libraries(${PROJECT_NAME}Example
+        PRIVATE
+        ${PROJECT_NAME}
+        )
+
+add_test(NAME ${PROJECT_NAME}Example
+        COMMAND ${PROJECT_NAME}Example
+        )
