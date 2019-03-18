@@ -1,0 +1,7 @@
+[package]
+name = "docgen"
+version = "0.1.0"
+authors = ["afrolov <frolov.public@yandex.ru>"]
+edition = "2018"
+
+[dependencies]
