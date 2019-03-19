@@ -356,9 +356,24 @@ void selectVisitable(Connection& client) {
 void getStarted();
 void getStartedPool();
 
+void configDefault();
+void configConnectStr();
+void configUrl();
+void configBuilder();
+void configBuilderExtra();
+void configBuilderManual();
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
+
     getStarted();
     getStartedPool();
+
+    configDefault();
+    configConnectStr();
+    configUrl();
+    configBuilder();
+    configBuilderExtra();
+    configBuilderManual();
 }
