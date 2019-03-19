@@ -367,6 +367,8 @@ void connect();
 void connectCheck();
 
 void exec(Connection& conn);
+void execArgs(Connection& conn);
+void execOid(Connection& conn);
 
 int main() {
     Connection conn{};
@@ -386,4 +388,6 @@ int main() {
     connectCheck();
 
     exec(conn);
+    execArgs(conn);
+    execOid(conn);
 }
