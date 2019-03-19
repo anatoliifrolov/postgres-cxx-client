@@ -3,6 +3,8 @@ add_executable(${PROJECT_NAME}Example
         src/102_GetStartedPool.cpp
         src/103_Headers.cpp
         src/104_Config.cpp
+        src/105_Errors.cpp
+        src/106_Exec.cpp
         src/main.cpp
         )
 

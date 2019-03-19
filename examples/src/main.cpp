@@ -363,6 +363,11 @@ void configBuilder();
 void configBuilderExtra();
 void configBuilderManual();
 
+void connect();
+void connectCheck();
+
+void exec(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -376,4 +381,9 @@ int main() {
     configBuilder();
     configBuilderExtra();
     configBuilderManual();
+
+    connect();
+    connectCheck();
+
+    exec(conn);
 }
