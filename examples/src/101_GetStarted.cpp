@@ -1,8 +1,9 @@
-/// ### Getting started coding
+/// ## Usage
+/// ### Get started with connection
 ///
-/// The following example gives you basic understanding of how to use the library.
+/// The following example gives you a basic idea of how to use the library.
 /// Each concept is explained in detail in corresponding section below.
-/// ```
+/// ```C++
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -22,7 +23,7 @@ struct MyTable {
 };
 
 void getStarted() {
-    // Connect to the database.
+    // Connect to a database.
     Connection conn{};
 
     // Create my_table.

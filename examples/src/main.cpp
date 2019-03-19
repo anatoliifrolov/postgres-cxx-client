@@ -354,9 +354,11 @@ void selectVisitable(Connection& client) {
 */
 
 void getStarted();
+void getStartedPool();
 
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
     getStarted();
+    getStartedPool();
 }
