@@ -368,7 +368,12 @@ void connectCheck();
 
 void exec(Connection& conn);
 void execArgs(Connection& conn);
-void execOid(Connection& conn);
+void oidArgs(Connection& conn);
+void nullArgs(Connection& conn);
+void largeArgs(Connection& conn);
+void argsRange(Connection& conn);
+void dynaArgs(Connection& conn);
+void timeArgs(Connection& conn);
 
 int main() {
     Connection conn{};
@@ -389,5 +394,10 @@ int main() {
 
     exec(conn);
     execArgs(conn);
-    execOid(conn);
+    oidArgs(conn);
+    nullArgs(conn);
+    largeArgs(conn);
+    argsRange(conn);
+    dynaArgs(conn);
+    timeArgs(conn);
 }
