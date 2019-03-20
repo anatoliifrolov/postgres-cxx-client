@@ -126,8 +126,7 @@ private:
     void setMeta(Oid id, int len, int fmt);
     void storeData(void const* arg, size_t len);
 
-    void setStatement(std::string&& stmt);
-    void setStatement(std::string const& stmt);
+    void setStatement(std::string stmt);
     void setStatement(std::string_view stmt);
     void setStatement(char const* stmt);
 

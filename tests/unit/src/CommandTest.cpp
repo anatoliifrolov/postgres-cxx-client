@@ -28,14 +28,10 @@ TEST(CommandTest, StmtView) {
     ASSERT_EQ(stmt.data(), cmd.statement());
 }
 
-TEST(CommandTest, StmtRef) {
+TEST(CommandTest, StmtOwn) {
     std::string const stmt = "STMT";
     Command const     cmd{stmt};
-    ASSERT_EQ(stmt.data(), cmd.statement());
-}
-
-TEST(CommandTest, StmtOwn) {
-    Command const cmd{std::string{"STMT"}};
+    ASSERT_NE(stmt.data(), cmd.statement());
     ASSERT_STREQ("STMT", cmd.statement());
 }
 

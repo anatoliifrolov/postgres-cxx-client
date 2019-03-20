@@ -63,6 +63,7 @@ void nullArgs(Connection& conn) {
 /// Sometimes you might be willing to avoid copying, e.g. for large piece of text.
 /// This can be achieved by passing pointer to underlying C-style string
 /// or by using ```std::string_view``` type.
+/// The same is true for statements as well.
 /// The both way are shown below:
 /// ```
 void largeArgs(Connection& conn) {

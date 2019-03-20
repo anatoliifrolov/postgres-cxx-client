@@ -97,13 +97,9 @@ void Command::storeData(void const* const arg, size_t const len) {
     values_.push_back(storage);
 }
 
-void Command::setStatement(std::string&& stmt) {
+void Command::setStatement(std::string stmt) {
     stmt_buf_ = std::move(stmt);
     stmt_ = stmt_buf_.data();
-}
-
-void Command::setStatement(std::string const& stmt) {
-    stmt_ = stmt.data();
 }
 
 void Command::setStatement(std::string_view const stmt) {
