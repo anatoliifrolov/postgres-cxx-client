@@ -93,6 +93,14 @@ TEST(ConnectionTest, Prepare) {
     ASSERT_FALSE(conn.exec(PreparedCommand{"bad"}).isOk());
 }
 
+TEST(ConnectionTest, PrepareArgs) {
+    Connection conn{};
+    ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT $1", {INT4OID}}).isOk());
+    ASSERT_TRUE(conn.exec(PreparedCommand{"select1", 1}).isOk());
+    ASSERT_TRUE(conn.exec(PrepareData{"bad", "SELECT $1"}).isOk());
+    ASSERT_FALSE(conn.exec(PreparedCommand{"bad", 2}).isOk());
+}
+
 TEST(ConnectionTest, ExecAsync) {
     Connection conn{};
     ASSERT_TRUE(conn.send("SELECT 1").receive().isOk());

@@ -73,7 +73,7 @@ Result Connection::exec(PreparedCommand const& cmd) {
                                  RESULT_FORMAT)};
 }
 
-Status Connection::execRaw(std::string_view stmt) {
+Status Connection::execRaw(std::string_view const stmt) {
     return Status{PQexec(native(), stmt.data())};
 }
 
@@ -109,7 +109,7 @@ Receiver Connection::send(PreparedCommand const& cmd) {
                                         RESULT_FORMAT)};
 }
 
-Consumer Connection::sendRaw(std::string_view stmt) {
+Consumer Connection::sendRaw(std::string_view const stmt) {
     return Consumer{handle_, PQsendQuery(native(), stmt.data())};
 }
 

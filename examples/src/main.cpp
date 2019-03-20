@@ -375,6 +375,8 @@ void argsRange(Connection& conn);
 void dynaArgs(Connection& conn);
 void timeArgs(Connection& conn);
 
+void prepare(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -400,4 +402,6 @@ int main() {
     argsRange(conn);
     dynaArgs(conn);
     timeArgs(conn);
+    
+    prepare(conn);
 }
