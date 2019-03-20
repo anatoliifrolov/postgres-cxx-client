@@ -368,3 +368,35 @@ void prepare(Connection& conn) {
 /// Beware that statement is prepared on a connection.
 /// There is a method to reset lost connection but it doesn't reprepare statements,
 /// you have to do it manually each time after loosing a connection.
+
+/// ### Multiple statements in one
+///
+/// The ```exec``` method described above allows to execute at most one statement at a time,
+/// meaning that the following is a runtime error:
+/// ```
+void badMultiExec(Connection& conn) {
+    try {
+        conn.exec("SELECT 1; SELECT 2").check();
+    } catch (Error const& err) {
+    }
+}
+/// ```
+/// But this can be useful when applying a migration.
+/// That's why the ```Connection``` provides a special method:
+/// ```
+void goodMultiExec(Connection& conn) {
+    conn.execRaw("SELECT 1; SELECT 2").check();
+}
+/// ```
+/// That's not an error anymore, but there are a couple of limitations.
+/// The first one is that there is no way to pass arguments, just a statement text.
+/// And also you are not allowed to obtain data.
+/// Don't be confused by the example - it is quite silly and just to demonstrate the feature,
+/// normally there won't be selects.
+/// The second limitation is due to the library sends and receives arguments in binary format,
+/// but when multiple statements are passed there is no way to tell Postgres to enable binary mode.
+/// Also when a select statement is embedded somewhere in between the other statements,
+/// it is impossible to get the selected data
+/// because only the result of the last statement is returned from a database.
+/// Such an interface discourages you from trying to do this.
+/// Once again, this mode is primarily to apply a migration.
