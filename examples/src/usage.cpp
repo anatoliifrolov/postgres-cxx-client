@@ -1,0 +1,370 @@
+/// ## Usage
+
+/// ### Get started with connection
+///
+/// The following example gives you a basic idea of how to use the library.
+/// Each concept is explained in detail in corresponding section below.
+/// ```C++
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <postgres/Postgres.h>
+
+using postgres::Command;
+using postgres::Connection;
+using postgres::Time;
+
+struct MyTable {
+    int                                   id;
+    std::string                           info;
+    std::chrono::system_clock::time_point create_time;
+
+    POSTGRES_CXX_TABLE("my_table", id, info, create_time);
+};
+
+void getStarted() {
+    // Connect to a database.
+    Connection conn{};
+
+    // Create my_table.
+    conn.create<MyTable>().check();
+
+    auto now = std::chrono::system_clock::now();
+
+    // Populate the table with data.
+    std::vector<MyTable> data{{1, "foo", now},
+                              {2, "bar", now},
+                              {3, "baz", now}};
+    conn.insert(data.begin(), data.end()).check();
+
+    // Retrieve some data from the table.
+    auto query = "SELECT info, create_time FROM my_table WHERE $1 < id";
+
+    for (auto const& row : conn.exec(Command{query, 1}).valid()) {
+        std::cout
+            << row["create_time"].as<Time>().toString()
+            << " "
+            << row["info"].as<std::string>()
+            << std::endl;
+    }
+}
+/// ```
+
+/// ### Get started with connection pool
+///
+/// Here is an example demonstrating how to use a connection pool.
+/// ```C++
+#include <iostream>
+#include <vector>
+#include <postgres/Postgres.h>
+
+using postgres::Client;
+using postgres::Command;
+using postgres::Connection;
+using postgres::Result;
+
+void getStartedPool() {
+    // Create a connection pool.
+    Client cl{};
+
+    std::vector<std::future<Result>> results{};
+    results.reserve(10);
+
+    // Send queries to separate threads for execution.
+    for (auto i = 0; i < 10; ++i) {
+        results.push_back(cl.query([i](Connection& conn) {
+            return conn.exec(Command{"SELECT $1::INT", i});
+        }));
+    }
+
+    // Wait for results to be ready and then handle them.
+    for (auto& res :results) {
+        std::cout << res.get().valid()[0][0].as<int>() << std::endl;
+    }
+}
+/// ```
+
+/// ### What to include
+///
+/// The library provides all-in-one header file ```#include <postgres/Postgres.h>```,
+/// one with forward declarations ```#include <postgres/Fwd.h>```,
+/// and also each class that is a part of a public API has its own header.
+/// It is strongly discouraged to declare any of the library types in your project code.
+/// So include ```Fwd.h``` when you just need a declaration, say in a function signature.
+/// If compilation time is not a big concern use ```Postgres.h```.
+/// Otherwise include only needed files from ```postgres``` directory.
+
+/// ### Configuring
+///
+/// Beign a wrapper around libpq, the library just gives you a convinient interface to its features.
+/// So this documentation mostly desribes the interface and is not a comprehensive reference.
+/// For further details see official libpq docs https://www.postgresql.org/docs/11/libpq-connect.html.
+///
+/// Postgres has default values for every of its configuration parameter.
+/// For instance, username defaults to the operating system name of the user running the app,
+/// and database name is the same as the user name.
+/// You have several ways to override the defaults:
+/// - environment variables;
+/// - connect string;
+/// - URL;
+/// - configuration builder.
+///
+/// The following four examples essentially do the same thing:
+/// ```
+#include <postgres/Postgres.h>
+
+using postgres::Config;
+using postgres::Connection;
+
+void configDefault() {
+    Connection conn{};
+    conn.check();
+}
+/// ```
+/// Here we connect to a database using the default values and environment variables.
+/// This is a good choise to pass sensitive information like passwords.
+/// For example, the library is tested assuming that PGUSER, PGPASSWORD and PGDATABASE are set.
+///
+/// Another way is to use a connect string:
+/// ```
+void configConnectStr() {
+    Connection conn{"user=cxx_client password=cxx_client dbname=cxx_client"};
+    conn.check();
+}
+/// ```
+/// ...or URL:
+/// ```
+void configUrl() {
+    Connection conn{"postgresql://cxx_client:cxx_client@/cxx_client"};
+    conn.check();
+}
+/// ```
+/// And the last one option is to use a configuration builder:
+/// ```
+void configBuilder() {
+    Connection conn{Config::Builder{}.user("cxx_client")
+                                     .password("cxx_client")
+                                     .dbname("cxx_client")
+                                     .build()};
+    conn.check();
+}
+/// ```
+/// The class ```Config::Builder``` provides setter methods for all parameters
+/// available (and not deprecated) at the moment of writing.
+/// Method names are in *snake_case* to exactly mirror corresponding parameter names.
+/// An example setting some random parameters:
+/// ```
+#include <chrono>
+
+using namespace std::chrono_literals;
+using postgres::SslMode;
+
+void configBuilderExtra() {
+    Connection conn{Config::Builder{}.application_name("APP")
+                                     .keepalives(true)
+                                     .keepalives_count(2)
+                                     .keepalives_idle(3min)
+                                     .sslmode(SslMode::DISABLE)
+                                     .build()};
+    conn.check();
+}
+/// ```
+/// Also there are some general purpose setters.
+/// The following example manually sets the same parameters as the previous one:
+/// ```
+void configBuilderManual() {
+    Connection conn{Config::Builder{}.set("application_name", "APP")
+                                     .enable("keepalives", true)
+                                     .setNumber("keepalives_count", 2)
+                                     .setInterval("keepalives_idle", 3min)
+                                     .set("sslmode", "disable")
+                                     .build()};
+    conn.check();
+}
+/// ```
+
+/// ### Error handling
+///
+/// One of the library design goals was to eliminate some sorts of bugs by design and at compile time.
+/// But of course runtime errors are unavoidable.
+/// Most of the time you're given two ways to deal with them depending on your attitude to exceptions.
+/// Lets talk about exceptions first.
+///
+/// An exception classes hierarchy consists of a base class ```Error```
+/// and two classes derived from it: ```LogicError``` and ```RuntimeError```
+/// inside namespace ```postgres```.
+/// The ```Error``` in turn is derived from ```std::exception```.
+/// The library throws ```LogicError``` to indicate a bug in your code,
+/// such as trying to access a row that is out of bounds or misusing the library in some way.
+/// Runtime errors, e.g. loosing a connection to a database,
+/// don't lead to an exception unless you explicitly tell to do that.
+///
+/// Many library types provide two methods to check their status: ```isOk()```
+/// returning boolean value and ```check()``` throwing an exception.
+/// It is a common pattern used throughout the library, so remember it.
+/// Also some types provide a method called ```valid()``` which can throw an exception as well.
+/// This one is for convinience and only works in chained method calls.
+/// You will encounter it in later examples.
+///
+/// Lets demonstrate the described behaviour using ```Connection``` class
+/// which we're now should be familiar with:
+/// ```
+#include <iostream>
+#include <postgres/Postgres.h>
+
+using postgres::Connection;
+
+void connect() {
+    Connection conn{};
+    if (conn.isOk()) {
+        std::cout << "Connected to a database" << std::endl;
+    } else {
+        std::cerr << "Fail to connect to a database: " << conn.message() << std::endl;
+    }
+}
+/// ```
+/// And an example of how to work with exceptions:
+/// ```
+using postgres::Error;
+
+void connectCheck() {
+    try {
+        Connection conn{};
+        conn.check();
+    } catch (Error const& err) {
+        std::cerr << err.what() << std::endl;
+    }
+}
+/// ```
+
+/// ### Statement execution
+///
+/// No that we've learned how to connect to a database lets execute some SQL-statements.
+/// That's what ```Connection::exec()``` method is for:
+/// ```
+#include <postgres/Postgres.h>
+
+using postgres::Connection;
+
+void exec(Connection& conn) {
+    auto res = conn.exec("SELECT 1").valid();
+    // Handle the result...
+}
+/// ```
+/// The ```exec``` returns an object of type ```Result```
+/// which is completely detached from the connection produced it,
+/// meaning you can use it even after the connection has been destroyed.
+///
+/// Next we check that the result is ok calling the ```valid()``` method,
+/// which throws an exception if the result is in a bad state,
+/// and just returns it otherwise.
+/// This is similar to calling ```unwrap()```, if you are familiar with Rust.
+/// Alternatively you can check the result using ```isOk()``` method
+/// as described in section about error handling.
+///
+/// Often it is needed to customize a statement with some arguments.
+/// You have an option to embed argument values directly into the statement,
+/// but it is a bad choise for several reasons:
+/// - this could make your app vulnerable to SQL-injection attacks;
+/// - you have to deal with escaping;
+/// - data is passed as text instead of binary format.
+///
+/// The library provides a better solution:
+/// ```
+using postgres::Command;
+
+void execArgs(Connection& conn) {
+    conn.exec(Command{"SELECT $1, $2", 42, "foo"}).check();
+}
+/// ```
+/// Argument types are automatically detected by the ```Command```,
+/// but sometimes you have to be explicit.
+/// In the example below if we hadn't specified the type of the argument
+/// it would've been guessed to be text instead of json:
+/// ```
+using postgres::bindOid;
+
+void oidArgs(Connection& conn) {
+    conn.exec(Command{"SELECT $1", bindOid(R"({"foo": "bar"})", JSONOID)}).check();
+}
+/// ```
+/// If there are arguments possibly having NULL values,
+/// use pointers of ```std::std::optional``` type.
+/// In the following example both ```ptr``` and ```opt``` will be treated as NULLs:
+/// ```
+void nullArgs(Connection& conn) {
+    int* ptr = nullptr;
+    std::optional<int> opt{};
+    conn.exec(Command{"SELECT $1, $2", ptr, opt}).check();
+}
+/// ```
+/// The ```Command``` stores its arguments into internal buffer.
+/// Sometimes you might be willing to avoid copying, e.g. for large piece of text.
+/// This can be achieved by passing pointer to underlying C-style string
+/// or by using ```std::string_view``` type.
+/// The same is true for statements as well.
+/// The both way are shown below:
+/// ```
+void largeArgs(Connection& conn) {
+    std::string      text = "SOME VERY LONG TEXT...";
+    std::string_view view = text;
+    conn.exec(Command{"SELECT $1, $2", text.data(), view}).check();
+}
+/// ```
+/// That's how you can pass arguments stored in a container:
+/// ```
+void argsRange(Connection& conn) {
+    std::vector<int> args{1, 2, 3};
+    conn.exec(Command{"SELECT $1, $2, $3", std::pair{args.begin(), args.end()}}).check();
+}
+/// ```
+/// Actually you're not limited to pass all the arguments at once to ```Command```.
+/// There is an ability to add arguments dynamically:
+/// ```
+void dynaArgs(Connection& conn) {
+    Command cmd{"SELECT $1, $2"};
+    cmd << 42 << "foo";
+    conn.exec(cmd).check();
+}
+/// ```
+/// And a final note about timestamps.
+/// The recommended way is to use a database type called ```TIMESTAMP```,
+/// which represents a number of microseconds since Postgres epoch in UTC.
+/// C++ ```std::chrono::system_clock::time_point``` objects are mapped to that type
+/// and passed in binary form as integral numbers.
+///
+/// If you want to preserve time zone there is a special library type.
+/// But keep in mind that it is a bit less efficient
+/// because timestamps are converted to strings to be transmitted to Postgres:
+/// ```
+using postgres::Time;
+
+void timeArgs(Connection& conn) {
+    auto now = std::chrono::system_clock::now();
+    conn.exec(Command{"SELECT $1", Time{now, true}}).check();
+}
+/// ```
+
+/// ### Prepared statements
+///
+/// Using prepared statements is quite trivial.
+/// The first step is to prepare statement.
+/// You have to specify statement name, statement body and argument types if present.
+/// Then you can use the name to actually execute the statement and bind argument values.
+/// Consider an example:
+/// ```
+#include <postgres/Postgres.h>
+
+using postgres::Connection;
+using postgres::PreparedCommand;
+using postgres::PrepareData;
+
+void prepare(Connection& conn) {
+    conn.exec(PrepareData{"my_select", "SELECT $1", {INT4OID}}).check();
+    conn.exec(PreparedCommand{"my_select", 123}).check();
+}
+/// ```
+/// Beware that statement is prepared on a connection.
+/// There is a method to reset lost connection but it doesn't reprepare statements,
+/// you have to do it manually each time after loosing a connection.
