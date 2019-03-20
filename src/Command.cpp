@@ -53,12 +53,8 @@ void Command::add(Time const& t) {
     types_.back() = TIMESTAMPOID;
 }
 
-void Command::add(std::string&& s) {
-    addText(s.data(), s.size() + 1);
-}
-
 void Command::add(std::string const& s) {
-    add(s.data());
+    addText(s.data(), s.size() + 1);
 }
 
 void Command::add(std::string_view const s) {

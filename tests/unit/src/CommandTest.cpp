@@ -197,23 +197,14 @@ TEST(CommandTest, StrView) {
     ASSERT_EQ(0, cmd.formats()[0]);
 }
 
-TEST(CommandTest, StrRef) {
+TEST(CommandTest, Str) {
     std::string const str = "STR";
     Command const     cmd{"STMT", str};
     ASSERT_STREQ("STMT", cmd.statement());
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(0u, cmd.types()[0]);
-    ASSERT_EQ(str.data(), cmd.values()[0]);
-    ASSERT_EQ(0, cmd.lengths()[0]);
-    ASSERT_EQ(0, cmd.formats()[0]);
-}
-
-TEST(CommandTest, StrOwn) {
-    Command const cmd{"STMT", std::string{"STR"}};
-    ASSERT_STREQ("STMT", cmd.statement());
-    ASSERT_EQ(1, cmd.count());
-    ASSERT_EQ(0u, cmd.types()[0]);
     ASSERT_STREQ("STR", cmd.values()[0]);
+    ASSERT_NE(str.data(), cmd.values()[0]);
     ASSERT_EQ(4, cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 }
@@ -280,8 +271,8 @@ TEST(CommandTest, Visit) {
     ASSERT_EQ(3, cmd.count());
 
     ASSERT_EQ(0u, cmd.types()[0]);
-    ASSERT_EQ(tbl.s.data(), cmd.values()[0]);
-    ASSERT_EQ(0, cmd.lengths()[0]);
+    ASSERT_EQ(tbl.s, cmd.values()[0]);
+    ASSERT_EQ(5, cmd.lengths()[0]);
     ASSERT_EQ(0, cmd.formats()[0]);
 
     ASSERT_EQ(Oid{INT4OID}, cmd.types()[1]);

@@ -119,7 +119,6 @@ private:
     void add(std::nullptr_t);
     void add(std::chrono::system_clock::time_point t);
     void add(Time const& t);
-    void add(std::string&& s);
     void add(std::string const& s);
     void add(std::string_view s);
     void add(char const* s);
