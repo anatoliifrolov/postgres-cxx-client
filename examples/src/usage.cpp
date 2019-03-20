@@ -400,3 +400,37 @@ void goodMultiExec(Connection& conn) {
 /// because only the result of the last statement is returned from a database.
 /// Such an interface discourages you from trying to do this.
 /// Once again, this mode is primarily to apply a migration.
+
+/// ### Transactions
+///
+/// Each statement is executed as a separate transaction.
+/// Multiple statements separated with semicolons as described in the previous section
+/// are a single transaction as well.
+/// If you need to join multiple statements into a single transaction, you have two options.
+/// Lets start with the simplest one:
+/// ```
+void transact(Connection& conn) {
+    conn.transact("SELECT 1", "SELECT 2", "SELECT 3").check();
+}
+/// ```
+/// That's it. Just call the ```transact``` method on a connection instance.
+/// Either all statements passed succeed or none of them have any effect.
+/// Again the example is a bit ridiculous, but imagine statements to be more meaningful,
+/// for instance inserting data to two different tables when one insert without the other
+/// would leave a system in inconsistent state.
+///
+/// The second way gives you more fine-grained control over transaction execution:
+/// ```
+void transactManual(Connection& conn) {
+    auto tx = conn.begin().valid();
+    conn.exec("SELECT 1").check();
+    conn.exec("SELECT 2").check();
+    tx.commit().check();
+}
+/// ```
+/// This way allows to put some logic between statement execution
+/// and build transactions which have to be more complex and flexible.
+/// Just don't forget to check that transaction started successfully and to commit it.
+/// Also consider the possibility of commit operation itself to fail.
+/// When the transaction handler returned from the call to ```begin()``` goes out of scope
+/// it rollbacks the transaction unless it has been explicitly commited before.

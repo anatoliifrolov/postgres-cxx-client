@@ -380,6 +380,9 @@ void prepare(Connection& conn);
 void badMultiExec(Connection& conn);
 void goodMultiExec(Connection& conn);
 
+void transact(Connection& conn);
+void transactManual(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -410,4 +413,7 @@ int main() {
 
     badMultiExec(conn);
     goodMultiExec(conn);
+
+    transact(conn);
+    transactManual(conn);
 }
