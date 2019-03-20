@@ -383,6 +383,10 @@ void goodMultiExec(Connection& conn);
 void transact(Connection& conn);
 void transactManual(Connection& conn);
 
+void result(Connection& conn);
+void resultVars(Connection& conn);
+void resultNull(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -416,4 +420,8 @@ int main() {
 
     transact(conn);
     transactManual(conn);
+
+    result(conn);
+    resultVars(conn);
+    resultNull(conn);
 }

@@ -4,7 +4,7 @@
 ///
 /// The following example gives you a basic idea of how to use the library.
 /// Each concept is explained in detail in corresponding section below.
-/// ```C++
+/// ```
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -54,7 +54,7 @@ void getStarted() {
 /// ### Get started with connection pool
 ///
 /// Here is an example demonstrating how to use a connection pool.
-/// ```C++
+/// ```
 #include <iostream>
 #include <vector>
 #include <postgres/Postgres.h>
@@ -434,3 +434,66 @@ void transactManual(Connection& conn) {
 /// Also consider the possibility of commit operation itself to fail.
 /// When the transaction handler returned from the call to ```begin()``` goes out of scope
 /// it rollbacks the transaction unless it has been explicitly commited before.
+
+/// ### Reading the result
+///
+/// Now it's time to talk about queries and how to access their results.
+/// As mentioned above the ```exec``` method returns an object of type ```Result```.
+/// Iterating over it will produce a ```Row``` object at each iteration.
+/// The '''Row''' in turn consists of a number of ```Field```*s*
+/// which can be obtained by index or name.
+/// Finally you can read the value of the ```Field``` into a new variable or an existing one.
+/// Probably that's a bit more clear expressed in code:
+/// ```
+void result(Connection& conn) {
+    for (auto const& row : conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid()) {
+        std::cout
+            << row["foo"].as<std::string>()
+            << " "
+            << row["bar"].as<std::string>()
+            << std::endl;
+    }
+}
+/// ```
+/// Now lets store the same values into variables:
+/// ```
+void resultVars(Connection& conn) {
+    std::string foo, bar;
+
+    auto const res = conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid();
+    res[0]["foo"] >> foo;
+    res[0]["bar"] >> bar;
+
+    std::cout << foo << " " << bar << std::endl;
+}
+/// ```
+/// In the last example it is evident that the result cannot be empty.
+/// In practice you always have to check it before indexing the result to avoid errors.
+/// Iterating lacks the possibility to access rows which are out of bounds
+/// and therefore is safer and preferrable.
+///
+/// Similarly to ```Command``` NULLs are represented with pointers or ```std::optional```:
+/// ```
+void resultNull(Connection& conn) {
+    auto const res = conn.exec("SELECT NULL::TEXT").valid();
+
+    // Bad idea.
+    std::string s;
+    try {
+        res[0][0] >> s;
+    } catch (Error const& err) {
+    }
+
+    // Ok.
+    auto opt = res[0][0].as<std::optional<std::string>>();
+
+    // Also ok.
+    auto ptr = &s;
+    res[0][0] >> ptr;
+}
+/// ```
+/// You can cast the field to arithmetic type, but the rules are quite strict.
+/// In particular the following is prohibited:
+/// - loosing precision (casting from floating point value to integral one and vice versa);
+/// - narrowing (casting larger type to smaller);
+/// - reading negative values into variables of unsigned types.
