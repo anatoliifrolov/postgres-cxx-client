@@ -386,6 +386,11 @@ void transactManual(Connection& conn);
 void result(Connection& conn);
 void resultVars(Connection& conn);
 void resultNull(Connection& conn);
+void resultBadCast(Connection& conn);
+void resultTime(Connection& conn);
+void resultTimeZone(Connection& conn);
+void resultExtractEpoch(Connection& conn);
+void resultData(Connection& conn);
 
 int main() {
     Connection conn{};
@@ -424,4 +429,9 @@ int main() {
     result(conn);
     resultVars(conn);
     resultNull(conn);
+    resultBadCast(conn);
+    resultTime(conn);
+    resultTimeZone(conn);
+    resultExtractEpoch(conn);
+    resultData(conn);
 }

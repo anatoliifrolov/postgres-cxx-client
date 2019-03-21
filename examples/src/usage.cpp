@@ -476,24 +476,106 @@ void resultVars(Connection& conn) {
 /// ```
 void resultNull(Connection& conn) {
     auto const res = conn.exec("SELECT NULL::TEXT").valid();
+    auto const fld = res[0][0];
 
     // Bad idea.
     std::string s;
     try {
-        res[0][0] >> s;
+        fld >> s;
     } catch (Error const& err) {
     }
 
     // Ok.
-    auto opt = res[0][0].as<std::optional<std::string>>();
+    auto opt = fld.as<std::optional<std::string>>();
 
     // Also ok.
     auto ptr = &s;
-    res[0][0] >> ptr;
+    fld >> ptr;
 }
 /// ```
 /// You can cast the field to arithmetic type, but the rules are quite strict.
 /// In particular the following is prohibited:
-/// - loosing precision (casting from floating point value to integral one and vice versa);
+/// - loss of precision (casting from floating point value to integral one and vice versa);
 /// - narrowing (casting larger type to smaller);
-/// - reading negative values into variables of unsigned types.
+/// - underflow (reading negative values into variables of unsigned types).
+///
+/// Lets look how those three cases may appear in code:
+/// ```
+void resultBadCast(Connection& conn) {
+    auto const res = conn.exec("SELECT -1::BIGINT").valid();
+    auto const fld = res[0][0];
+
+    try {
+        // Loss of precision.
+        fld.as<double>();
+
+        // Narrowing.
+        fld.as<int32_t>();
+
+        // Underflow.
+        fld.as<uint64_t>();
+    } catch (Error const& err) {
+    }
+}
+/// ```
+/// Also the library is able to read timestamps without time zones:
+/// ```
+void resultTime(Connection& conn) {
+    auto const res = conn.exec("SELECT '2017-08-25T13:03:35'::TIMESTAMP").valid();
+    auto const fld = res[0][0];
+
+    // Modern C++ way.
+    fld.as<std::chrono::system_clock::time_point>();
+
+    // Getting time_t.
+    fld.as<Time>().toUnix();
+}
+/// ```
+/// But what if time zone information is crutial to your app?
+/// Trying to treat this as in the previous example will lead to runtime error.
+/// But you can just cast timestamp to ```TEXT``` and read it into ```std::string```:
+/// ```
+void resultTimeZone(Connection& conn) {
+    auto const res = conn.exec("SELECT now()::TEXT").valid();
+    auto const fld = res[0][0];
+
+    // Prints something like '2019-03-21 12:58:13.256812+03'.
+    std::cout << fld.as<std::string>() << std::endl;
+}
+/// ```
+/// And one more caveat about working with timestamps.
+/// Using this library eliminates the need for extracting epoch from timestamp
+/// by means of Postgres, so avoid this in a new code.
+/// But in case you have to deal with such a statement beware that
+/// it yields the result of type double precision:
+/// ```
+void resultExtractEpoch(Connection& conn) {
+    auto const res = conn.exec("SELECT extract(EPOCH FROM now())").valid();
+    auto const fld = res[0][0];
+
+    // Nope!
+    try {
+        fld.as<std::chrono::system_clock::time_point>();
+    } catch (Error const& err) {
+    }
+
+    // Ok.
+    std::cout << fld.as<double>() << std::endl;
+}
+/// ```
+/// Finally you can read absolutely anything into ```std::string```.
+/// This doesn't perform any checks and just gives you raw content of the field.
+/// There is also an option to avoid copying data using ```std::string_view```
+/// but make sure the result is staying alive for enough time.
+/// ```
+void resultData(Connection& conn) {
+    auto const res = conn.exec("SELECT 'DATA'").valid();
+    auto const fld = res[0][0];
+
+    // Copying...
+    std::cout << fld.as<std::string>() << std::endl;
+
+    // ...and non-copying variants.
+    std::cout << fld.as<std::string_view>() << std::endl;
+}
+/// ```
