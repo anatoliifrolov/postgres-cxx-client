@@ -668,3 +668,105 @@ void sendRowByRow(Connection& conn) {
 /// Notice that the result is checked to be not empty inside the loop body -
 /// you have always do the same thing.
 /// This is because of how libpq works.
+
+/// ### Statement generation
+///
+/// As the library was not intended to be a fully-fledged SQL-statement generator
+/// it is capable of producing just the most basic statements for you.
+/// It is possible to create and drop tables,
+/// perform inserts, selects and updates having no extra clauses.
+///
+/// This feature might come in handy when testing or prototyping,
+/// but for real-world applications we most likely to end up with more complex SQL-statement.
+/// And the library can help us here a little bit.
+/// Remember the very first code example?
+/// We've created a table called "my_table" there
+/// to demonstrate basic statement generation facilities.
+///
+/// Now lets use that table to show how we can make an "upsert" statement.
+/// The so-called "upsert" is a special kind of Postgres statement
+/// consisting of an insert followed with update when insert results in a conflict.
+/// The starting example left our table in the following state:
+///
+/// id | info |        create_time
+/// ---|------|---------------------------
+/// 1  | foo  | 2019-03-21 13:01:25.729536
+/// 2  | bar  | 2019-03-21 13:01:25.729536
+/// 3  | baz  | 2019-03-21 13:01:25.729536
+///
+/// Lets update it:
+/// ```
+void updateMyTable(Connection& conn) {
+    // Needed for the example to work.
+    conn.exec("ALTER TABLE my_table ADD PRIMARY KEY (id)").check();
+
+    auto const now = std::chrono::system_clock::now();
+
+    // 3 and 4 collide with existing ids.
+    std::vector<MyTable> data{{2, "spam", now},
+                              {3, "ham",  now},
+                              {4, "eggs", now}};
+
+    auto const range = std::pair{data.begin(), data.end()};
+
+    // Generate an upsert statement.
+    using postgres::Statement;
+    using postgres::RangeStatement;
+
+    auto const statement = "INSERT INTO "
+                           + Statement<MyTable>::table()
+                           + " VALUES "
+                           + RangeStatement::placeholders(range.first, range.second)
+                           + " ON CONFLICT (id) DO UPDATE SET info = EXCLUDED.info";
+
+    conn.exec(Command{statement, range}).check();
+}
+/// ```
+/// As a result the table now contains:
+///
+/// id | info |        create_time
+/// ---|------|----------------------------
+/// 1  | foo  | 2019-03-21 13:01:25.729536
+/// 2  | spam | 2019-03-21 13:46:04.580402
+/// 3  | ham  | 2019-03-21 13:46:04.580402
+/// 4  | eggs | 2019-03-21 13:46:04.693358
+///
+/// Recall the definition of MyTable:
+/// ```
+/// struct MyTable {
+///     int                                   id;
+///     std::string                           info;
+///     std::chrono::system_clock::time_point create_time;
+///
+///     POSTGRES_CXX_TABLE("my_table", id, info, create_time);
+/// };
+/// ```
+/// It is ```POSTGRES_CXX_TABLE``` macro that does all the magic.
+/// Once we've added it to a structure definition it becomes possible
+/// to visit all the data members along with their names using generated methods.
+/// Those methods are ```visitPostgresDefinition``` and ```visitPostgresFields```,
+/// and you can use them to produce SQL-statements for your custom data types.
+/// Here is a code skeleton to start with:
+/// ```
+struct Generator {
+    // Called by visitPostgresDefinition.
+    template <typename T>
+    void accept(char const* column_name) {
+        std::cout << column_name << std::endl;
+    }
+
+    // Called by visitPostgresFields.
+    template <typename T>
+    void accept(char const* column_name, T const& value) {
+        std::cout << column_name << std::endl;
+    }
+};
+
+void visitMyTable(Connection& conn) {
+    Generator gen{};
+    MyTable::visitPostgresDefinition(gen);
+
+    MyTable data{1, "foo"};
+    data.visitPostgresFields(gen);
+}
+/// ```
