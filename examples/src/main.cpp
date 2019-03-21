@@ -394,6 +394,10 @@ void resultData(Connection& conn);
 
 void escape(Connection& conn);
 
+void send(Connection& conn);
+void sendTWice(Connection& conn);
+void sendRowByRow(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -438,4 +442,8 @@ int main() {
     resultData(conn);
 
     escape(conn);
+
+    send(conn);
+    sendTWice(conn);
+    sendRowByRow(conn);
 }

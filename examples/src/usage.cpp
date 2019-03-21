@@ -593,3 +593,78 @@ void escape(Connection& conn) {
     std::cout << conn.escId("escape me") << std::endl;
 }
 /// ```
+
+/// ### Asynchronous interface
+///
+/// Statement execution methods considered so far are synchronous,
+/// meaning that the calling thread is blocked until a database gives back the result.
+/// There is also an asynchronous family of methods
+/// allowing you to split the execution process into sending and receiving parts.
+/// Don't confuse it with multithreaded mode of connection pool which is covered later.
+/// That's how it looks like:
+/// ```
+void send(Connection& conn) {
+    // Sending doesn't block.
+    auto receiver = conn.send("SELECT 123::INT").valid();
+
+    while (receiver.isBusy()) {
+        // Do some other job here...
+    }
+
+    // But receiving does block unless the result is ready.
+    auto const res = receiver.receive();
+    std::cout << res[0][0].as<int>() << std::endl;
+
+    // No more results.
+    std::cout << receiver.receive().isDone() << std::endl;
+}
+/// ```
+/// Calling the ```send``` method returns an instance of type ```Receiver```
+/// which allows you to obtain the result later.
+/// It is a RAII-type which performs cleanup in its destructor
+/// leaving the connection in a valid state ready for reuse.
+/// As a consequence the destructor can block for a short time until all the results are taken,
+/// but it normally shouldn't be an issue assuming proper library use.
+///
+/// You can't have multiple active sends simultaneously.
+/// Either receive the results until ```isDone``` gives true
+/// or just let the receiver go out of scope.
+/// ```
+void sendTWice(Connection& conn) {
+    auto rec1 = conn.send("SELECT 1").valid();
+
+    // Error!
+    try {
+        auto rec2 = conn.send("SELECT 2").valid();
+    } catch (Error const& err) {
+    }
+}
+/// ```
+/// There are also asynchronous counterparts for prepared and raw statements.
+/// There is nothing special about them so we won't waste our time on examples.
+/// What's more interesting is a so called single row mode.
+/// The primary goal of this mode it to receive a large datasets.
+/// Such a large that it is impossible or unreasonable to fit them in memory.
+/// You may think of it as establishing a stream of rows.
+/// As always there is a tradeoff - the single row mode works a bit slower.
+/// Lets look at an example:
+/// ```
+void sendRowByRow(Connection& conn) {
+    // Imagine this query to end up with billions of rows.
+    auto const query = "SELECT 1::INT"
+                       " UNION ALL SELECT 2::INT"
+                       " UNION ALL SELECT 3::INT";
+
+    // Receive the result one row at a time.
+    for (auto const& res : conn.iter(query).valid()) {
+        if (res.isEmpty()) {
+            continue;
+        }
+
+        std::cout << res[0][0].as<int>() << std::endl;
+    }
+}
+/// ```
+/// Notice that the result is checked to be not empty inside the loop body -
+/// you have always do the same thing.
+/// This is because of how libpq works.
