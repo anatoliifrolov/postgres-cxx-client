@@ -117,7 +117,7 @@ void getStartedPool() {
 using postgres::Config;
 using postgres::Connection;
 
-void configDefault() {
+void config() {
     Connection conn{};
     conn.check();
 }
@@ -128,7 +128,7 @@ void configDefault() {
 ///
 /// Another way is to use a connect string:
 /// ```
-void configConnectStr() {
+void configStr() {
     Connection conn{"user=cxx_client password=cxx_client dbname=cxx_client"};
     conn.check();
 }
@@ -274,7 +274,7 @@ void exec(Connection& conn) {
 /// ```
 using postgres::Command;
 
-void execArgs(Connection& conn) {
+void args(Connection& conn) {
     conn.exec(Command{"SELECT $1, $2", 42, "foo"}).check();
 }
 /// ```
@@ -285,7 +285,7 @@ void execArgs(Connection& conn) {
 /// ```
 using postgres::bindOid;
 
-void oidArgs(Connection& conn) {
+void argsOid(Connection& conn) {
     conn.exec(Command{"SELECT $1", bindOid(R"({"foo": "bar"})", JSONOID)}).check();
 }
 /// ```
@@ -293,7 +293,7 @@ void oidArgs(Connection& conn) {
 /// use pointers of ```std::std::optional``` type.
 /// In the following example both ```ptr``` and ```opt``` will be treated as NULLs:
 /// ```
-void nullArgs(Connection& conn) {
+void argsNull(Connection& conn) {
     int* ptr = nullptr;
     std::optional<int> opt{};
     conn.exec(Command{"SELECT $1, $2", ptr, opt}).check();
@@ -306,7 +306,7 @@ void nullArgs(Connection& conn) {
 /// The same is true for statements as well.
 /// The both way are shown below:
 /// ```
-void largeArgs(Connection& conn) {
+void argsLarge(Connection& conn) {
     std::string      text = "SOME VERY LONG TEXT...";
     std::string_view view = text;
     conn.exec(Command{"SELECT $1, $2", text.data(), view}).check();
@@ -322,7 +322,7 @@ void argsRange(Connection& conn) {
 /// Actually you're not limited to pass all the arguments at once to ```Command```.
 /// There is an ability to add arguments dynamically:
 /// ```
-void dynaArgs(Connection& conn) {
+void argsDyna(Connection& conn) {
     Command cmd{"SELECT $1, $2"};
     cmd << 42 << "foo";
     conn.exec(cmd).check();
@@ -340,7 +340,7 @@ void dynaArgs(Connection& conn) {
 /// ```
 using postgres::Time;
 
-void timeArgs(Connection& conn) {
+void argsTime(Connection& conn) {
     auto now = std::chrono::system_clock::now();
     conn.exec(Command{"SELECT $1", Time{now, true}}).check();
 }
@@ -374,7 +374,7 @@ void prepare(Connection& conn) {
 /// The ```exec``` method described above allows to execute at most one statement at a time,
 /// meaning that the following is a runtime error:
 /// ```
-void badMultiExec(Connection& conn) {
+void execMultiBad(Connection& conn) {
     try {
         conn.exec("SELECT 1; SELECT 2").check();
     } catch (Error const& err) {
@@ -384,7 +384,7 @@ void badMultiExec(Connection& conn) {
 /// But this can be useful when applying a migration.
 /// That's why the ```Connection``` provides a special method:
 /// ```
-void goodMultiExec(Connection& conn) {
+void execMultiOk(Connection& conn) {
     conn.execRaw("SELECT 1; SELECT 2").check();
 }
 /// ```
@@ -696,7 +696,7 @@ void sendRowByRow(Connection& conn) {
 ///
 /// Lets update it:
 /// ```
-void updateMyTable(Connection& conn) {
+void myTableUpdate(Connection& conn) {
     // Needed for the example to work.
     conn.exec("ALTER TABLE my_table ADD PRIMARY KEY (id)").check();
 
@@ -762,7 +762,7 @@ struct Generator {
     }
 };
 
-void visitMyTable(Connection& conn) {
+void myTableVisit(Connection& conn) {
     Generator gen{};
     MyTable::visitPostgresDefinition(gen);
 
