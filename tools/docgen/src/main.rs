@@ -3,10 +3,13 @@ use std::fs;
 
 fn main() {
     let mut args: Vec<String> = env::args().skip(1).collect();
-    args.sort();
-
     for filename in &args {
         let content= fs::read_to_string(filename).unwrap();
+        if filename.ends_with(".md") {
+            println!("{}", content);
+            continue;
+        }
+
         let mut lines= content.lines().peekable();
         while let Some(line) = lines.next() {
             // Code example.

@@ -669,7 +669,7 @@ void sendRowByRow(Connection& conn) {
 /// you have always do the same thing.
 /// This is because of how libpq works.
 
-/// ### Statement generation
+/// ### Generating statements
 ///
 /// As the library was not intended to be a fully-fledged SQL-statement generator
 /// it is capable of producing just the most basic statements for you.
