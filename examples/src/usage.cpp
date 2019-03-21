@@ -579,3 +579,17 @@ void resultData(Connection& conn) {
     std::cout << fld.as<std::string_view>() << std::endl;
 }
 /// ```
+
+/// ### Escaping
+///
+/// Thanks to ```Command``` class it should be extremely rare you have to deal with escaping.
+/// But just in case there are a couple of methods performing that kind of task.
+/// ```
+void escape(Connection& conn) {
+    // Literals.
+    std::cout << conn.esc("E'SCAPE_ME") << std::endl;
+
+    // Identifiers.
+    std::cout << conn.escId("escape me") << std::endl;
+}
+/// ```

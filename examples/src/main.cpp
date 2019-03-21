@@ -392,6 +392,8 @@ void resultTimeZone(Connection& conn);
 void resultExtractEpoch(Connection& conn);
 void resultData(Connection& conn);
 
+void escape(Connection& conn);
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -434,4 +436,6 @@ int main() {
     resultTimeZone(conn);
     resultExtractEpoch(conn);
     resultData(conn);
+
+    escape(conn);
 }
