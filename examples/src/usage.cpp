@@ -770,3 +770,86 @@ void visitMyTable(Connection& conn) {
     data.visitPostgresFields(gen);
 }
 /// ```
+
+/// ### Connection pool
+///
+/// Now that you know how to use the connection lets move on to more high-level feature.
+/// Connection pool is designed to execute statements concurrently in separate threads.
+/// You've seen it in the section called "Get started with connection pool".
+/// Here we'll explore all the details and nuances.
+/// To start using the connection pool you have to create an instance of a ```Client``` class.
+/// An interface is rather compact: you can invoke either ```exec``` or ```query``` methods,
+/// passing any callable object accepting a reference to a connection as its parameter.
+/// Which one to use depends on the connection method which is going to do the job.
+/// ```
+void pool() {
+    Client cl{};
+
+    auto res = cl.query([](Connection& conn) {
+        return conn.exec("SELECT 1");
+    });
+
+    std::cout << res.get().valid().size() << std::endl;
+}
+/// ```
+/// The client implements single-producer-multiple-consumers pattern
+/// and is not thread-safe by itself
+/// meaning you have to protect it with a mutex to use from within multiple threads.
+/// The client is quite straightforward to use,
+/// however a lot of flexibility is hidden in its configuration,
+/// so lets discover how to configure the client.
+///
+/// First of all any available connection option can be passed
+/// to the client to let it know how to establish a connection.
+/// We've covered how to configure a connection in the corresponding section.
+/// The only difference is that a config or URL must be wrapped in a ```Context```
+/// to be passed to a client.
+/// ```
+using postgres::Context;
+
+void poolConfig() {
+    auto cfg = Config::Builder{}.user("cxx_client")
+                                .password("cxx_client")
+                                .dbname("cxx_client")
+                                .build();
+
+    Client cl{Context::Builder{}.config(std::move(cfg)).build()};
+}
+/// ```
+/// The same technique is used for prepared statements:
+/// ```
+void poolPrepare() {
+    Client cl{Context::Builder{}.prepare({"my_select", "SELECT 1"}).build()};
+}
+/// ```
+/// And finally there are parameters affecting the behaviour of the connection pool:
+/// ```
+using postgres::ShutdownPolicy;
+
+void poolBehaviour() {
+    Client cl{Context::Builder{}.idleTimeout(1min)
+                                .maxConcurrency(2)
+                                .maxQueueSize(30)
+                                .shutdownPolicy(ShutdownPolicy::DROP)
+                                .build()};
+}
+/// ```
+/// Idle timeout tells the client to stop thread and close connection to a database
+/// after specified duration of inactivity.
+/// Its primary purpose is to reduce the number of allocated resources after load spikes
+/// back to the usual level.
+/// This feature is disabled by default.
+///
+/// Maximum concurrency specifies the number of threads/connections
+/// and defaults to hardware concurrency.
+/// Also the internal queue size can be limited.
+/// Exceeding the limit results in an exception in a thread working with the client.
+/// By default the queue is allowed to grow until application run out of memory and crash.
+///
+/// Shutdown policy regulates how to handle the queue on shutdown.
+/// Default policy is to stop gracefully
+/// meaning that all the requests waiting in queue will be executed.
+/// You can alternatively choose to drop the queue,
+/// but active requests are not canceled and can take some time anyway.
+/// And the last one policy is to abort.
+/// Behaviour in that case is undefined and your app have good chances to crash.

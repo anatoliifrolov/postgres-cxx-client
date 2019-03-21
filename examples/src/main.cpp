@@ -401,6 +401,11 @@ void sendRowByRow(Connection& conn);
 void updateMyTable(Connection& conn);
 void visitMyTable(Connection& conn);
 
+void pool();
+void poolConfig();
+void poolPrepare();
+void poolBehaviour();
+
 int main() {
     Connection conn{};
     conn.exec("DROP TABLE IF EXISTS my_table").check();
@@ -452,4 +457,9 @@ int main() {
 
     updateMyTable(conn);
     visitMyTable(conn);
+
+    pool();
+    poolConfig();
+    poolPrepare();
+    poolBehaviour();
 }
