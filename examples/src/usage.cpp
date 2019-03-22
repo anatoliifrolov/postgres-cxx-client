@@ -3,7 +3,7 @@
 /// ### Get started with connection
 ///
 /// The following example gives you a basic idea of how to use the library.
-/// Each concept is explained in detail in corresponding section below.
+/// Each feature is explained in detail in corresponding section below.
 /// ```
 #include <chrono>
 #include <iostream>
@@ -53,7 +53,8 @@ void getStarted() {
 
 /// ### Get started with connection pool
 ///
-/// Here is an example demonstrating how to use a connection pool.
+/// Here is one more example to get you started.
+/// At this time how to use a connection pool is demonstrated.
 /// ```
 #include <iostream>
 #include <vector>
@@ -66,14 +67,14 @@ using postgres::Result;
 
 void getStartedPool() {
     // Create a connection pool.
-    Client cl{};
+    Client client{};
 
     std::vector<std::future<Result>> results{};
     results.reserve(10);
 
     // Send queries to separate threads for execution.
     for (auto i = 0; i < 10; ++i) {
-        results.push_back(cl.query([i](Connection& conn) {
+        results.push_back(client.query([i](Connection& conn) {
             return conn.exec(Command{"SELECT $1::INT", i});
         }));
     }
@@ -87,36 +88,33 @@ void getStartedPool() {
 
 /// ### What to include
 ///
-/// The library provides all-in-one header file ```#include <postgres/Postgres.h>```,
-/// one with forward declarations ```#include <postgres/Fwd.h>```,
-/// and also each class that is a part of a public API has its own header.
+/// The library provides an all-in-one header file `#include <postgres/Postgres.h>`,
+/// the one with forward declarations `#include <postgres/Fwd.h>`,
+/// and also every class that is a part of a public API has its own header which you can include.
 /// It is strongly discouraged to declare any of the library types in your project code.
-/// So include ```Fwd.h``` when you just need a declaration, say in a function signature.
-/// If compilation time is not a big concern use ```Postgres.h```.
-/// Otherwise include only needed files from ```postgres``` directory.
+/// Include "Fwd.h" instead when you need just a declaration, say in a function signature.
+/// If compilation time is not a paramount concern use "Postgres.h",
+/// otherwise include only needed files from "postgres" directory.
+/// The examples in this document include "Postgres.h" for brevity.
 
 /// ### Configuring
 ///
-/// Beign a wrapper around libpq, the library just gives you a convinient interface to its features.
-/// So this documentation mostly desribes the interface and is not a comprehensive reference.
-/// For further details see official libpq docs https://www.postgresql.org/docs/11/libpq-connect.html.
+/// You can find comprehensive description of Postgres configuration options
+/// in the official libpq documentation at https://www.postgresql.org/docs/11/libpq-connect.html.
+/// Here we will focus on an interface the library provides
+/// to make it more convenient configuring a database connection.
 ///
-/// Postgres has default values for every of its configuration parameter.
+/// Postgres has default values for all of its configuration parameter.
 /// For instance, username defaults to the operating system name of the user running the app,
 /// and database name is the same as the user name.
-/// You have several ways to override the defaults:
+/// There are several ways to override the defaults:
 /// - environment variables;
-/// - connect string;
+/// - connection string;
 /// - URL;
 /// - configuration builder.
 ///
-/// The following four examples essentially do the same thing:
+/// Lets consider each one in turn with the examples.
 /// ```
-#include <postgres/Postgres.h>
-
-using postgres::Config;
-using postgres::Connection;
-
 void config() {
     Connection conn{};
     conn.check();
@@ -124,9 +122,10 @@ void config() {
 /// ```
 /// Here we connect to a database using the default values and environment variables.
 /// This is a good choise to pass sensitive information like passwords.
-/// For example, the library is tested assuming that PGUSER, PGPASSWORD and PGDATABASE are set.
+/// For example, the library is tested assuming that
+/// PGUSER, PGPASSWORD and PGDATABASE variables are set.
 ///
-/// Another way is to use a connect string:
+/// Alternatively we can use a connection string:
 /// ```
 void configStr() {
     Connection conn{"user=cxx_client password=cxx_client dbname=cxx_client"};
@@ -140,8 +139,10 @@ void configUrl() {
     conn.check();
 }
 /// ```
-/// And the last one option is to use a configuration builder:
+/// And the last one approach is to exploit a configuration builder:
 /// ```
+using postgres::Config;
+
 void configBuilder() {
     Connection conn{Config::Builder{}.user("cxx_client")
                                      .password("cxx_client")
@@ -150,13 +151,11 @@ void configBuilder() {
     conn.check();
 }
 /// ```
-/// The class ```Config::Builder``` provides setter methods for all parameters
+/// The `Config::Builder` provides setter methods for all parameters
 /// available (and not deprecated) at the moment of writing.
 /// Method names are in *snake_case* to exactly mirror corresponding parameter names.
-/// An example setting some random parameters:
+/// There are quite a few options, e.g:
 /// ```
-#include <chrono>
-
 using namespace std::chrono_literals;
 using postgres::SslMode;
 
@@ -170,8 +169,10 @@ void configBuilderExtra() {
     conn.check();
 }
 /// ```
-/// Also there are some general purpose setters.
-/// The following example manually sets the same parameters as the previous one:
+/// We can also do the same thing with general purpose setters of the `Config::Builder`,
+/// but their use is not recommended unless there is some brand new parameter
+/// that has not yet been supported by the library.
+/// Just in case:
 /// ```
 void configBuilderManual() {
     Connection conn{Config::Builder{}.set("application_name", "APP")
@@ -186,35 +187,31 @@ void configBuilderManual() {
 
 /// ### Error handling
 ///
-/// One of the library design goals was to eliminate some sorts of bugs by design and at compile time.
-/// But of course runtime errors are unavoidable.
-/// Most of the time you're given two ways to deal with them depending on your attitude to exceptions.
-/// Lets talk about exceptions first.
+/// One of the library goals was to eliminate some sorts of bugs by design and at compile time,
+/// but of course runtime errors are unavoidable.
+/// Most of the time you're given two ways to deal with them
+/// depending on your attitude to exceptions.
+/// Lets discuss exceptions first.
 ///
-/// An exception classes hierarchy consists of a base class ```Error```
-/// and two classes derived from it: ```LogicError``` and ```RuntimeError```
-/// inside namespace ```postgres```.
-/// The ```Error``` in turn is derived from ```std::exception```.
-/// The library throws ```LogicError``` to indicate a bug in your code,
-/// such as trying to access a row that is out of bounds or misusing the library in some way.
-/// Runtime errors, e.g. loosing a connection to a database,
-/// don't lead to an exception unless you explicitly tell to do that.
+/// An exception classes hierarchy consists of a base class `postgres::Error`
+/// and two classes derived from it: `postgres::LogicError` and `postgres::RuntimeError`.
+/// The `Error` in turn is a child of `std::exception`.
+/// The `LogicError` is triggered to indicate a bug in your code
+/// such as trying to access a row that is out of bounds or misusing the library in some other way.
+/// Runtime errors, e.g. a connection that's got broken,
+/// don't usually cause an exception to be thrown unless you explicitly tell to do that.
 ///
-/// Many library types provide two methods to check their status: ```isOk()```
-/// returning boolean value and ```check()``` throwing an exception.
+/// Many library types provide two methods to check their status: `isOk()`
+/// returning a boolean value and `check()` throwing an exception.
 /// It is a common pattern used throughout the library, so remember it.
-/// Also some types provide a method called ```valid()``` which can throw an exception as well.
-/// This one is for convinience and only works in chained method calls.
-/// You will encounter it in later examples.
+/// Also some types provide a method `valid()` which can throw an exception as well.
+/// This one is kind of syntactic sugar and only works in chained method calls.
+/// You will encounter it in a lot of examples.
+/// The next section gives some more information on `valid()`.
 ///
-/// Lets demonstrate the described behaviour using ```Connection``` class
+/// Lets demonstrate the described behaviour using the `Connection` class
 /// which we're now should be familiar with:
 /// ```
-#include <iostream>
-#include <postgres/Postgres.h>
-
-using postgres::Connection;
-
 void connect() {
     Connection conn{};
     if (conn.isOk()) {
@@ -224,7 +221,7 @@ void connect() {
     }
 }
 /// ```
-/// And an example of how to work with exceptions:
+/// And an exception-aware example:
 /// ```
 using postgres::Error;
 
@@ -237,36 +234,49 @@ void connectCheck() {
     }
 }
 /// ```
+/// Some errors might stem from a connection loss.
+/// Once established a connection can be easily reset without the need to reconfigure it anew.
+/// But all the connection state is gone including prepared statements, current schema, etc.
+/// ```
+void connectReset(Connection& conn) {
+    if (!conn.isOk()) {
+        conn.reset();
+    }
+}
+/// ```
 
 /// ### Statement execution
 ///
-/// No that we've learned how to connect to a database lets execute some SQL-statements.
-/// That's what ```Connection::exec()``` method is for:
+/// No that we've learned how to connect to a database lets execute some SQL-statements:
 /// ```
-#include <postgres/Postgres.h>
-
-using postgres::Connection;
-
 void exec(Connection& conn) {
-    auto res = conn.exec("SELECT 1").valid();
+    auto const res = conn.exec("SELECT 1").valid();
     // Handle the result...
 }
 /// ```
-/// The ```exec``` returns an object of type ```Result```
-/// which is completely detached from the connection produced it,
-/// meaning you can use it even after the connection has been destroyed.
+/// The `exec()` returns an object of type `Result`.
+/// The result is completely detached from the connection,
+/// meaning it is safe to use it even after the connection has been closed.
 ///
-/// Next we check that the result is ok calling the ```valid()``` method,
-/// which throws an exception if the result is in a bad state,
-/// and just returns it otherwise.
-/// This is similar to calling ```unwrap()```, if you are familiar with Rust.
-/// Alternatively you can check the result using ```isOk()``` method
-/// as described in section about error handling.
+/// Next we check that the execution has succeeded calling the `valid()` method,
+/// which just forwards the result if it is in a good state,
+/// and throws an exception otherwise.
+/// This is similar to calling `unwrap()`, if you're familiar with Rust.
 ///
-/// Often it is needed to customize a statement with some arguments.
-/// You have an option to embed argument values directly into the statement,
+/// As stated above you're able to avoid exceptions if you'd like:
+/// ```
+void execNoexcept(Connection& conn) {
+    auto const res = conn.exec("BAD SQL");
+    if (!res.isOk()) {
+        std::cerr << res.message() << std::endl;
+        return;
+    }
+}
+/// ```
+/// It is often needed to parametrize a statement with values computed at runtime.
+/// You have an option to embed those values directly into the statement text,
 /// but it is a bad choise for several reasons:
-/// - this could make your app vulnerable to SQL-injection attacks;
+/// - your app could get vulnerable to an SQL-injection attack;
 /// - you have to deal with escaping;
 /// - data is passed as text instead of binary format.
 ///
@@ -278,33 +288,33 @@ void args(Connection& conn) {
     conn.exec(Command{"SELECT $1, $2", 42, "foo"}).check();
 }
 /// ```
-/// Argument types are automatically detected by the ```Command```,
-/// but sometimes you have to be explicit.
+/// Under the hood argument types are passed to Postgres along with their values.
+/// The `Command` automatically detects those types, but sometimes you have to be explicit.
 /// In the example below if we hadn't specified the type of the argument
-/// it would've been guessed to be text instead of json:
+/// it would've been guessed to be plain text instead of json:
 /// ```
 using postgres::bindOid;
 
 void argsOid(Connection& conn) {
-    conn.exec(Command{"SELECT $1", bindOid(R"({"foo": "bar"})", JSONOID)}).check();
+    auto const json = R"({"foo": "bar"})";
+    conn.exec(Command{"SELECT $1", bindOid(json, JSONOID)}).check();
 }
 /// ```
-/// If there are arguments possibly having NULL values,
-/// use pointers of ```std::std::optional``` type.
-/// In the following example both ```ptr``` and ```opt``` will be treated as NULLs:
+/// If there are arguments possibly having NULL values, use pointers or `std::optional` type.
+/// In the following example both `ptr` and `opt` will be treated as NULLs:
 /// ```
 void argsNull(Connection& conn) {
     int* ptr = nullptr;
-    std::optional<int> opt{};
+    std::optional<int> opt;
     conn.exec(Command{"SELECT $1, $2", ptr, opt}).check();
 }
 /// ```
-/// The ```Command``` stores its arguments into internal buffer.
-/// Sometimes you might be willing to avoid copying, e.g. for large piece of text.
+/// The `Command` stores all the arguments into its internal buffer.
+/// But there are cases when it is desirable to avoid copying, e.g. for a large piece of text.
 /// This can be achieved by passing pointer to underlying C-style string
-/// or by using ```std::string_view``` type.
+/// or by using `std::string_view`, but keep an eye on lifetimes.
 /// The same is true for statements as well.
-/// The both way are shown below:
+/// The both ways are shown below:
 /// ```
 void argsLarge(Connection& conn) {
     std::string      text = "SOME VERY LONG TEXT...";
@@ -319,24 +329,22 @@ void argsRange(Connection& conn) {
     conn.exec(Command{"SELECT $1, $2, $3", std::pair{args.begin(), args.end()}}).check();
 }
 /// ```
-/// Actually you're not limited to pass all the arguments at once to ```Command```.
-/// There is an ability to add arguments dynamically:
+/// Also there is an ability to add arguments afterwards:
 /// ```
-void argsDyna(Connection& conn) {
+void argsAfter(Connection& conn) {
     Command cmd{"SELECT $1, $2"};
     cmd << 42 << "foo";
     conn.exec(cmd).check();
 }
 /// ```
 /// And a final note about timestamps.
-/// The recommended way is to use a database type called ```TIMESTAMP```,
+/// The recommended way is to use a database type called `TIMESTAMP`,
 /// which represents a number of microseconds since Postgres epoch in UTC.
-/// C++ ```std::chrono::system_clock::time_point``` objects are mapped to that type
-/// and passed in binary form as integral numbers.
-///
-/// If you want to preserve time zone there is a special library type.
-/// But keep in mind that it is a bit less efficient
-/// because timestamps are converted to strings to be transmitted to Postgres:
+/// Instances of `std::chrono::system_clock::time_point` are easily converted to that type
+/// and are accepted by the `Command` as arguments.
+/// Of course you can work with timestamps that include time zone information as well,
+/// but the library won't help you here, just pass them as strings.
+/// Well, almost won't help - actually you can preserve your local time zone:
 /// ```
 using postgres::Time;
 
@@ -354,9 +362,6 @@ void argsTime(Connection& conn) {
 /// Then you can use the name to actually execute the statement and bind argument values.
 /// Consider an example:
 /// ```
-#include <postgres/Postgres.h>
-
-using postgres::Connection;
 using postgres::PreparedCommand;
 using postgres::PrepareData;
 
@@ -365,14 +370,14 @@ void prepare(Connection& conn) {
     conn.exec(PreparedCommand{"my_select", 123}).check();
 }
 /// ```
-/// Beware that statement is prepared on a connection.
-/// There is a method to reset lost connection but it doesn't reprepare statements,
-/// you have to do it manually each time after loosing a connection.
+/// Beware that the `Connection` is intentionally just a thin wrapper around native libpq handle
+/// and doesn't keep any additional state.
+/// Consequently, statements must be prepared again every time a connection's been reestablished.
 
 /// ### Multiple statements in one
 ///
-/// The ```exec``` method described above allows to execute at most one statement at a time,
-/// meaning that the following is a runtime error:
+/// The `exec()` method described earlier allows to execute only one statement at a time,
+/// which means that the following is a runtime error:
 /// ```
 void execMultiBad(Connection& conn) {
     try {
@@ -381,45 +386,50 @@ void execMultiBad(Connection& conn) {
     }
 }
 /// ```
-/// But this can be useful when applying a migration.
-/// That's why the ```Connection``` provides a special method:
+/// But what if we have a migration file with plenty of statements
+/// which we want to apply all at once?
+/// Or, generalizing the problem, just want to join several statements into one for some reason?
+/// Here is a solution:
 /// ```
 void execMultiOk(Connection& conn) {
     conn.execRaw("SELECT 1; SELECT 2").check();
 }
 /// ```
 /// That's not an error anymore, but there are a couple of limitations.
-/// The first one is that there is no way to pass arguments, just a statement text.
-/// And also you are not allowed to obtain data.
-/// Don't be confused by the example - it is quite silly and just to demonstrate the feature,
+/// The first one is that there is technically no way to pass arguments, only a statement.
+/// Moreover you are not allowed to obtain data.
+/// Don't be confused by the example - it is quite silly and just for demonstration purposes,
 /// normally there won't be selects.
 /// The second limitation is due to the library sends and receives arguments in binary format,
 /// but when multiple statements are passed there is no way to tell Postgres to enable binary mode.
-/// Also when a select statement is embedded somewhere in between the other statements,
+/// Also when a select statement is embedded somewhere between the other statements,
 /// it is impossible to get the selected data
 /// because only the result of the last statement is returned from a database.
-/// Such an interface discourages you from trying to do this.
-/// Once again, this mode is primarily to apply a migration.
+/// Therefore it was decided to completely disable data read and avoid aforementioned issues.
 
 /// ### Transactions
 ///
 /// Each statement is executed as a separate transaction.
 /// Multiple statements separated with semicolons as described in the previous section
 /// are a single transaction as well.
-/// If you need to join multiple statements into a single transaction, you have two options.
+/// There are two more apporaches to treat multiple statements as a transaction.
 /// Lets start with the simplest one:
 /// ```
 void transact(Connection& conn) {
-    conn.transact("SELECT 1", "SELECT 2", "SELECT 3").check();
+    conn.transact("SELECT 1",
+                  Command{"SELECT $1", 2},
+                  PreparedCommand{"my_select", 3},
+                  PrepareData{"my_select2", "SELECT $1"}).check();
 }
 /// ```
-/// That's it. Just call the ```transact``` method on a connection instance.
-/// Either all statements passed succeed or none of them have any effect.
+/// The `transact()` accepts anything the `exec()` does:
+/// strings, `Command`s, `PreparedCommand`s and `PrepareData` in any combination.
+/// Either all of them succeed or none have any effect.
 /// Again the example is a bit ridiculous, but imagine statements to be more meaningful,
 /// for instance inserting data to two different tables when one insert without the other
 /// would leave a system in inconsistent state.
 ///
-/// The second way gives you more fine-grained control over transaction execution:
+/// The second way gives more fine-grained control over transaction execution:
 /// ```
 void transactManual(Connection& conn) {
     auto tx = conn.begin().valid();
@@ -429,21 +439,20 @@ void transactManual(Connection& conn) {
 }
 /// ```
 /// This way allows to put some logic between statement execution
-/// and build transactions which have to be more complex and flexible.
-/// Just don't forget to check that transaction started successfully and to commit it.
+/// and build more complex and flexible transactions.
+/// Please don't forget to check that the `begin()` has succeeded and to commit.
 /// Also consider the possibility of commit operation itself to fail.
-/// When the transaction handler returned from the call to ```begin()``` goes out of scope
-/// it rollbacks the transaction unless it has been explicitly commited before.
+/// When transaction handle goes out of scope it rollbacks the transaction
+/// unless it has been explicitly commited already.
 
 /// ### Reading the result
 ///
 /// Now it's time to talk about queries and how to access their results.
-/// As mentioned above the ```exec``` method returns an object of type ```Result```.
-/// Iterating over it will produce a ```Row``` object at each iteration.
-/// The '''Row''' in turn consists of a number of ```Field```*s*
-/// which can be obtained by index or name.
-/// Finally you can read the value of the ```Field``` into a new variable or an existing one.
-/// Probably that's a bit more clear expressed in code:
+/// As mentioned above the `exec()` method returns an object of type `Result`.
+/// Iterating over it will produce a `Row` instance on each iteration.
+/// The 'Row' in turn consists of a number of `Field`s accessible by their index or name.
+/// Finally you can read the value of the `Field` into a new variable or an existing one.
+/// That is a bit less verbose expressed in code:
 /// ```
 void result(Connection& conn) {
     for (auto const& row : conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid()) {
@@ -461,18 +470,22 @@ void resultVars(Connection& conn) {
     std::string foo, bar;
 
     auto const res = conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid();
+    if (res.isEmpty()) {
+        // Normally this case should be covered as well...
+    }
+
     res[0]["foo"] >> foo;
     res[0]["bar"] >> bar;
 
     std::cout << foo << " " << bar << std::endl;
 }
 /// ```
-/// In the last example it is evident that the result cannot be empty.
-/// In practice you always have to check it before indexing the result to avoid errors.
-/// Iterating lacks the possibility to access rows which are out of bounds
-/// and therefore is safer and preferrable.
+/// In the last example it was evident that the result could not be empty.
+/// In practice you should usually make a check before trying to access the data
+/// or you will end up with a chance of going out of bounds.
+/// Iterating eliminates this risk and therefore is safer and preferrable.
 ///
-/// Similarly to ```Command``` NULLs are represented with pointers or ```std::optional```:
+/// Similarly to the `Command` NULLs are represented with pointers or `std::optional`:
 /// ```
 void resultNull(Connection& conn) {
     auto const res = conn.exec("SELECT NULL::TEXT").valid();
@@ -531,9 +544,7 @@ void resultTime(Connection& conn) {
     fld.as<Time>().toUnix();
 }
 /// ```
-/// But what if time zone information is crutial to your app?
-/// Trying to treat this as in the previous example will lead to runtime error.
-/// But you can just cast timestamp to ```TEXT``` and read it into ```std::string```:
+/// Timestamps with time zone have to be converted to `TEXT` and then read into `std::string`:
 /// ```
 void resultTimeZone(Connection& conn) {
     auto const res = conn.exec("SELECT now()::TEXT").valid();
@@ -543,11 +554,8 @@ void resultTimeZone(Connection& conn) {
     std::cout << fld.as<std::string>() << std::endl;
 }
 /// ```
-/// And one more caveat about working with timestamps.
-/// Using this library eliminates the need for extracting epoch from timestamp
-/// by means of Postgres, so avoid this in a new code.
-/// But in case you have to deal with such a statement beware that
-/// it yields the result of type double precision:
+/// And a small caveat about `extract(EPOCH FROM ...`-like statements.
+/// Working with such a statement be aware that it yields the result of type `DOUBLE PRECISION`:
 /// ```
 void resultExtractEpoch(Connection& conn) {
     auto const res = conn.exec("SELECT extract(EPOCH FROM now())").valid();
@@ -563,9 +571,9 @@ void resultExtractEpoch(Connection& conn) {
     std::cout << fld.as<double>() << std::endl;
 }
 /// ```
-/// Finally you can read absolutely anything into ```std::string```.
+/// Finally you can read absolutely anything into `std::string`.
 /// This doesn't perform any checks and just gives you raw content of the field.
-/// There is also an option to avoid copying data using ```std::string_view```
+/// There is also an option to avoid copying data with help of `std::string_view`,
 /// but make sure the result is staying alive for enough time.
 /// ```
 void resultData(Connection& conn) {
@@ -582,7 +590,7 @@ void resultData(Connection& conn) {
 
 /// ### Escaping
 ///
-/// Thanks to ```Command``` class it should be extremely rare you have to deal with escaping.
+/// Thanks to the `Command`, it should be extremely rare when you have to deal with escaping.
 /// But just in case there are a couple of methods performing that kind of task.
 /// ```
 void escape(Connection& conn) {
@@ -598,9 +606,9 @@ void escape(Connection& conn) {
 ///
 /// Statement execution methods considered so far are synchronous,
 /// meaning that the calling thread is blocked until a database gives back the result.
-/// There is also an asynchronous family of methods
-/// allowing you to split the execution process into sending and receiving parts.
-/// Don't confuse it with multithreaded mode of connection pool which is covered later.
+/// Now lets look at an asynchronous family of methods
+/// allowing you to split the execution process into sending and receiving phases.
+/// Don't confuse it with multithreaded mode of a connection pool which is covered later.
 /// That's how it looks like:
 /// ```
 void send(Connection& conn) {
@@ -619,16 +627,17 @@ void send(Connection& conn) {
     std::cout << receiver.receive().isDone() << std::endl;
 }
 /// ```
-/// Calling the ```send``` method returns an instance of type ```Receiver```
-/// which allows you to obtain the result later.
-/// It is a RAII-type which performs cleanup in its destructor
-/// leaving the connection in a valid state ready for reuse.
-/// As a consequence the destructor can block for a short time until all the results are taken,
+/// Calling the `send()` method returns an instance of type `Receiver`
+/// which allows to obtain the result later.
+/// It is a RAII-type which performs some cleanup in its destructor
+/// to leave the connection in a valid state ready for reuse.
+/// As a consequence the destructor can block for a short period of time
+/// until all the results are taken,
 /// but it normally shouldn't be an issue assuming proper library use.
 ///
 /// You can't have multiple active sends simultaneously.
-/// Either receive the results until ```isDone``` gives true
-/// or just let the receiver go out of scope.
+/// Either receive the results until `isDone()` gives true
+/// or let the receiver go out of scope.
 /// ```
 void sendTWice(Connection& conn) {
     auto rec1 = conn.send("SELECT 1").valid();
@@ -642,11 +651,11 @@ void sendTWice(Connection& conn) {
 /// ```
 /// There are also asynchronous counterparts for prepared and raw statements.
 /// There is nothing special about them so we won't waste our time on examples.
-/// What's more interesting is a so called single row mode.
-/// The primary goal of this mode it to receive a large datasets.
+/// What's more interesting is a so-called single row mode,
+/// the primary goal of which it to receive large datasets.
 /// Such a large that it is impossible or unreasonable to fit them in memory.
 /// You may think of it as establishing a stream of rows.
-/// As always there is a tradeoff - the single row mode works a bit slower.
+/// As always there is a tradeoff - single row mode works a bit slower.
 /// Lets look at an example:
 /// ```
 void sendRowByRow(Connection& conn) {
@@ -665,27 +674,26 @@ void sendRowByRow(Connection& conn) {
     }
 }
 /// ```
-/// Notice that the result is checked to be not empty inside the loop body -
-/// you have always do the same thing.
-/// This is because of how libpq works.
+/// Notice that the result is checked for emptiness inside the loop body -
+/// this is because of how libpq works, and you have always do the same thing.
 
 /// ### Generating statements
 ///
-/// As the library was not intended to be a fully-fledged SQL-statement generator
+/// Since the library was not intended to be a fully-fledged SQL-statement generator
 /// it is capable of producing just the most basic statements for you.
 /// It is possible to create and drop tables,
 /// perform inserts, selects and updates having no extra clauses.
 ///
-/// This feature might come in handy when testing or prototyping,
-/// but for real-world applications we most likely to end up with more complex SQL-statement.
-/// And the library can help us here a little bit.
+/// This feature may come in handy when testing or prototyping,
+/// but real-world applications often require more sophisticated SQL-statements,
+/// and you can find some helpers in the library to construct them.
 /// Remember the very first code example?
 /// We've created a table called "my_table" there
 /// to demonstrate basic statement generation facilities.
 ///
-/// Now lets use that table to show how we can make an "upsert" statement.
+/// Now lets use that table to show how we can perform an upsert.
 /// The so-called "upsert" is a special kind of Postgres statement
-/// consisting of an insert followed with update when insert results in a conflict.
+/// consisting of an insert which on conflict fallbacks to an update.
 /// The starting example left our table in the following state:
 ///
 /// id | info |        create_time
@@ -696,6 +704,9 @@ void sendRowByRow(Connection& conn) {
 ///
 /// Lets update it:
 /// ```
+using postgres::Statement;
+using postgres::RangeStatement;
+
 void myTableUpdate(Connection& conn) {
     // Needed for the example to work.
     conn.exec("ALTER TABLE my_table ADD PRIMARY KEY (id)").check();
@@ -710,9 +721,6 @@ void myTableUpdate(Connection& conn) {
     auto const range = std::pair{data.begin(), data.end()};
 
     // Generate an upsert statement.
-    using postgres::Statement;
-    using postgres::RangeStatement;
-
     auto const statement = "INSERT INTO "
                            + Statement<MyTable>::table()
                            + " VALUES "
@@ -722,7 +730,7 @@ void myTableUpdate(Connection& conn) {
     conn.exec(Command{statement, range}).check();
 }
 /// ```
-/// As a result the table now contains:
+/// We've just changed the content to the following:
 ///
 /// id | info |        create_time
 /// ---|------|----------------------------
@@ -741,10 +749,10 @@ void myTableUpdate(Connection& conn) {
 ///     POSTGRES_CXX_TABLE("my_table", id, info, create_time);
 /// };
 /// ```
-/// It is ```POSTGRES_CXX_TABLE``` macro that does all the magic.
+/// It is the `POSTGRES_CXX_TABLE` macro that does the magic.
 /// Once we've added it to a structure definition it becomes possible
 /// to visit all the data members along with their names using generated methods.
-/// Those methods are ```visitPostgresDefinition``` and ```visitPostgresFields```,
+/// Those methods are `visitPostgresDefinition` and `visitPostgresFields`,
 /// and you can use them to produce SQL-statements for your custom data types.
 /// Here is a code skeleton to start with:
 /// ```
@@ -773,18 +781,19 @@ void myTableVisit(Connection& conn) {
 
 /// ### Connection pool
 ///
-/// Now that you know how to use the connection lets move on to more high-level feature.
-/// Connection pool is designed to execute statements concurrently in separate threads.
-/// You've seen it in the section called "Get started with connection pool".
+/// Now that you know how to use a connection lets move on to a higher-level feature.
+/// Connection pool was designed to execute multiple statements concurrently.
+/// You've seen it in the "Get started with connection pool" section.
 /// Here we'll explore all the details and nuances.
-/// To start using the connection pool you have to create an instance of a ```Client``` class.
-/// An interface is rather compact: you can invoke either ```exec``` or ```query``` methods,
+/// To start using the pool create an instance of a `Client` class.
+/// An interface is rather compact: you can invoke either `exec()` or `query()`,
 /// passing any callable object accepting a reference to a connection as its parameter.
 /// Which one to use depends on the connection method which is going to do the job.
 /// ```
 void pool() {
     Client cl{};
 
+    // The result is of type std::future<Result>.
     auto res = cl.query([](Connection& conn) {
         return conn.exec("SELECT 1");
     });
@@ -792,17 +801,16 @@ void pool() {
     std::cout << res.get().valid().size() << std::endl;
 }
 /// ```
-/// The client implements single-producer-multiple-consumers pattern
-/// and is not thread-safe by itself
-/// meaning you have to protect it with a mutex to use from within multiple threads.
-/// The client is quite straightforward to use,
-/// however a lot of flexibility is hidden in its configuration,
-/// so lets discover how to configure the client.
+/// The `Client` implements single-producer-multiple-consumers pattern
+/// and is not thread-safe by itself: protect it with a mutex for concurrent access.
+/// The interface is quite straightforward to use,
+/// however a lot of flexibility is hidden in a connection pool configuration,
+/// so lets discover it.
 ///
 /// First of all any available connection option can be passed
-/// to the client to let it know how to establish a connection.
+/// to a client to let it know how to establish a connection.
 /// We've covered how to configure a connection in the corresponding section.
-/// The only difference is that a config or URL must be wrapped in a ```Context```
+/// The only difference is that a config or URL must be wrapped in a `Context`
 /// to be passed to a client.
 /// ```
 using postgres::Context;
@@ -822,7 +830,7 @@ void poolPrepare() {
     Client cl{Context::Builder{}.prepare({"my_select", "SELECT 1"}).build()};
 }
 /// ```
-/// And finally there are parameters affecting the behaviour of the connection pool:
+/// And finally there are parameters affecting the behaviour of a connection pool:
 /// ```
 using postgres::ShutdownPolicy;
 
@@ -834,22 +842,20 @@ void poolBehaviour() {
                                 .build()};
 }
 /// ```
-/// Idle timeout tells the client to stop thread and close connection to a database
+/// Idle timeout causes a thread to stop and close its connection to a database
 /// after specified duration of inactivity.
-/// Its primary purpose is to reduce the number of allocated resources after load spikes
-/// back to the usual level.
+/// Its primary purpose is to reduce the number of allocated resources back to the usual level
+/// after load spikes has gone.
 /// This feature is disabled by default.
 ///
 /// Maximum concurrency specifies the number of threads/connections
 /// and defaults to hardware concurrency.
 /// Also the internal queue size can be limited.
-/// Exceeding the limit results in an exception in a thread working with the client.
+/// Exceeding the limit results in an exception in a thread calling the client methods.
 /// By default the queue is allowed to grow until application run out of memory and crash.
 ///
 /// Shutdown policy regulates how to handle the queue on shutdown.
-/// Default policy is to stop gracefully
-/// meaning that all the requests waiting in queue will be executed.
+/// Default policy is to stop gracefully: all requests waiting in the queue will be executed.
 /// You can alternatively choose to drop the queue,
-/// but active requests are not canceled and can take some time anyway.
-/// And the last one policy is to abort.
-/// Behaviour in that case is undefined and your app have good chances to crash.
+/// but active requests are not canceled and can take some time to complete anyway.
+/// And the last one policy is to abort resulting in an undefined behaviour.

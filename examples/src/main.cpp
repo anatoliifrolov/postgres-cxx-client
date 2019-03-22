@@ -14,14 +14,16 @@ void configBuilderManual();
 
 void connect();
 void connectCheck();
+void connectReset(Connection& conn);
 
 void exec(Connection& conn);
+void execNoexcept(Connection& conn);
 void args(Connection& conn);
 void argsOid(Connection& conn);
 void argsNull(Connection& conn);
 void argsLarge(Connection& conn);
 void argsRange(Connection& conn);
-void argsDyna(Connection& conn);
+void argsAfter(Connection& conn);
 void argsTime(Connection& conn);
 
 void prepare(Connection& conn);
@@ -71,14 +73,16 @@ int main() {
 
     connect();
     connectCheck();
+    connectReset(conn);
 
     exec(conn);
+    execNoexcept(conn);
     args(conn);
     argsOid(conn);
     argsNull(conn);
     argsLarge(conn);
     argsRange(conn);
-    argsDyna(conn);
+    argsAfter(conn);
     argsTime(conn);
 
     prepare(conn);
