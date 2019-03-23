@@ -18,16 +18,11 @@ fn main() {
                 continue;
             }
 
-            // Markdown or empty line.
-            let line = line
-                .trim_left_matches("/// ")
-                .trim_left_matches("///");
-            if line.is_empty() || !line.as_bytes()[0].is_ascii_alphabetic() {
-                println!("{}", line);
-                continue;
-            }
-
-            if line.contains("|") {
+            // Markdown, table or empty line.
+            let line = line.trim_left_matches("/// ").trim_left_matches("///");
+            let as_is =
+                line.is_empty() || line.contains("|") || !line.as_bytes()[0].is_ascii_alphabetic();
+            if as_is {
                 println!("{}", line);
                 continue;
             }
