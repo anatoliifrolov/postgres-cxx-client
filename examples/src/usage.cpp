@@ -1,4 +1,7 @@
 /// ## Usage
+///
+/// This section shows how to actually write code using the library.
+/// All the examples are built and run as part of CI process and are guaranteed to work.
 
 /// ### Get started with connection
 ///
@@ -713,7 +716,7 @@ void myTableUpdate(Connection& conn) {
 
     auto const now = std::chrono::system_clock::now();
 
-    // 3 and 4 collide with existing ids.
+    // 2 and 3 collide with existing ids.
     std::vector<MyTable> data{{2, "spam", now},
                               {3, "ham",  now},
                               {4, "eggs", now}};
@@ -721,13 +724,15 @@ void myTableUpdate(Connection& conn) {
     auto const range = std::pair{data.begin(), data.end()};
 
     // Generate an upsert statement.
-    auto const statement = "INSERT INTO "
-                           + Statement<MyTable>::table()
-                           + " VALUES "
-                           + RangeStatement::placeholders(range.first, range.second)
-                           + " ON CONFLICT (id) DO UPDATE SET info = EXCLUDED.info";
+    auto const upsert = "INSERT INTO "
+                        + Statement<MyTable>::table()
+                        + " ("
+                        + Statement<MyTable>::fields()
+                        + ") VALUES "
+                        + RangeStatement::placeholders(range.first, range.second)
+                        + " ON CONFLICT (id) DO UPDATE SET info = EXCLUDED.info";
 
-    conn.exec(Command{statement, range}).check();
+    conn.exec(Command{upsert, range}).check();
 }
 /// ```
 /// We've just changed the content to the following:
@@ -750,9 +755,9 @@ void myTableUpdate(Connection& conn) {
 /// };
 /// ```
 /// It is the `POSTGRES_CXX_TABLE` macro that does the magic.
-/// Once we've added it to a structure definition it becomes possible
+/// Once we've added it to a type definition it becomes possible
 /// to visit all the data members along with their names using generated methods.
-/// Those methods are `visitPostgresDefinition` and `visitPostgresFields`,
+/// Those methods are `visitPostgresDefinition()` and `visitPostgresFields()`,
 /// and you can use them to produce SQL-statements for your custom data types.
 /// Here is a code skeleton to start with:
 /// ```
@@ -778,6 +783,30 @@ void myTableVisit(Connection& conn) {
     data.visitPostgresFields(gen);
 }
 /// ```
+/// You might be wondering, how did the library figure out the field types
+/// when we asked it to create a table for the definition of `MyTable`?
+/// The rules are summarized here:
+///
+/// PostgreSQL type  | C++ types (with possible example for 64-bit machine)
+/// -----------------|------------------------------------------------------
+/// BOOL             | bool
+/// REAL             | Floating point numbers fitting in 4 bytes (float).
+/// DOUBLE PRECISION | Floating point numbers fitting in 8 bytes (double).
+/// SMALLINT         | Signed integral numbers fitting in 2 bytes (short).
+/// INT              | Signed integral numbers fitting in 4 bytes (int).
+/// BIGINT           | Signed integral numbers fitting in 8 bytes (long).
+/// SMALLSERIAL      | Unsigned integral numbers fitting in 2 bytes (unsigned short).
+/// SERIAL           | Unsigned integral numbers fitting in 4 bytes (unsigned int).
+/// BIGSERIAL        | Unsigned integral numbers fitting in 8 bytes (unsigned long).
+/// TEXT             | std::string
+/// TIMESTAMP        | std::chrono::system_clock::time_point
+///
+/// Be careful working with unsigned integers since the SQL standard doesn't support them
+/// and neither do Postgres.
+/// Moreover it is considered to be a good practice in C++ to use signed numbers for arithmetic
+/// and unsigned ones for bitmasks.
+/// The design decision for table generation was to utilize unsigned integers
+/// to create auto-incremented fields, which are useful for producing unique identifiers.
 
 /// ### Connection pool
 ///

@@ -27,6 +27,11 @@ fn main() {
                 continue;
             }
 
+            if line.contains("|") {
+                println!("{}", line);
+                continue;
+            }
+
             // Piece of text.
             match lines.peek() {
                 None => {
@@ -35,7 +40,8 @@ fn main() {
                 Some(&next) => {
                     let is_continuing = 4 < next.len()
                         && next.starts_with("/// ")
-                        && next.as_bytes()[4].is_ascii_alphabetic();
+                        && next.as_bytes()[4].is_ascii_alphabetic()
+                        && !next.contains("|");
                     if is_continuing {
                         print!("{} ", line);
                     } else {
