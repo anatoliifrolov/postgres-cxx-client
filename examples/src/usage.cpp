@@ -376,6 +376,10 @@ void prepare(Connection& conn) {
 /// Beware that the `Connection` is intentionally just a thin wrapper around native libpq handle
 /// and doesn't keep any additional state.
 /// Consequently, statements must be prepared again every time a connection's been reestablished.
+/// Also using PgBouncer can lead to errors depending on its configuration.
+/// If you're certain you've successfully prepared a statement and your code is correct,
+/// but Postgres complains that the prepared statement doesn't exist,
+/// then setting `pool_mode=session` in pgbouncer.ini is likely to solve the problem.
 
 /// ### Multiple statements in one
 ///
