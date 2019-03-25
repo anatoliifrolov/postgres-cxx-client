@@ -20,7 +20,7 @@ Features:
 Prerequisites:
 * CMake 3.8 or newer.
 * A C++17-compliant compiler.
-* libpq-dev.
+* libpq-dev and postgresql-server-dev-all.
 * Google Test (only to run the tests).
 
 The project is built and tested using GCC 7.3 and Clang 6.0 on a machine running Linux.
@@ -114,6 +114,27 @@ After this step our project should've become able to compile and run.
 
 ### Running the tests
 
+To run the tests locally, create a database and a role both with a name "cxx_client".
+Set the password "cxx_client" for the role and make the role be owner of the database.
+How to do that is beyond the scope of this document.
+Make sure that PostgreSQL server is up and ready to accept connections.
+Then go to the library directory and from the command line type the following:
+```bash
+$ git submodule update --init --recursive
+$ cmake -DPOSTGRES_CXX_BUILD_TESTS=ON -B./build/ -H.
+$ cmake --build ./build/
+$ cd ./build/
+$ PGUSER=cxx_client PGPASSWORD=cxx_client PGDATABASE=cxx_client ctest -V
+```
+Pass any additional parameters you need to the ctest.
+For instance, you may have to specify the database address with `PGHOST` or `PGHOSTADDR` variables.
+On success you should see something similar to:
+```
+1/1 Test #1: PostgresCxxClientTest ............   Passed    0.79 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.79 sec
+```
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
