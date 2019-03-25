@@ -4,6 +4,7 @@ cp -r \
     cmake \
     deps \
     docker/entrypoint.sh \
+    examples \
     include \
     src \
     tests \

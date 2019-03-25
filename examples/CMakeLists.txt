@@ -1,16 +1,16 @@
-add_executable(${PROJECT_NAME}Example
+add_executable(PostgresCxxClientExample
         src/main.cpp
         src/usage.cpp
         )
 
 find_package(Threads REQUIRED)
 
-target_link_libraries(${PROJECT_NAME}Example
+target_link_libraries(PostgresCxxClientExample
         PRIVATE
-        ${PROJECT_NAME}
+        PostgresCxxClient
         Threads::Threads
         )
 
-add_test(NAME ${PROJECT_NAME}Example
-        COMMAND ${PROJECT_NAME}Example
+add_test(NAME PostgresCxxClientExample
+        COMMAND PostgresCxxClientExample
         )

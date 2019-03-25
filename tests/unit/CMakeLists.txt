@@ -1,4 +1,4 @@
-add_executable(${PROJECT_NAME}Test
+add_executable(PostgresCxxClientTest
         src/ChannelFake.cpp
         src/ChannelMock.cpp
         src/ChannelTest.cpp
@@ -21,19 +21,19 @@ add_executable(${PROJECT_NAME}Test
         src/WorkerTest.cpp
         )
 
-target_include_directories(${PROJECT_NAME}Test
+target_include_directories(PostgresCxxClientTest
         PRIVATE
         "${PROJECT_SOURCE_DIR}/deps/googletest/googletest/include"
         "${PROJECT_SOURCE_DIR}/deps/googletest/googlemock/include"
         )
 
-target_link_libraries(${PROJECT_NAME}Test
+target_link_libraries(PostgresCxxClientTest
         PRIVATE
-        ${PROJECT_NAME}
+        PostgresCxxClient
         gtest_main
         gmock_main
         )
 
-add_test(NAME ${PROJECT_NAME}Test
-        COMMAND ${PROJECT_NAME}Test
+add_test(NAME PostgresCxxClientTest
+        COMMAND PostgresCxxClientTest
         )
