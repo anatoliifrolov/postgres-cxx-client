@@ -13,6 +13,31 @@ Features:
 * Passing arguments in binary format.
 * Working with timestamps and NULLs.
 
+## Table of Contents
+
+* [Getting started](#getting-started)
+  * [CMake subproject](#cmake-subproject)
+  * [Prebuilt library](#prebuilt-library)
+  * [Running the tests](#running-the-tests)
+* [License](#license)
+* [Usage](#usage)
+  * [Get started with connection](#get-started-with-connection)
+  * [Get started with connection pool](#get-started-with-connection-pool)
+  * [What to include](#what-to-include)
+  * [Configuring](#configuring)
+  * [Error handling](#error-handling)
+  * [Statement execution](#statement-execution)
+  * [Prepared statements](#prepared-statements)
+  * [Multiple statements in one](#multiple-statements-in-one)
+  * [Transactions](#transactions)
+  * [Reading the result](#reading-the-result)
+  * [Escaping](#escaping)
+  * [Asynchronous interface](#asynchronous-interface)
+  * [Generating statements](#generating-statements)
+  * [Connection pool](#connection-pool)
+
+<a name="getting-started"/>
+
 ## Getting started
 
 Prerequisites:
@@ -56,6 +81,8 @@ int main() {
 Now we have two ways to make the project compile as mentioned a bit earlier.
 Lets consider each of them in turn.
 
+<a name="cmake-subproject"/>
+
 ### CMake subproject
 
 We have to bring the PostgreSQL client library files into our project somehow.
@@ -80,6 +107,8 @@ target_link_libraries(MyProject PostgresCxxClient::PostgresCxxClient)
 ```  
 There are two new lines at the bottom doing the job.
 And that's it, our project is ready to run.
+
+<a name="prebuilt-library"/>
 
 ### Prebuilt library
 
@@ -110,6 +139,8 @@ What's left is just to tell CMake where to lookup for the libraries
 using the option `-DCMAKE_PREFIX_PATH=~/lib/`.
 After this step our project should've become able to compile and run.
 
+<a name="running-the-tests"/>
+
 ### Running the tests
 
 To run the tests locally, create a database and a role both with a name "cxx_client".
@@ -133,14 +164,20 @@ On success you should see something similar to:
 Total Test time (real) =   0.79 sec
 ```
 
+<a name="license"/>
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+<a name="usage"/>
 
 ## Usage
 
 This section shows how to actually write code using the library.
 All the examples are built and run as part of CI process and are guaranteed to work.
+
+<a name="get-started-with-connection"/>
 
 ### Get started with connection
 
@@ -193,6 +230,8 @@ void getStarted() {
 }
 ```
 
+<a name="get-started-with-connection-pool"/>
+
 ### Get started with connection pool
 
 Here is one more example to get you started.
@@ -228,6 +267,8 @@ void getStartedPool() {
 }
 ```
 
+<a name="what-to-include"/>
+
 ### What to include
 
 The library provides an all-in-one header file `#include <postgres/Postgres.h>`,
@@ -238,6 +279,8 @@ Include "Fwd.h" instead when you need just a declaration, say in a function sign
 If compilation time is not a paramount concern use "Postgres.h",
 otherwise include only needed files from "postgres" directory.
 The examples in this document include "Postgres.h" for brevity.
+
+<a name="configuring"/>
 
 ### Configuring
 
@@ -327,6 +370,8 @@ void configBuilderManual() {
 }
 ```
 
+<a name="error-handling"/>
+
 ### Error handling
 
 One of the library goals was to eliminate some sorts of bugs by design and at compile time,
@@ -386,6 +431,8 @@ void connectReset(Connection& conn) {
     }
 }
 ```
+
+<a name="statement-execution"/>
 
 ### Statement execution
 
@@ -496,6 +543,8 @@ void argsTime(Connection& conn) {
 }
 ```
 
+<a name="prepared-statements"/>
+
 ### Prepared statements
 
 Using prepared statements is quite trivial.
@@ -519,6 +568,8 @@ Also using PgBouncer can lead to errors depending on its configuration.
 If you're certain you've successfully prepared a statement and your code is correct,
 but Postgres complains that the prepared statement doesn't exist,
 then setting `pool_mode=session` in pgbouncer.ini is likely to solve the problem.
+
+<a name="multiple-statements-in-one"/>
 
 ### Multiple statements in one
 
@@ -552,6 +603,8 @@ Also when a select statement is embedded somewhere between the other statements,
 it is impossible to get the selected data
 because only the result of the last statement is returned from a database.
 Therefore it was decided to completely disable data read and avoid aforementioned issues.
+
+<a name="transactions"/>
 
 ### Transactions
 
@@ -590,6 +643,8 @@ Please don't forget to check that the `begin()` has succeeded and to commit.
 Also consider the possibility of commit operation itself to fail.
 When transaction handle goes out of scope it rollbacks the transaction
 unless it has been explicitly commited already.
+
+<a name="reading-the-result"/>
 
 ### Reading the result
 
@@ -734,6 +789,8 @@ void resultData(Connection& conn) {
 }
 ```
 
+<a name="escaping"/>
+
 ### Escaping
 
 Thanks to the `Command`, it should be extremely rare when you have to deal with escaping.
@@ -747,6 +804,8 @@ void escape(Connection& conn) {
     std::cout << conn.escId("escape me") << std::endl;
 }
 ```
+
+<a name="asynchronous-interface"/>
 
 ### Asynchronous interface
 
@@ -822,6 +881,8 @@ void sendRowByRow(Connection& conn) {
 ```
 Notice that the result is checked for emptiness inside the loop body -
 this is because of how libpq works, and you have always do the same thing.
+
+<a name="generating-statements"/>
 
 ### Generating statements
 
@@ -951,6 +1012,8 @@ and unsigned ones for bitmasks.
 The design decision for table generation was to utilize unsigned integers
 to create auto-incremented fields, which are useful for producing unique identifiers.
 
+<a name="connection-pool"/>
+
 ### Connection pool
 
 Now that you know how to use a connection lets move on to a higher-level feature.
@@ -1031,3 +1094,4 @@ Default policy is to stop gracefully: all requests waiting in the queue will be 
 You can alternatively choose to drop the queue,
 but active requests are not canceled and can take some time to complete anyway.
 And the last one policy is to abort resulting in an undefined behaviour.
+
