@@ -21,8 +21,8 @@ Features:
   * [Running the tests](#running-the-tests)
 * [License](#license)
 * [Usage](#usage)
-  * [Get started with connection](#get-started-with-connection)
-  * [Get started with connection pool](#get-started-with-connection-pool)
+  * [Get started with a connection](#get-started-with-a-connection)
+  * [Get started with a connection pool](#get-started-with-a-connection-pool)
   * [What to include](#what-to-include)
   * [Configuring](#configuring)
   * [Error handling](#error-handling)
@@ -175,14 +175,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Usage
 
 This section shows how to actually write code using the library.
-All the examples are built and run as part of CI process and are guaranteed to work.
+All the examples are built and run as part of a CI process and are guaranteed to work.
 
-<a name="get-started-with-connection"/>
+<a name="get-started-with-a-connection"/>
 
-### Get started with connection
+### Get started with a connection
 
-The following example gives you a basic idea of how to use the library.
-Each feature is explained in detail in corresponding section below.
+The following example gives you basic idea of how to use the library.
+Each feature is explained in detail in its corresponding section below.
 ```cpp
 #include <chrono>
 #include <iostream>
@@ -230,12 +230,12 @@ void getStarted() {
 }
 ```
 
-<a name="get-started-with-connection-pool"/>
+<a name="get-started-with-a-connection-pool"/>
 
-### Get started with connection pool
+### Get started with a connection pool
 
 Here is one more example to get you started.
-At this time how to use a connection pool is demonstrated.
+At this time a connection pool usage is demonstrated.
 ```cpp
 #include <iostream>
 #include <vector>
@@ -253,15 +253,15 @@ void getStartedPool() {
     std::vector<std::future<Result>> results{};
     results.reserve(10);
 
-    // Send queries to separate threads for execution.
+    // Send queries to separate threads.
     for (auto i = 0; i < 10; ++i) {
         results.push_back(client.query([i](Connection& conn) {
             return conn.exec(Command{"SELECT $1::INT", i});
         }));
     }
 
-    // Wait for results to be ready and then handle them.
-    for (auto& res :results) {
+    // Wait for the results to be ready and handle them.
+    for (auto& res : results) {
         std::cout << res.get().valid()[0][0].as<int>() << std::endl;
     }
 }
@@ -271,14 +271,15 @@ void getStartedPool() {
 
 ### What to include
 
-The library provides an all-in-one header file `#include <postgres/Postgres.h>`,
-the one with forward declarations `#include <postgres/Fwd.h>`,
+The library provides the all-in-one header file "postgres/Postgres.h",
+the one with forward declarations - "postgres/Fwd.h",
 and also every class that is a part of a public API has its own header which you can include.
-It is strongly discouraged to declare any of the library types in your project code.
-Include "Fwd.h" instead when you need just a declaration, say in a function signature.
-If compilation time is not a paramount concern use "Postgres.h",
-otherwise include only needed files from "postgres" directory.
-The examples in this document include "Postgres.h" for brevity.
+It is strongly discouraged to declare any of the library types in your project's code.
+Include the "postgres/Fwd.h" instead when you need just a declaration,
+say in a function signature.
+If compilation time is not a paramount concern use the "postgres/Postgres.h" in implementation,
+otherwise include only needed files from the "postgres" directory.
+The examples in this document use the "postgres/Postgres.h" for brevity.
 
 <a name="configuring"/>
 
@@ -286,12 +287,12 @@ The examples in this document include "Postgres.h" for brevity.
 
 You can find comprehensive description of Postgres configuration options
 in the official libpq documentation at https://www.postgresql.org/docs/11/libpq-connect.html.
-Here we will focus on an interface the library provides
+Here we will focus on the interface the library provides
 to make it more convenient configuring a database connection.
 
-Postgres has default values for all of its configuration parameter.
+Postgres has default values for all of its configuration parameters.
 For instance, username defaults to the operating system name of the user running the app,
-and database name is the same as the user name.
+and database name is the same as the username.
 There are several ways to override the defaults:
 - environment variables;
 - connection string;
@@ -392,7 +393,7 @@ Many library types provide two methods to check their status: `isOk()`
 returning a boolean value and `check()` throwing an exception.
 It is a common pattern used throughout the library, so remember it.
 Also some types provide a method `valid()` which can throw an exception as well.
-This one is kind of syntactic sugar and only works in chained method calls.
+The last one is kind of syntactic sugar and only works in chained method calls.
 You will encounter it in a lot of examples.
 The next section gives some more information on `valid()`.
 
@@ -422,7 +423,7 @@ void connectCheck() {
 }
 ```
 Some errors might stem from a connection loss.
-Once established a connection can be easily reset without the need to reconfigure it anew.
+Once established, a connection can be easily reset without the need to reconfigure it anew.
 But all the connection state is gone including prepared statements, current schema, etc.
 ```cpp
 void connectReset(Connection& conn) {
@@ -446,7 +447,6 @@ void exec(Connection& conn) {
 The `exec()` returns an object of type `Result`.
 The result is completely detached from the connection,
 meaning it is safe to use it even after the connection has been closed.
-
 Next we check that the execution has succeeded calling the `valid()` method,
 which just forwards the result if it is in a good state,
 and throws an exception otherwise.
@@ -480,7 +480,7 @@ void args(Connection& conn) {
 Under the hood argument types are passed to Postgres along with their values.
 The `Command` automatically detects those types, but sometimes you have to be explicit.
 In the example below if we hadn't specified the type of the argument
-it would've been guessed to be plain text instead of json:
+it would've been guessed to be plain text instead of JSON:
 ```cpp
 using postgres::bindOid;
 
@@ -501,7 +501,7 @@ void argsNull(Connection& conn) {
 The `Command` stores all the arguments into its internal buffer.
 But there are cases when it is desirable to avoid copying, e.g. for a large piece of text.
 This can be achieved by passing pointer to underlying C-style string
-or by using `std::string_view`, but keep an eye on lifetimes.
+or by using a `std::string_view`, but keep an eye on lifetimes.
 The same is true for statements as well.
 The both ways are shown below:
 ```cpp
@@ -548,8 +548,7 @@ void argsTime(Connection& conn) {
 ### Prepared statements
 
 Using prepared statements is quite trivial.
-The first step is to prepare statement.
-You have to specify statement name, statement body and argument types if present.
+To prepare a statement you have to specify its name, body and argument types if present.
 Then you can use the name to actually execute the statement and bind argument values.
 Consider an example:
 ```cpp
@@ -564,8 +563,8 @@ void prepare(Connection& conn) {
 Beware that the `Connection` is intentionally just a thin wrapper around native libpq handle
 and doesn't keep any additional state.
 Consequently, statements must be prepared again every time a connection's been reestablished.
-Also using PgBouncer can lead to errors depending on its configuration.
-If you're certain you've successfully prepared a statement and your code is correct,
+Also using PgBouncer can lead to errors depending on its configuration:
+if you're certain you've successfully prepared a statement and your code is correct,
 but Postgres complains that the prepared statement doesn't exist,
 then setting `pool_mode=session` in pgbouncer.ini is likely to solve the problem.
 
@@ -599,7 +598,7 @@ Don't be confused by the example - it is quite silly and just for demonstration 
 normally there won't be selects.
 The second limitation is due to the library sends and receives arguments in binary format,
 but when multiple statements are passed there is no way to tell Postgres to enable binary mode.
-Also when a select statement is embedded somewhere between the other statements,
+Also when a select-statement is embedded somewhere between the other statements,
 it is impossible to get the selected data
 because only the result of the last statement is returned from a database.
 Therefore it was decided to completely disable data read and avoid aforementioned issues.
@@ -622,7 +621,7 @@ void transact(Connection& conn) {
 }
 ```
 The `transact()` accepts anything the `exec()` does:
-strings, `Command`s, `PreparedCommand`s and `PrepareData` in any combination.
+strings, `Command`*s*, `PreparedCommand`*s* and `PrepareData` in any combination.
 Either all of them succeed or none have any effect.
 Again the example is a bit ridiculous, but imagine statements to be more meaningful,
 for instance inserting data to two different tables when one insert without the other
@@ -641,7 +640,7 @@ This way allows to put some logic between statement execution
 and build more complex and flexible transactions.
 Please don't forget to check that the `begin()` has succeeded and to commit.
 Also consider the possibility of commit operation itself to fail.
-When transaction handle goes out of scope it rollbacks the transaction
+When a transaction handle goes out of scope it rollbacks the transaction
 unless it has been explicitly commited already.
 
 <a name="reading-the-result"/>
@@ -651,9 +650,9 @@ unless it has been explicitly commited already.
 Now it's time to talk about queries and how to access their results.
 As mentioned above the `exec()` method returns an object of type `Result`.
 Iterating over it will produce a `Row` instance on each iteration.
-The 'Row' in turn consists of a number of `Field`s accessible by their index or name.
+The `Row` in turn consists of a number of `Field`*s* accessible by their index or name.
 Finally you can read the value of the `Field` into a new variable or an existing one.
-That is a bit less verbose expressed in code:
+That is probably a bit less verbose expressed in code:
 ```cpp
 void result(Connection& conn) {
     for (auto const& row : conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid()) {
@@ -686,7 +685,7 @@ In practice you should usually make a check before trying to access the data
 or you will end up with a chance of going out of bounds.
 Iterating eliminates this risk and therefore is safer and preferrable.
 
-Similarly to the `Command` NULLs are represented with pointers or `std::optional`:
+Similarly to the `Command` NULLs are represented with pointers or an `std::optional`:
 ```cpp
 void resultNull(Connection& conn) {
     auto const res = conn.exec("SELECT NULL::TEXT").valid();
@@ -745,7 +744,7 @@ void resultTime(Connection& conn) {
     fld.as<Time>().toUnix();
 }
 ```
-Timestamps with time zone have to be converted to `TEXT` and then read into `std::string`:
+Timestamps **with** time zone have to be converted to `TEXT` and then read into `std::string`:
 ```cpp
 void resultTimeZone(Connection& conn) {
     auto const res = conn.exec("SELECT now()::TEXT").valid();
@@ -774,8 +773,8 @@ void resultExtractEpoch(Connection& conn) {
 ```
 Finally you can read absolutely anything into `std::string`.
 This doesn't perform any checks and just gives you raw content of the field.
-There is also an option to avoid copying data with help of `std::string_view`,
-but make sure the result is staying alive for enough time.
+There is also an option to avoid copying data with help of a `std::string_view`,
+but make sure the result is staying alive long enough.
 ```cpp
 void resultData(Connection& conn) {
     auto const res = conn.exec("SELECT 'DATA'").valid();
@@ -838,7 +837,7 @@ It is a RAII-type which performs some cleanup in its destructor
 to leave the connection in a valid state ready for reuse.
 As a consequence the destructor can block for a short period of time
 until all the results are taken,
-but it normally shouldn't be an issue assuming proper library use.
+but it normally shouldn't be an issue assuming the proper library use.
 
 You can't have multiple active sends simultaneously.
 Either receive the results until `isDone()` gives true
@@ -856,11 +855,11 @@ void sendTWice(Connection& conn) {
 ```
 There are also asynchronous counterparts for prepared and raw statements.
 There is nothing special about them so we won't waste our time on examples.
-What's more interesting is a so-called single row mode,
+What's more interesting is a so-called "single-row mode",
 the primary goal of which it to receive large datasets.
-Such a large that it is impossible or unreasonable to fit them in memory.
+Such a large that it is impossible or unreasonable to fit them in RAM.
 You may think of it as establishing a stream of rows.
-As always there is a tradeoff - single row mode works a bit slower.
+As always there is a tradeoff - the single-row mode works a bit slower.
 Lets look at an example:
 ```cpp
 void sendRowByRow(Connection& conn) {
@@ -1039,7 +1038,7 @@ void pool() {
 The `Client` implements single-producer-multiple-consumers pattern
 and is not thread-safe by itself: protect it with a mutex for concurrent access.
 The interface is quite straightforward to use,
-however a lot of flexibility is hidden in a connection pool configuration,
+however a lot of flexibility is hidden in a connection pool's configuration,
 so lets discover it.
 
 First of all any available connection option can be passed
@@ -1080,7 +1079,7 @@ void poolBehaviour() {
 Idle timeout causes a thread to stop and close its connection to a database
 after specified duration of inactivity.
 Its primary purpose is to reduce the number of allocated resources back to the usual level
-after load spikes has gone.
+after a load spike has gone.
 This feature is disabled by default.
 
 Maximum concurrency specifies the number of threads/connections
@@ -1093,5 +1092,5 @@ Shutdown policy regulates how to handle the queue on shutdown.
 Default policy is to stop gracefully: all requests waiting in the queue will be executed.
 You can alternatively choose to drop the queue,
 but active requests are not canceled and can take some time to complete anyway.
-And the last one policy is to abort resulting in an undefined behaviour.
+And the last one policy is to abort, resulting in an undefined behaviour.
 
