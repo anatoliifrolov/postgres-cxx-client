@@ -13,8 +13,6 @@ Features:
 * Passing arguments in binary format.
 * Working with timestamps and NULLs.
 
-## Table of Contents
-
 ## Getting started
 
 Prerequisites:
@@ -138,3 +136,4 @@ Total Test time (real) =   0.79 sec
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
