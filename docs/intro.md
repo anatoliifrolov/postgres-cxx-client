@@ -30,15 +30,15 @@ You can integrate the library into your project in two ways:
 * As a prebuilt library.
 
 If you're experienced with CMake you probably already know what to do.
-Anyway, lets go through the process step by step.
-First we'll create a new CMake-based project which will serve us as an example.
-Initially the project will have the following structure:
+Anyway, let’s go through the process step-by-step.
+First, we'll create a new CMake-based project which will serve us as an example.
+Initially, the project will have the following structure:
 ```
 .
 ├── CMakeLists.txt
 └── main.cpp
 ```
-Lets fill out the CMakeLists.txt with:
+Let’s fill out the CMakeLists.txt with:
 ```cmake
 cmake_minimum_required(VERSION 3.8)
 project(MyProject)
@@ -54,7 +54,7 @@ int main() {
 }
 ```
 Now we have two ways to make the project compile as mentioned a bit earlier.
-Lets consider each of them in turn.
+Let’s consider each of them in turn.
 
 ### CMake subproject
 
@@ -68,7 +68,7 @@ $ git submodule add \
     https://github.com/anatoliifrolov/postgres-cxx-client.git \
     ./deps/postgres-cxx-client/
 ```
-Now we're able to add the library to our project's dependencies in the CMakeLists.txt:
+Now we're able to add the library to our project dependencies in the CMakeLists.txt:
 ```cmake
 cmake_minimum_required(VERSION 3.8)
 project(MyProject)
@@ -83,7 +83,7 @@ And that's it, our project is ready to run.
 
 ### Prebuilt library
 
-Lets say we keep libraries in `~/lib/` directory.
+Let’s say we keep libraries in `~/lib/` directory.
 Then the steps are as follows:
 ```bash
 $ cd ~/lib/
@@ -106,9 +106,9 @@ add_executable(MyProject main.cpp)
 find_package(PostgresCxxClient)
 target_link_libraries(MyProject PostgresCxxClient::PostgresCxxClient)
 ```
-What's left is just to tell CMake where to lookup for the libraries
+What's left is just to tell CMake where to look up for the libraries
 using the option `-DCMAKE_PREFIX_PATH=~/lib/`.
-After this step our project should've become able to compile and run.
+After this step our project is able to compile and run.
 
 ### Running the tests
 
@@ -116,7 +116,7 @@ To run the tests locally, create a database and a role both with a name "cxx_cli
 Set the password "cxx_client" for the role and make the role be owner of the database.
 How to do that is beyond the scope of this document.
 Make sure that PostgreSQL server is up and ready to accept connections.
-Then go to the library directory and from the command line type the following:
+Then go to the library directory and type the following from the command line:
 ```bash
 $ git submodule update --init --recursive
 $ cmake -DPOSTGRES_CXX_BUILD_TESTS=ON -B./build/ -H.
@@ -124,7 +124,7 @@ $ cmake --build ./build/
 $ cd ./build/
 $ PGUSER=cxx_client PGPASSWORD=cxx_client PGDATABASE=cxx_client ctest -V
 ```
-Pass any additional parameters you need to the ctest.
+Pass any additional parameters you need to the CTest.
 For instance, you may have to specify the database address with `PGHOST` or `PGHOSTADDR` variables.
 On success you should see something similar to:
 ```

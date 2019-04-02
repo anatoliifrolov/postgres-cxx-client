@@ -55,15 +55,15 @@ You can integrate the library into your project in two ways:
 * As a prebuilt library.
 
 If you're experienced with CMake you probably already know what to do.
-Anyway, lets go through the process step by step.
-First we'll create a new CMake-based project which will serve us as an example.
-Initially the project will have the following structure:
+Anyway, let’s go through the process step-by-step.
+First, we'll create a new CMake-based project which will serve us as an example.
+Initially, the project will have the following structure:
 ```
 .
 ├── CMakeLists.txt
 └── main.cpp
 ```
-Lets fill out the CMakeLists.txt with:
+Let’s fill out the CMakeLists.txt with:
 ```cmake
 cmake_minimum_required(VERSION 3.8)
 project(MyProject)
@@ -79,7 +79,7 @@ int main() {
 }
 ```
 Now we have two ways to make the project compile as mentioned a bit earlier.
-Lets consider each of them in turn.
+Let’s consider each of them in turn.
 
 <a name="cmake-subproject"/>
 
@@ -95,7 +95,7 @@ $ git submodule add \
     https://github.com/anatoliifrolov/postgres-cxx-client.git \
     ./deps/postgres-cxx-client/
 ```
-Now we're able to add the library to our project's dependencies in the CMakeLists.txt:
+Now we're able to add the library to our project dependencies in the CMakeLists.txt:
 ```cmake
 cmake_minimum_required(VERSION 3.8)
 project(MyProject)
@@ -112,7 +112,7 @@ And that's it, our project is ready to run.
 
 ### Prebuilt library
 
-Lets say we keep libraries in `~/lib/` directory.
+Let’s say we keep libraries in `~/lib/` directory.
 Then the steps are as follows:
 ```bash
 $ cd ~/lib/
@@ -135,9 +135,9 @@ add_executable(MyProject main.cpp)
 find_package(PostgresCxxClient)
 target_link_libraries(MyProject PostgresCxxClient::PostgresCxxClient)
 ```
-What's left is just to tell CMake where to lookup for the libraries
+What's left is just to tell CMake where to look up for the libraries
 using the option `-DCMAKE_PREFIX_PATH=~/lib/`.
-After this step our project should've become able to compile and run.
+After this step our project is able to compile and run.
 
 <a name="running-the-tests"/>
 
@@ -147,7 +147,7 @@ To run the tests locally, create a database and a role both with a name "cxx_cli
 Set the password "cxx_client" for the role and make the role be owner of the database.
 How to do that is beyond the scope of this document.
 Make sure that PostgreSQL server is up and ready to accept connections.
-Then go to the library directory and from the command line type the following:
+Then go to the library directory and type the following from the command line:
 ```bash
 $ git submodule update --init --recursive
 $ cmake -DPOSTGRES_CXX_BUILD_TESTS=ON -B./build/ -H.
@@ -155,7 +155,7 @@ $ cmake --build ./build/
 $ cd ./build/
 $ PGUSER=cxx_client PGPASSWORD=cxx_client PGDATABASE=cxx_client ctest -V
 ```
-Pass any additional parameters you need to the ctest.
+Pass any additional parameters you need to the CTest.
 For instance, you may have to specify the database address with `PGHOST` or `PGHOSTADDR` variables.
 On success you should see something similar to:
 ```
@@ -181,7 +181,7 @@ All the examples are built and run as part of a CI process and are guaranteed to
 
 ### Get started with a connection
 
-The following example gives you basic idea of how to use the library.
+The following example gives you the basic idea of how to use the library.
 Each feature is explained in detail in its corresponding section below.
 ```cpp
 #include <chrono>
@@ -274,7 +274,7 @@ void getStartedPool() {
 The library provides the all-in-one header file "postgres/Postgres.h",
 the one with forward declarations - "postgres/Fwd.h",
 and also every class that is a part of a public API has its own header which you can include.
-It is strongly discouraged to declare any of the library types in your project's code.
+It is strongly discouraged to declare any of the library types in your project code.
 Include the "postgres/Fwd.h" instead when you need just a declaration,
 say in a function signature.
 If compilation time is not a paramount concern use the "postgres/Postgres.h" in implementation,
@@ -285,21 +285,21 @@ The examples in this document use the "postgres/Postgres.h" for brevity.
 
 ### Configuring
 
-You can find comprehensive description of Postgres configuration options
+You can find a comprehensive description of Postgres configuration options
 in the official libpq documentation at https://www.postgresql.org/docs/11/libpq-connect.html.
 Here we will focus on the interface the library provides
 to make it more convenient configuring a database connection.
 
 Postgres has default values for all of its configuration parameters.
-For instance, username defaults to the operating system name of the user running the app,
-and database name is the same as the username.
+For instance, a username defaults to the operating system name of the user running the app,
+and a database name is the same as the username.
 There are several ways to override the defaults:
 - environment variables;
 - connection string;
 - URL;
 - configuration builder.
 
-Lets consider each one in turn with the examples.
+Let’s consider each one in turn with the examples.
 ```cpp
 void config() {
     Connection conn{};
@@ -307,11 +307,11 @@ void config() {
 }
 ```
 Here we connect to a database using the default values and environment variables.
-This is a good choise to pass sensitive information like passwords.
+This is a good choice to pass sensitive information like passwords.
 For example, the library is tested assuming that
 PGUSER, PGPASSWORD and PGDATABASE variables are set.
 
-Alternatively we can use a connection string:
+Alternatively, we can use a connection string:
 ```cpp
 void configStr() {
     Connection conn{"user=cxx_client password=cxx_client dbname=cxx_client"};
@@ -325,7 +325,7 @@ void configUrl() {
     conn.check();
 }
 ```
-And the last one approach is to exploit a configuration builder:
+And the last approach is to exploit a configuration builder:
 ```cpp
 using postgres::Config;
 
@@ -379,14 +379,14 @@ One of the library goals was to eliminate some sorts of bugs by design and at co
 but of course runtime errors are unavoidable.
 Most of the time you're given two ways to deal with them
 depending on your attitude to exceptions.
-Lets discuss exceptions first.
+Let’s discuss exceptions first.
 
 An exception classes hierarchy consists of a base class `postgres::Error`
 and two classes derived from it: `postgres::LogicError` and `postgres::RuntimeError`.
 The `Error` in turn is a child of `std::exception`.
 The `LogicError` is triggered to indicate a bug in your code
 such as trying to access a row that is out of bounds or misusing the library in some other way.
-Runtime errors, e.g. a connection that's got broken,
+Runtime errors, e.g. a connection that got broken,
 don't usually cause an exception to be thrown unless you explicitly tell to do that.
 
 Many library types provide two methods to check their status: `isOk()`
@@ -397,7 +397,7 @@ The last one is kind of syntactic sugar and only works in chained method calls.
 You will encounter it in a lot of examples.
 The next section gives some more information on `valid()`.
 
-Lets demonstrate the described behaviour using the `Connection` class
+Let’s demonstrate the described behaviour using the `Connection` class
 which we're now should be familiar with:
 ```cpp
 void connect() {
@@ -423,8 +423,8 @@ void connectCheck() {
 }
 ```
 Some errors might stem from a connection loss.
-Once established, a connection can be easily reset without the need to reconfigure it anew.
-But all the connection state is gone including prepared statements, current schema, etc.
+When the connection breaks, it can be easily reset without the need to reconfigure it anew,
+but the state including prepared statements is gone.
 ```cpp
 void connectReset(Connection& conn) {
     if (!conn.isOk()) {
@@ -437,7 +437,7 @@ void connectReset(Connection& conn) {
 
 ### Statement execution
 
-No that we've learned how to connect to a database lets execute some SQL-statements:
+Now that we've learned how to connect to a database let’s execute some SQL-statements:
 ```cpp
 void exec(Connection& conn) {
     auto const res = conn.exec("SELECT 1").valid();
@@ -445,8 +445,8 @@ void exec(Connection& conn) {
 }
 ```
 The `exec()` returns an object of type `Result`.
-The result is completely detached from the connection,
-meaning it is safe to use it even after the connection has been closed.
+The result is completely detached from the connection -
+it is safe to use it even after the connection has been closed.
 Next we check that the execution has succeeded calling the `valid()` method,
 which just forwards the result if it is in a good state,
 and throws an exception otherwise.
@@ -464,7 +464,7 @@ void execNoexcept(Connection& conn) {
 ```
 It is often needed to parametrize a statement with values computed at runtime.
 You have an option to embed those values directly into the statement text,
-but it is a bad choise for several reasons:
+but it is a bad choice for several reasons:
 - your app could get vulnerable to an SQL-injection attack;
 - you have to deal with escaping;
 - data is passed as text instead of binary format.
@@ -585,7 +585,7 @@ void execMultiBad(Connection& conn) {
 But what if we have a migration file with plenty of statements
 which we want to apply all at once?
 Or, generalizing the problem, just want to join several statements into one for some reason?
-Here is a solution:
+Here is the solution:
 ```cpp
 void execMultiOk(Connection& conn) {
     conn.execRaw("SELECT 1; SELECT 2").check();
@@ -593,15 +593,15 @@ void execMultiOk(Connection& conn) {
 ```
 That's not an error anymore, but there are a couple of limitations.
 The first one is that there is technically no way to pass arguments, only a statement.
-Moreover you are not allowed to obtain data.
+Moreover, you are not allowed to obtain data.
 Don't be confused by the example - it is quite silly and just for demonstration purposes,
-normally there won't be selects.
-The second limitation is due to the library sends and receives arguments in binary format,
+normally there won't be any selects.
+The second limitation is due to the library sends and receives arguments in a binary format,
 but when multiple statements are passed there is no way to tell Postgres to enable binary mode.
 Also when a select-statement is embedded somewhere between the other statements,
 it is impossible to get the selected data
 because only the result of the last statement is returned from a database.
-Therefore it was decided to completely disable data read and avoid aforementioned issues.
+Therefore, it was decided to completely disable data read and avoid aforementioned issues.
 
 <a name="transactions"/>
 
@@ -610,8 +610,8 @@ Therefore it was decided to completely disable data read and avoid aforementione
 Each statement is executed as a separate transaction.
 Multiple statements separated with semicolons as described in the previous section
 are a single transaction as well.
-There are two more apporaches to treat multiple statements as a transaction.
-Lets start with the simplest one:
+There are two more approaches to treat multiple statements as a transaction.
+Let’s start with the simplest one:
 ```cpp
 void transact(Connection& conn) {
     conn.transact("SELECT 1",
@@ -624,7 +624,7 @@ The `transact()` accepts anything the `exec()` does:
 strings, `Command`*s*, `PreparedCommand`*s* and `PrepareData` in any combination.
 Either all of them succeed or none have any effect.
 Again the example is a bit ridiculous, but imagine statements to be more meaningful,
-for instance inserting data to two different tables when one insert without the other
+for instance, inserting data to two different tables when one insert without the other
 would leave a system in inconsistent state.
 
 The second way gives more fine-grained control over transaction execution:
@@ -638,10 +638,10 @@ void transactManual(Connection& conn) {
 ```
 This way allows to put some logic between statement execution
 and build more complex and flexible transactions.
-Please don't forget to check that the `begin()` has succeeded and to commit.
+Please, don't forget to check that the `begin()` has succeeded and to commit.
 Also consider the possibility of commit operation itself to fail.
 When a transaction handle goes out of scope it rollbacks the transaction
-unless it has been explicitly commited already.
+unless it has been explicitly committed already.
 
 <a name="reading-the-result"/>
 
@@ -651,8 +651,8 @@ Now it's time to talk about queries and how to access their results.
 As mentioned above the `exec()` method returns an object of type `Result`.
 Iterating over it will produce a `Row` instance on each iteration.
 The `Row` in turn consists of a number of `Field`*s* accessible by their index or name.
-Finally you can read the value of the `Field` into a new variable or an existing one.
-That is probably a bit less verbose expressed in code:
+Finally, you can read the value of the `Field` into a new variable or an existing one.
+That is probably expressed a bit less verbosely in code:
 ```cpp
 void result(Connection& conn) {
     for (auto const& row : conn.exec("SELECT 'foo' AS foo, 'bar' AS bar").valid()) {
@@ -664,7 +664,7 @@ void result(Connection& conn) {
     }
 }
 ```
-Now lets store the same values into variables:
+Now let’s store the same values into variables:
 ```cpp
 void resultVars(Connection& conn) {
     std::string foo, bar;
@@ -683,7 +683,7 @@ void resultVars(Connection& conn) {
 In the last example it was evident that the result could not be empty.
 In practice you should usually make a check before trying to access the data
 or you will end up with a chance of going out of bounds.
-Iterating eliminates this risk and therefore is safer and preferrable.
+Iterating eliminates this risk and therefore is safer and more preferable.
 
 Similarly to the `Command` NULLs are represented with pointers or an `std::optional`:
 ```cpp
@@ -707,12 +707,12 @@ void resultNull(Connection& conn) {
 }
 ```
 You can cast the field to arithmetic type, but the rules are quite strict.
-In particular the following is prohibited:
+In particular, the following is prohibited:
 - loss of precision (casting from floating point value to integral one and vice versa);
 - narrowing (casting larger type to smaller);
 - underflow (reading negative values into variables of unsigned types).
 
-Lets look how those three cases may appear in code:
+Let’s look how those three cases may appear in code:
 ```cpp
 void resultBadCast(Connection& conn) {
     auto const res = conn.exec("SELECT -1::BIGINT").valid();
@@ -772,7 +772,7 @@ void resultExtractEpoch(Connection& conn) {
 }
 ```
 Finally you can read absolutely anything into `std::string`.
-This doesn't perform any checks and just gives you raw content of the field.
+This doesn't perform any checks and just gives you a raw content of the field.
 There is also an option to avoid copying data with help of a `std::string_view`,
 but make sure the result is staying alive long enough.
 ```cpp
@@ -810,10 +810,10 @@ void escape(Connection& conn) {
 
 Statement execution methods considered so far are synchronous,
 meaning that the calling thread is blocked until a database gives back the result.
-Now lets look at an asynchronous family of methods
+Now let’s look at an asynchronous family of methods
 allowing you to split the execution process into sending and receiving phases.
 Don't confuse it with multithreaded mode of a connection pool which is covered later.
-That's how it looks like:
+That's what it looks like:
 ```cpp
 void send(Connection& conn) {
     // Sending doesn't block.
@@ -835,7 +835,7 @@ Calling the `send()` method returns an instance of type `Receiver`
 which allows to obtain the result later.
 It is a RAII-type which performs some cleanup in its destructor
 to leave the connection in a valid state ready for reuse.
-As a consequence the destructor can block for a short period of time
+As a consequence, the destructor can block for a short period of time
 until all the results are taken,
 but it normally shouldn't be an issue assuming the proper library use.
 
@@ -856,11 +856,11 @@ void sendTWice(Connection& conn) {
 There are also asynchronous counterparts for prepared and raw statements.
 There is nothing special about them so we won't waste our time on examples.
 What's more interesting is a so-called "single-row mode",
-the primary goal of which it to receive large datasets.
-Such a large that it is impossible or unreasonable to fit them in RAM.
+the primary goal of which is to receive large datasets.
+So large that it is impossible or unreasonable to fit them in RAM.
 You may think of it as establishing a stream of rows.
 As always there is a tradeoff - the single-row mode works a bit slower.
-Lets look at an example:
+Let’s look at an example:
 ```cpp
 void sendRowByRow(Connection& conn) {
     // Imagine this query to end up with billions of rows.
@@ -879,7 +879,7 @@ void sendRowByRow(Connection& conn) {
 }
 ```
 Notice that the result is checked for emptiness inside the loop body -
-this is because of how libpq works, and you have always do the same thing.
+this is because of how libpq works, and you always have to do the same thing.
 
 <a name="generating-statements"/>
 
@@ -897,9 +897,9 @@ Remember the very first code example?
 We've created a table called "my_table" there
 to demonstrate basic statement generation facilities.
 
-Now lets use that table to show how we can perform an upsert.
+Now let’s use that table to show how we can perform an upsert.
 The so-called "upsert" is a special kind of Postgres statement
-consisting of an insert which on conflict fallbacks to an update.
+consisting of an insert which on conflict turns into an update.
 The starting example left our table in the following state:
 
 id | info |        create_time
@@ -1006,7 +1006,7 @@ TIMESTAMP        | std::chrono::system_clock::time_point
 
 Be careful working with unsigned integers since the SQL standard doesn't support them
 and neither do Postgres.
-Moreover it is considered to be a good practice in C++ to use signed numbers for arithmetic
+Moreover, it is considered to be a good practice in C++ to use signed numbers for arithmetic
 and unsigned ones for bitmasks.
 The design decision for table generation was to utilize unsigned integers
 to create auto-incremented fields, which are useful for producing unique identifiers.
@@ -1015,7 +1015,7 @@ to create auto-incremented fields, which are useful for producing unique identif
 
 ### Connection pool
 
-Now that you know how to use a connection lets move on to a higher-level feature.
+Now that you know how to use a connection let’s move on to a higher-level feature.
 Connection pool was designed to execute multiple statements concurrently.
 You've seen it in the "Get started with connection pool" section.
 Here we'll explore all the details and nuances.
@@ -1038,10 +1038,10 @@ void pool() {
 The `Client` implements single-producer-multiple-consumers pattern
 and is not thread-safe by itself: protect it with a mutex for concurrent access.
 The interface is quite straightforward to use,
-however a lot of flexibility is hidden in a connection pool's configuration,
-so lets discover it.
+however, a lot of flexibility is hidden in a connection pool's configuration,
+so let’s discover it.
 
-First of all any available connection option can be passed
+First of all, any available connection option can be passed
 to a client to let it know how to establish a connection.
 We've covered how to configure a connection in the corresponding section.
 The only difference is that a config or URL must be wrapped in a `Context`
@@ -1086,7 +1086,7 @@ Maximum concurrency specifies the number of threads/connections
 and defaults to hardware concurrency.
 Also the internal queue size can be limited.
 Exceeding the limit results in an exception in a thread calling the client methods.
-By default the queue is allowed to grow until application run out of memory and crash.
+By default the queue is allowed to grow until application runs out of memory and crashes.
 
 Shutdown policy regulates how to handle the queue on shutdown.
 Default policy is to stop gracefully: all requests waiting in the queue will be executed.
