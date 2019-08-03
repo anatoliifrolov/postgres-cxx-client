@@ -12,12 +12,9 @@ void configBuilder();
 void configBuilderExtra();
 void configBuilderManual();
 
-void connect();
-void connectCheck();
 void connectReset(Connection& conn);
 
 void exec(Connection& conn);
-void execNoexcept(Connection& conn);
 void args(Connection& conn);
 void argsOid(Connection& conn);
 void argsNull(Connection& conn);
@@ -59,7 +56,7 @@ void poolBehaviour();
 
 int main() {
     Connection conn{};
-    conn.exec("DROP TABLE IF EXISTS my_table").check();
+    conn.exec("DROP TABLE IF EXISTS my_table");
 
     getStarted();
     getStartedPool();
@@ -71,12 +68,9 @@ int main() {
     configBuilderExtra();
     configBuilderManual();
 
-    connect();
-    connectCheck();
     connectReset(conn);
 
     exec(conn);
-    execNoexcept(conn);
     args(conn);
     argsOid(conn);
     argsNull(conn);

@@ -12,13 +12,8 @@ Receiver& Receiver::operator=(Receiver&& other) noexcept = default;
 
 Receiver::~Receiver() noexcept = default;
 
-Receiver Receiver::valid()&& {
-    check();
-    return std::move(*this);
-}
-
 Result Receiver::receive() {
-    return Result{PQgetResult(handle_.get())};
+    return Result{PQgetResult(handle_.get()), this};
 }
 
 void Receiver::iter() {
@@ -26,13 +21,11 @@ void Receiver::iter() {
 }
 
 Receiver::iterator Receiver::begin() {
-    check();
     return iterator{*this, receive()};
 }
 
 Receiver::iterator Receiver::end() {
-    check();
-    return iterator{*this, Result{nullptr}};
+    return iterator{*this, Result{nullptr, this}};
 }
 
 Receiver::iterator::iterator(Receiver& rec, Result res)

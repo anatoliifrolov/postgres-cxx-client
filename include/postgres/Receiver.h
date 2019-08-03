@@ -15,7 +15,6 @@ public:
     Receiver& operator=(Receiver&& other) noexcept;
     ~Receiver() noexcept;
 
-    Receiver valid()&&;
     Result receive();
     iterator begin();
     iterator end();

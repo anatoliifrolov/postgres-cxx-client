@@ -78,17 +78,9 @@ public:
 
     template <typename... Ts>
     std::enable_if_t<(1 < sizeof... (Ts)), Result> transact(Ts&& ... args) {
-        auto res = exec("BEGIN", std::forward<Ts>(args)...);
-        if (!res.isOk()) {
-            exec("ROLLBACK");
-            return res;
-        }
-
-        auto status = exec("COMMIT");
-        if (!status.isOk()) {
-            return status;
-        }
-
+        auto tx  = begin();
+        auto res = exec(std::forward<Ts>(args)...);
+        tx.commit();
         return res;
     }
 
@@ -107,7 +99,6 @@ public:
 
     Transaction begin();
 
-    void check();
     bool reset();
     bool isOk();
     std::string message();
@@ -118,6 +109,8 @@ public:
     PGconn* native() const;
 
 private:
+    explicit Connection(PGconn* handle);
+
     template <typename T, typename... Ts>
     std::enable_if_t<(0 < sizeof... (Ts)), Result> exec(T&& arg, Ts&& ... args) {
         auto res = exec(std::forward<T>(arg));

@@ -15,7 +15,7 @@ TEST(ClientTest, Result) {
         return conn.exec("SELECT 1::INT");
     }).get()[0][0].as<int32_t>());
     ASSERT_THROW(cl.exec([](Connection& conn) {
-        return conn.exec("BAD").valid();
+        return conn.exec("BAD");
     }).get(), RuntimeError);
 }
 

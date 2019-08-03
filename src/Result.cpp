@@ -9,16 +9,15 @@ Result::Result(PGresult* const handle)
     : Status{handle} {
 }
 
+Result::Result(PGresult* const handle, postgres::Consumer* const consumer)
+    : Status{handle, consumer} {
+}
+
 Result::Result(Result&& other) noexcept = default;
 
 Result& Result::operator=(Result&& other) noexcept = default;
 
 Result::~Result() noexcept = default;
-
-Result Result::valid()&& {
-    check();
-    return std::move(*this);
-}
 
 Result::iterator Result::begin() const {
     check();

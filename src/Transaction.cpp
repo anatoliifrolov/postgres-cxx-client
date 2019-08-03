@@ -1,37 +1,30 @@
 #include <postgres/Transaction.h>
 
-#include <utility>
 #include <postgres/Connection.h>
+#include <postgres/Error.h>
 
 namespace postgres {
 
-Transaction::Transaction(Connection& conn, Result status)
-    : conn_{&conn}, status_{std::move(status)} {
+Transaction::Transaction(Connection& conn)
+    : conn_{&conn} {
 }
 
-Transaction::Transaction(Transaction&& other) noexcept = default;
-
-Transaction& Transaction::operator=(Transaction&& other) noexcept = default;
+Transaction::Transaction(Transaction&& other) noexcept
+    : conn_{other.conn_} {
+    other.conn_ = nullptr;
+}
 
 Transaction::~Transaction() noexcept {
-    if (status_.isOk()) {
+    if (conn_) {
         conn_->exec("ROLLBACK");
     }
 }
 
 Result Transaction::commit() {
-    status_.check();
-    status_ = conn_->exec("COMMIT");
-    return std::move(status_);
-}
-
-Transaction Transaction::valid()&& {
-    status_.check();
-    return std::move(*this);
-}
-
-Status const& Transaction::status() const {
-    return status_;
+    _POSTGRES_CXX_ASSERT(LogicError, conn_, "no transaction in progress");
+    auto const conn = conn_;
+    conn_ = nullptr;
+    return conn->exec("COMMIT");
 }
 
 }  // namespace postgres

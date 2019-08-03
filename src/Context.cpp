@@ -22,9 +22,8 @@ Context::~Context() noexcept = default;
 
 Connection Context::connect() const {
     auto conn = uri_.empty() ? Connection{cfg_} : Connection{uri_};
-    conn.check();
     for (auto const& prep : preparings_) {
-        conn.exec(prep).check();
+        conn.exec(prep);
     }
     return conn;
 }

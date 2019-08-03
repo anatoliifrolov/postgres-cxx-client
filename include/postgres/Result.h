@@ -16,7 +16,6 @@ public:
     Result& operator=(Result&& other) noexcept;
     ~Result() noexcept;
 
-    Result valid()&&;
     iterator begin() const;
     iterator end() const;
     Row operator[](int idx) const;
@@ -26,6 +25,7 @@ private:
     friend class Receiver;
 
     explicit Result(PGresult* handle);
+    explicit Result(PGresult* handle, Consumer* consumer);
 };
 
 class Result::iterator {

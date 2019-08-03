@@ -1,7 +1,7 @@
-# Modern C++ client for PostgreSQL
+# PgCC (Postgres C++ Client)
 
-This library is a wrapper around libpq designed 
-to make your work with Postgres easy and safe in a modern C++ way. 
+PgCC is a C++17 client library for working with PostgreSQL databases.
+This library is a wrapper around libpq designed to make your work with Postgres easier. 
 Features:
 * C++17.
 * Minimal dependencies.
@@ -13,7 +13,7 @@ Features:
 * Passing arguments in binary format.
 * Working with timestamps and NULLs.
 
-## Getting started
+## Getting Started
 
 Prerequisites:
 * CMake 3.8 or newer.
@@ -22,10 +22,10 @@ Prerequisites:
 * Google Test (only to run the tests).
 
 The project is built and tested using GCC 7.3 and Clang 6.0 on a machine running Linux.
-As there is no platform specific code, it should also work on the other platforms as well,
+As there is no platform specific code, it should also work on other platforms as well,
 but the author cannot guarantee this.
 
-You can integrate the library into your project in two ways:
+You can integrate PgCC into your project in two ways:
 * As a CMake subproject.
 * As a prebuilt library.
 
@@ -56,9 +56,9 @@ int main() {
 Now we have two ways to make the project compile as mentioned a bit earlier.
 Let’s consider each of them in turn.
 
-### CMake subproject
+### CMake Subproject
 
-We have to bring the PostgreSQL client library files into our project somehow.
+We have to bring the PgCC files into our project somehow.
 How to achieve this is up to you.
 We could just download the repository or use a package manager,
 but we'll utilize git submodules for this purpose:
@@ -81,7 +81,7 @@ target_link_libraries(MyProject PostgresCxxClient::PostgresCxxClient)
 There are two new lines at the bottom doing the job.
 And that's it, our project is ready to run.
 
-### Prebuilt library
+### Prebuilt Library
 
 Let’s say we keep libraries in `~/lib/` directory.
 Then the steps are as follows:
@@ -110,7 +110,7 @@ What's left is just to tell CMake where to look up for the libraries
 using the option `-DCMAKE_PREFIX_PATH=~/lib/`.
 After this step our project is able to compile and run.
 
-### Running the tests
+### Running the Tests
 
 To run the tests locally, create a database and a role both with a name "cxx_client".
 Set the password "cxx_client" for the role and make the role be owner of the database.

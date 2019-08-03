@@ -28,15 +28,6 @@ TEST(ConnectionTest, Connect) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
-    ASSERT_NO_THROW(conn.check());
-}
-
-TEST(ConnectionTest, ConnectBad) {
-    Connection conn{Config::Builder{}.port(2345).build()};
-    ASSERT_FALSE(conn.isOk());
-    ASSERT_FALSE(conn.message().empty());
-    ASSERT_FALSE(conn.reset());
-    ASSERT_THROW(conn.check(), RuntimeError);
 }
 
 TEST(ConnectionTest, ConnectStr) {
@@ -44,15 +35,6 @@ TEST(ConnectionTest, ConnectStr) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
-    ASSERT_NO_THROW(conn.check());
-}
-
-TEST(ConnectionTest, ConnectStrBad) {
-    Connection conn{"port=2345"};
-    ASSERT_FALSE(conn.isOk());
-    ASSERT_FALSE(conn.message().empty());
-    ASSERT_FALSE(conn.reset());
-    ASSERT_THROW(conn.check(), RuntimeError);
 }
 
 TEST(ConnectionTest, ConnectUri) {
@@ -60,37 +42,34 @@ TEST(ConnectionTest, ConnectUri) {
     ASSERT_TRUE(conn.isOk());
     ASSERT_TRUE(conn.message().empty());
     ASSERT_TRUE(conn.reset());
-    ASSERT_NO_THROW(conn.check());
 }
 
-TEST(ConnectionTest, ConnectUriBad) {
-    Connection conn{"postgresql://:2345"};
-    ASSERT_FALSE(conn.isOk());
-    ASSERT_FALSE(conn.message().empty());
-    ASSERT_FALSE(conn.reset());
-    ASSERT_THROW(conn.check(), RuntimeError);
+TEST(ConnectionTest, ConnectBad) {
+    ASSERT_THROW(Connection{Config::Builder{}.port(2345).build()}, RuntimeError);
+    ASSERT_THROW(Connection{"port=2345"}, RuntimeError);
+    ASSERT_THROW(Connection{"postgresql://:2345"}, RuntimeError);
 }
 
 TEST(ConnectionTest, Exec) {
     Connection conn{};
     ASSERT_TRUE(conn.exec("SELECT 1").isOk());
-    ASSERT_FALSE(conn.exec("SELECT 1; SELECT 2").isOk());
-    ASSERT_FALSE(conn.exec("BAD").isOk());
+    ASSERT_THROW(conn.exec("SELECT 1; SELECT 2"), RuntimeError);
+    ASSERT_THROW(conn.exec("BAD"), RuntimeError);
 }
 
 TEST(ConnectionTest, ExecRaw) {
     Connection conn{};
     ASSERT_TRUE(conn.execRaw("SELECT 1").isOk());
     ASSERT_TRUE(conn.execRaw("SELECT 1; SELECT 2").isOk());
-    ASSERT_FALSE(conn.execRaw("BAD").isOk());
+    ASSERT_THROW(conn.execRaw("BAD"), RuntimeError);
 }
 
 TEST(ConnectionTest, Prepare) {
     Connection conn{};
     ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(conn.exec(PreparedCommand{"select1"}).isOk());
-    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
-    ASSERT_FALSE(conn.exec(PreparedCommand{"bad"}).isOk());
+    ASSERT_THROW(conn.exec(PrepareData{"bad", "BAD"}), RuntimeError);
+    ASSERT_THROW(conn.exec(PreparedCommand{"bad"}), RuntimeError);
 }
 
 TEST(ConnectionTest, PrepareArgs) {
@@ -98,44 +77,44 @@ TEST(ConnectionTest, PrepareArgs) {
     ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT $1", {INT4OID}}).isOk());
     ASSERT_TRUE(conn.exec(PreparedCommand{"select1", 1}).isOk());
     ASSERT_TRUE(conn.exec(PrepareData{"bad", "SELECT $1"}).isOk());
-    ASSERT_FALSE(conn.exec(PreparedCommand{"bad", 2}).isOk());
+    ASSERT_THROW(conn.exec(PreparedCommand{"bad", 2}), RuntimeError);
 }
 
 TEST(ConnectionTest, ExecAsync) {
     Connection conn{};
     ASSERT_TRUE(conn.send("SELECT 1").receive().isOk());
-    ASSERT_FALSE(conn.send("SELECT 1; SELECT 2").receive().isOk());
-    ASSERT_FALSE(conn.send("BAD").receive().isOk());
+    ASSERT_THROW(conn.send("SELECT 1; SELECT 2").receive(), RuntimeError);
+    ASSERT_THROW(conn.send("BAD").receive(), RuntimeError);
 }
 
 TEST(ConnectionTest, ExecRawAsync) {
     Connection conn{};
     ASSERT_TRUE(conn.sendRaw("SELECT 1").consume().isOk());
     ASSERT_TRUE(conn.sendRaw("SELECT 1; SELECT 2").consume().isOk());
-    ASSERT_FALSE(conn.sendRaw("BAD").consume().isOk());
+    ASSERT_THROW(conn.sendRaw("BAD").consume(), RuntimeError);
 }
 
 TEST(ConnectionTest, PrepareAsync) {
     Connection conn{};
     ASSERT_TRUE(conn.send(PrepareData{"select1", "SELECT 1"}).receive().isOk());
     ASSERT_TRUE(conn.send(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.send(PrepareData{"bad", "BAD"}).receive().isOk());
-    ASSERT_FALSE(conn.send(PreparedCommand{"bad"}).receive().isOk());
+    ASSERT_THROW(conn.send(PrepareData{"bad", "BAD"}).receive(), RuntimeError);
+    ASSERT_THROW(conn.send(PreparedCommand{"bad"}).receive(), RuntimeError);
 }
 
 TEST(ConnectionTest, RowByRow) {
     Connection conn{};
     ASSERT_TRUE(conn.iter("SELECT 1").receive().isOk());
-    ASSERT_FALSE(conn.iter("SELECT 1; SELECT 2").receive().isOk());
-    ASSERT_FALSE(conn.iter("BAD").receive().isOk());
+    ASSERT_THROW(conn.iter("SELECT 1; SELECT 2").receive(), RuntimeError);
+    ASSERT_THROW(conn.iter("BAD").receive(), RuntimeError);
 }
 
 TEST(ConnectionTest, PrepareRowByRow) {
     Connection conn{};
     ASSERT_TRUE(conn.exec(PrepareData{"select1", "SELECT 1"}).isOk());
     ASSERT_TRUE(conn.iter(PreparedCommand{"select1"}).receive().isOk());
-    ASSERT_FALSE(conn.exec(PrepareData{"bad", "BAD"}).isOk());
-    ASSERT_FALSE(conn.iter(PreparedCommand{"bad"}).receive().isOk());
+    ASSERT_THROW(conn.exec(PrepareData{"bad", "BAD"}), RuntimeError);
+    ASSERT_THROW(conn.iter(PreparedCommand{"bad"}).receive(), RuntimeError);
 }
 
 TEST(ConnectionTest, Esc) {

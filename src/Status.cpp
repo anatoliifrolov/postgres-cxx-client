@@ -5,6 +5,16 @@ namespace postgres {
 
 Status::Status(PGresult* const handle)
     : handle_{handle, PQclear} {
+    check();
+}
+
+Status::Status(PGresult* const handle, postgres::Consumer*)
+    : handle_{handle, PQclear} {
+    // Null result is valid in asynchronous mode.
+    // It indicates an end of rows stream.
+    if (handle) {
+        check();
+    }
 }
 
 Status::Status(Status&& other) noexcept = default;
@@ -14,9 +24,13 @@ Status& Status::operator=(Status&& other) noexcept = default;
 Status::~Status() noexcept = default;
 
 void Status::check() const {
+    if (!handle_) {
+        _POSTGRES_CXX_FAIL(LogicError, "rows stream is over");
+    }
+
     _POSTGRES_CXX_ASSERT(RuntimeError,
                          isOk(),
-                         "fail to execute statement: " << describe() << ": " << message());
+                         "fail to execute operation: " << describe() << ": " << message());
 }
 
 bool Status::isOk() const {

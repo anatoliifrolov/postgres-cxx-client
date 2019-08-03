@@ -5,6 +5,8 @@
 
 namespace postgres {
 
+class Consumer;
+
 class Status {
 public:
     Status(Status const& other) = delete;
@@ -13,7 +15,6 @@ public:
     Status& operator=(Status&& other) noexcept;
     ~Status() noexcept;
 
-    void check() const;
     bool isOk() const;
     bool isDone() const;
     bool isEmpty() const;
@@ -31,6 +32,9 @@ protected:
     friend class Consumer;
 
     explicit Status(PGresult* handle);
+    explicit Status(PGresult* handle, Consumer*);
+
+    void check() const;
 
 private:
     std::unique_ptr<PGresult, void (*)(PGresult*)> handle_;

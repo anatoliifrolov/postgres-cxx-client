@@ -31,11 +31,16 @@ Connection::Connection()
 }
 
 Connection::Connection(Config const& cfg)
-    : handle_{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME), PQfinish} {
+    : Connection{PQconnectdbParams(cfg.keys(), cfg.values(), EXPAND_DBNAME)} {
 }
 
 Connection::Connection(std::string const& uri)
-    : handle_{PQconnectdb(uri.data()), PQfinish} {
+    : Connection{PQconnectdb(uri.data())} {
+}
+
+Connection::Connection(PGconn* const handle)
+    : handle_{handle, PQfinish} {
+    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), "fail to connect: " << message());
 }
 
 Connection::Connection(Connection&& other) noexcept = default;
@@ -126,11 +131,8 @@ Receiver Connection::iter(PreparedCommand const& cmd) {
 }
 
 Transaction Connection::begin() {
-    return Transaction{*this, exec("BEGIN")};
-}
-
-void Connection::check() {
-    _POSTGRES_CXX_ASSERT(RuntimeError, isOk(), "connection is in a bad state: " << message());
+    exec("BEGIN");
+    return Transaction{*this};
 }
 
 bool Connection::reset() {
