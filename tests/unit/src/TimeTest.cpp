@@ -16,19 +16,19 @@ TEST(TimeTest, CStyle) {
 }
 
 TEST(TimeTest, Chrono) {
-    auto const t = Time{TIME_POINT_SAMPLE_NANO};
+    auto const t = Time{TIME_POINT_SAMPLE_MICRO};
     ASSERT_EQ(TIME_SAMPLE, t.toUnix());
     ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
-    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_POINT_SAMPLE_MICRO, t.point());
     ASSERT_EQ(TIME_STR_SAMPLE_NANO, t.toString());
     ASSERT_FALSE(t.hasZone());
 }
 
 TEST(TimeTest, Tz) {
-    auto const t = Time{TIME_POINT_SAMPLE_NANO, true};
+    auto const t = Time{TIME_POINT_SAMPLE_MICRO, true};
     ASSERT_EQ(TIME_SAMPLE, t.toUnix());
     ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
-    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_POINT_SAMPLE_MICRO, t.point());
     ASSERT_EQ(TIME_STR_SAMPLE_NANO_TZ, t.toString());
     ASSERT_TRUE(t.hasZone());
 }
@@ -46,7 +46,7 @@ TEST(TimeTest, NanoFmt) {
     auto const t = Time{TIME_STR_SAMPLE_NANO};
     ASSERT_EQ(TIME_SAMPLE, t.toUnix());
     ASSERT_EQ(TIME_SAMPLE_PG_MICRO, t.toPostgres());
-    ASSERT_EQ(TIME_POINT_SAMPLE_NANO, t.point());
+    ASSERT_EQ(TIME_POINT_SAMPLE_MICRO, t.point());
     ASSERT_EQ(TIME_STR_SAMPLE_NANO, t.toString());
     ASSERT_FALSE(t.hasZone());
 }

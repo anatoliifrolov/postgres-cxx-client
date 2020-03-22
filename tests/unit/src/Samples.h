@@ -22,11 +22,9 @@ inline constexpr auto TIME_POINT_SAMPLE       = std::chrono::system_clock::time_
     TIME_SAMPLE}};
 inline constexpr auto TIME_POINT_SAMPLE_MICRO = TIME_POINT_SAMPLE
                                                 + std::chrono::microseconds{987654};
-inline constexpr auto TIME_POINT_SAMPLE_NANO  = TIME_POINT_SAMPLE
-                                                + std::chrono::nanoseconds{987654321};
 
 inline std::string const TIME_STR_SAMPLE         = "2017-08-25T13:03:35";
-inline std::string const TIME_STR_SAMPLE_NANO    = TIME_STR_SAMPLE + ".987654321";
+inline std::string const TIME_STR_SAMPLE_NANO    = TIME_STR_SAMPLE + ".987654000";
 inline std::string const TIME_STR_SAMPLE_NANO_TZ = makeTimeStrSampleNanoTz();
 
 }  // namespace postgres

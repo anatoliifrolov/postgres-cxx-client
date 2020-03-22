@@ -79,7 +79,8 @@ Time::Time(std::string const& s) {
     pnt_ = Clock::from_time_t(seconds);
     if (!fraction.empty()) {
         fraction.resize(9, '0');
-        pnt_ += nanoseconds{std::stol(fraction)};
+        auto const nanos = nanoseconds{std::stol(fraction)};
+        pnt_ += std::chrono::duration_cast<Point::duration>(nanos);
     }
 }
 

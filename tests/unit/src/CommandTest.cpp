@@ -229,7 +229,7 @@ TEST(CommandTest, Time) {
 }
 
 TEST(CommandTest, TimeZone) {
-    Command const cmd{"STMT", Time{TIME_POINT_SAMPLE_NANO, true}};
+    Command const cmd{"STMT", Time{TIME_POINT_SAMPLE_MICRO, true}};
     ASSERT_EQ(1, cmd.count());
     ASSERT_EQ(Oid{TIMESTAMPTZOID}, cmd.types()[0]);
     ASSERT_EQ(TIME_STR_SAMPLE_NANO_TZ, cmd.values()[0]);
